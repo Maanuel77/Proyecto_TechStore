@@ -4,7 +4,10 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.salesianos.triana.techstore.exception.GarantiaInvalidaException;
+import com.salesianos.triana.techstore.exception.RecursoNoEncontradoException;
 import com.salesianos.triana.techstore.model.Producto;
+import com.salesianos.triana.techstore.repository.ProductoRepository;
 
 import lombok.RequiredArgsConstructor;
 
