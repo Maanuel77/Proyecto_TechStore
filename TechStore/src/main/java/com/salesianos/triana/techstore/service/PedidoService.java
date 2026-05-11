@@ -1,0 +1,78 @@
+package com.salesianos.triana.techstore.service;
+
+
+import java.time.LocalDate;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.salesianos.triana.techstore.model.Pedido;
+import com.salesianos.triana.techstore.model.Producto;
+import com.salesianos.triana.techstore.repository.PedidoRepository;
+import com.salesianos.triana.techstore.repository.ProductoRepository;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class PedidoService {
+
+    private final PedidoRepository    pedidoRepository;
+    private final ProductoRepository  productoRepository;
+
+    public List<Pedido> findAll() {
+        return pedidoRepository.findAll();
+    }
+
+    public List<Pedido> findByFechaBetween(LocalDate desde, LocalDate hasta) {
+        return pedidoRepository.findByFechaBetween(desde, hasta);
+    }
+
+    public List<Object[]> findClientesConMayorGasto() {
+        return pedidoRepository.findClientesConMayorGasto();
+    }
+
+    public Double getTotalIngresos() {
+        Double val = pedidoRepository.getTotalIngresos();
+        return val != null ? val : 0.0;
+    }
+
+    public Double getTicketMedio() {
+        Double val = pedidoRepository.getTicketMedio();
+        return val != null ? val : 0.0;
+    }
+
+    public Long countClientesActivos() {
+        Long val = pedidoRepository.countClientesActivos();
+        return val != null ? val : 0L;
+    }
+
+    @Transactional
+    public Pedido guardarPedido(Pedido pedido) {
+        pedido.setFecha(LocalDate.now());
+        if (pedido.getCodigo() == null || pedido.getCodigo().isBlank()) {
+            pedido.setCodigo("PED-" + System.currentTimeMillis());
+        }
+/*
+        pedido.getLineas().forEach(linea -> {
+            Producto p = productoRepository.findById(linea.getProducto().getId())
+
+            if (p.getStock() < linea.getCantidad()) {
+                throw new StockInsuficienteException("Stock insuficiente para " + p.getNombre());
+            }
+            p.setStock(p.getStock() - linea.getCantidad());
+            productoRepository.save(p);
+
+            linea.setPedido(pedido);
+            linea.setPrecioUnitario(p.getPrecio());
+            linea.setSubtotal(p.getPrecio() * linea.getCantidad());
+        });*/
+
+        double total = pedido.getLineas().stream()
+                .mapToDouble(l -> l.getSubtotal() + (l.getCosteGarantia() != null ? l.getCosteGarantia() : 0.0))
+                .sum();
+        pedido.setTotal(total);
+        return pedidoRepository.save(pedido);
+    }
+}
