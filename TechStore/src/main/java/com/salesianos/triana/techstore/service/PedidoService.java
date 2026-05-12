@@ -54,20 +54,14 @@ public class PedidoService {
         if (pedido.getCodigo() == null || pedido.getCodigo().isBlank()) {
             pedido.setCodigo("PED-" + System.currentTimeMillis());
         }
-/*
         pedido.getLineas().forEach(linea -> {
-            Producto p = productoRepository.findById(linea.getProducto().getId())
-
-            if (p.getStock() < linea.getCantidad()) {
-                throw new StockInsuficienteException("Stock insuficiente para " + p.getNombre());
-            }
+            Producto p = productoRepository.findById(linea.getProducto().getId()).orElseThrow();
             p.setStock(p.getStock() - linea.getCantidad());
             productoRepository.save(p);
-
             linea.setPedido(pedido);
             linea.setPrecioUnitario(p.getPrecio());
             linea.setSubtotal(p.getPrecio() * linea.getCantidad());
-        });*/
+        });
 
         double total = pedido.getLineas().stream()
                 .mapToDouble(l -> l.getSubtotal() + (l.getCosteGarantia() != null ? l.getCosteGarantia() : 0.0))

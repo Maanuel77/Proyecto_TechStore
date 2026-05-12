@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Iniciar sesión — TechStore', null)}"></head>
+<body class="min-vh-100 d-flex align-items-center justify-content-center bg-light py-4">
+
+<div class="ts-login-card card border-0 shadow-lg rounded-4 p-4 p-sm-5 mx-auto">
+
+    <a class="text-dark fw-bold fs-4 text-decoration-none d-block text-center mb-1"
+       th:href="@{/}">TechStore</a>
+    <p class="text-muted text-center small mb-4">Accede a tu cuenta</p>
+
+    <div class="alert alert-danger border-0 rounded-3 small py-2"
+         th:if="${param.error}">
+        <i class="bi bi-exclamation-circle me-1"></i>
+        Usuario o contraseña incorrectos.
+    </div>
+    <div class="alert alert-success border-0 rounded-3 small py-2"
+         th:if="${param.logout}">
+        <i class="bi bi-check-circle me-1"></i>
+        Has cerrado sesión correctamente.
+    </div>
+
+    <form method="post" th:action="@{/auth/login}" novalidate>
+        <div class="mb-3">
+            <label class="form-label small fw-semibold text-muted text-uppercase ts-label-sm">
+                Usuario
+            </label>
+            <input class="form-control" name="username" type="text"
+                   autocomplete="username" required autofocus />
+        </div>
+        <div class="mb-4">
+            <label class="form-label small fw-semibold text-muted text-uppercase ts-label-sm">
+                Contraseña
+            </label>
+            <input class="form-control" type="password" name="password"
+                   autocomplete="current-password" required />
+        </div>
+        <button type="submit" class="btn btn-dark rounded-pill w-100 py-2">
+            Entrar
+        </button>
+    </form>
+
+    <div class="bg-light rounded-3 p-3 d-flex gap-3 mt-3">
+        <div class="flex-fill text-center">
+            <div class="text-muted small text-uppercase fw-semibold ts-label-sm mb-1">Admin</div>
+            <div class="ts-demo-creds">admin / admin123</div>
+        </div>
+        <div class="ts-demo-sep"></div>
+        <div class="flex-fill text-center">
+            <div class="text-muted small text-uppercase fw-semibold ts-label-sm mb-1">Cliente</div>
+            <div class="ts-demo-creds">cliente / cliente123</div>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
