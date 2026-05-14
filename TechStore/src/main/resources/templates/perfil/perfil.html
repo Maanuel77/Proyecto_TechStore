@@ -18,59 +18,72 @@
         <div class="container pb-5">
             <div class="row g-4 justify-content-center">
 
-                <!-- Datos del usuario -->
+                <!-- Datos del usuario (editables) -->
                 <div class="col-lg-6">
                     <div class="card border-0 shadow-sm rounded-4 p-4">
                         <h5 class="fw-semibold mb-4">
                             <i class="bi bi-person-circle me-2"></i>Datos personales
                         </h5>
 
-                        <!-- Alerta contraseña cambiada -->
+                        <!-- Alertas de confirmación -->
+                        <div class="alert alert-success border-0 rounded-3 small py-2"
+                             th:if="${datosCambiados}">
+                            <i class="bi bi-check-circle me-1"></i>
+                            Datos actualizados correctamente.
+                        </div>
                         <div class="alert alert-success border-0 rounded-3 small py-2"
                              th:if="${passwordCambiado}">
                             <i class="bi bi-check-circle me-1"></i>
                             Contraseña actualizada correctamente.
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label small fw-semibold text-muted text-uppercase">
-                                Usuario
-                            </label>
-                            <input type="text" class="form-control" readonly
-                                   th:value="${usuario.username}" />
-                        </div>
+                        <form th:action="@{/perfil/editar}" method="post">
 
-                        <div class="mb-3">
-                            <label class="form-label small fw-semibold text-muted text-uppercase">
-                                Nombre completo
-                            </label>
-                            <input type="text" class="form-control" readonly
-                                   th:value="${usuario.fullname}" />
-                        </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-muted text-uppercase">
+                                    Usuario
+                                </label>
+                                <input type="text" class="form-control" name="username"
+                                       th:value="${usuario.username}" required />
+                            </div>
 
-                        <div class="mb-3">
-                            <label class="form-label small fw-semibold text-muted text-uppercase">
-                                Email
-                            </label>
-                            <input type="email" class="form-control" readonly
-                                   th:value="${usuario.email}" />
-                        </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-muted text-uppercase">
+                                    Nombre completo
+                                </label>
+                                <input type="text" class="form-control" name="fullname"
+                                       th:value="${usuario.fullname}" />
+                            </div>
 
-                        <div class="mb-3">
-                            <label class="form-label small fw-semibold text-muted text-uppercase">
-                                Teléfono
-                            </label>
-                            <input type="text" class="form-control" readonly
-                                   th:value="${usuario.telefono != null} ? ${usuario.telefono} : '—'" />
-                        </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-muted text-uppercase">
+                                    Email
+                                </label>
+                                <input type="email" class="form-control" name="email"
+                                       th:value="${usuario.email}" required />
+                            </div>
 
-                        <div>
-                            <label class="form-label small fw-semibold text-muted text-uppercase">
-                                Rol
-                            </label>
-                            <input type="text" class="form-control" readonly
-                                   th:value="${usuario.role}" />
-                        </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-muted text-uppercase">
+                                    Teléfono
+                                </label>
+                                <input type="text" class="form-control" name="telefono"
+                                       th:value="${usuario.telefono}" />
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label small fw-semibold text-muted text-uppercase">
+                                    Rol
+                                </label>
+                                <input type="text" class="form-control" readonly
+                                       th:value="${usuario.role}" />
+                            </div>
+
+                            <button type="submit" class="btn btn-dark rounded-pill w-100 py-2">
+                                <i class="bi bi-floppy me-1"></i>Guardar cambios
+                            </button>
+
+                        </form>
                     </div>
                 </div>
 

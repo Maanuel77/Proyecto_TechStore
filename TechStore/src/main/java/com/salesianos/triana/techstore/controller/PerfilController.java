@@ -29,6 +29,22 @@ public class PerfilController {
         return "perfil/perfil";
     }
 
+    @PostMapping("/editar")
+    public String editarDatos(@AuthenticationPrincipal User usuario,
+                               @RequestParam String username,
+                               @RequestParam String email,
+                               @RequestParam String fullname,
+                               @RequestParam String telefono,
+                               RedirectAttributes ra) {
+        usuario.setUsername(username);
+        usuario.setEmail(email);
+        usuario.setFullname(fullname);
+        usuario.setTelefono(telefono);
+        userRepository.save(usuario);
+        ra.addFlashAttribute("datosCambiados", true);
+        return "redirect:/perfil";
+    }
+
     @PostMapping("/cambiar-password")
     public String cambiarPassword(@AuthenticationPrincipal User usuario,
                                   @RequestParam String nuevaPassword,
