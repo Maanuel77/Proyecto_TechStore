@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.salesianos.triana.techstore.security.User;
 import com.salesianos.triana.techstore.security.UserRepository;
@@ -34,24 +33,21 @@ public class PerfilController {
                                @RequestParam String username,
                                @RequestParam String email,
                                @RequestParam String fullname,
-                               @RequestParam String telefono,
-                               RedirectAttributes ra) {
+                               @RequestParam String telefono
+                               ) {
         usuario.setUsername(username);
         usuario.setEmail(email);
         usuario.setFullname(fullname);
         usuario.setTelefono(telefono);
         userRepository.save(usuario);
-        ra.addFlashAttribute("datosCambiados", true);
         return "redirect:/perfil";
     }
 
     @PostMapping("/cambiar-password")
     public String cambiarPassword(@AuthenticationPrincipal User usuario,
-                                  @RequestParam String nuevaPassword,
-                                  RedirectAttributes ra) {
+                                  @RequestParam String nuevaPassword) {
         usuario.setPassword(passwordEncoder.encode(nuevaPassword));
         userRepository.save(usuario);
-        ra.addFlashAttribute("passwordCambiado", true);
         return "redirect:/perfil";
     }
 }
