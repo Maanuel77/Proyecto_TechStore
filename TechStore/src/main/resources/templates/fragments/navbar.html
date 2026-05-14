@@ -37,6 +37,10 @@
 						<i class="bi bi-person-circle me-1"></i>
 						<span sec:authentication="name"></span>
 					</span>
+					<a th:href="@{/perfil}" class="btn btn-outline-secondary btn-sm rounded-pill"
+					   sec:authorize="isAuthenticated()">
+						<i class="bi bi-person me-1"></i>Mi perfil
+					</a>
 					<form th:action="@{/logout}" method="post" sec:authorize="isAuthenticated()" class="m-0">
 						<button type="submit" class="btn btn-outline-dark btn-sm rounded-pill">
 							Cerrar sesión
