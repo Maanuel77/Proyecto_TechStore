@@ -4,38 +4,28 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 
+/*
+ * Configuración principal de Spring Security.
+ *
+ * Define qué rutas son públicas y cuáles requieren autenticación o un rol
+ * concreto, cómo es el formulario de login, el logout, y algunos ajustes
+ * necesarios para que la consola H2 funcione en desarrollo.
+ *
+ * NOTA: el bean PasswordEncoder se ha movido a PasswordEncoderConfig
+ * y el bean UserDetailsService lo provee automáticamente
+ * CustomUserDetailsService al implementar la interfaz y llevar @Service.
+ * Mantenerlos aquí causaría dependencias circulares entre beans.
+ */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-    @Bean
-    public UserDetailsService userDetailsService(PasswordEncoder encoder) {
-        UserDetails admin = User.withUsername("admin")
-                .password(encoder.encode("admin123"))
-                .roles("ADMIN")
-                .build();
-        UserDetails cliente = User.withUsername("cliente")
-                .password(encoder.encode("cliente123"))
-                .roles("CLIENTE")
-                .build();
-        return new InMemoryUserDetailsManager(admin, cliente);
-    }
-
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/css/**", "/js/**", "/img/**").permitAll()
@@ -44,6 +34,13 @@ public class SecurityConfig {
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
+            // Conserva la URL original a la que el usuario intentaba acceder
+            // antes de ser redirigido al login, y lo lleva allí tras autenticarse.
+            .requestCache(cache -> {
+                HttpSessionRequestCache requestCache = new HttpSessionRequestCache();
+                requestCache.setMatchingRequestParameterName(null);
+                cache.requestCache(requestCache);
+            })
             .formLogin(form -> form
                 .loginPage("/auth/login")
                 .loginProcessingUrl("/auth/login")
@@ -54,12 +51,14 @@ public class SecurityConfig {
                 .logoutSuccessUrl("/")
                 .permitAll()
             )
+            // Permitir acceso a la consola H2 (solo desarrollo)
             .csrf(csrf -> csrf
                 .ignoringRequestMatchers("/h2-console/**")
             )
             .headers(headers -> headers
                 .frameOptions(frame -> frame.disable())
             );
+
         return http.build();
     }
 }
