@@ -6,17 +6,6 @@ import org.springframework.stereotype.Component;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 
-/*
- * Componente que carga los usuarios iniciales en la base de datos
- * al arrancar la aplicación.
- *
- * @PostConstruct garantiza que este método se ejecuta una sola vez,
- * justo después de que Spring haya inyectado todas las dependencias,
- * pero antes de que la aplicación empiece a recibir peticiones.
- *
- * Las contraseñas se codifican con el PasswordEncoder configurado,
- * nunca se guardan en texto plano.
- */
 @Component
 @RequiredArgsConstructor
 public class UserDataSeed {

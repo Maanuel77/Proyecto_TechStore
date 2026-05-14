@@ -7,18 +7,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 
-/*
- * Configuración principal de Spring Security.
- *
- * Define qué rutas son públicas y cuáles requieren autenticación o un rol
- * concreto, cómo es el formulario de login, el logout, y algunos ajustes
- * necesarios para que la consola H2 funcione en desarrollo.
- *
- * NOTA: el bean PasswordEncoder se ha movido a PasswordEncoderConfig
- * y el bean UserDetailsService lo provee automáticamente
- * CustomUserDetailsService al implementar la interfaz y llevar @Service.
- * Mantenerlos aquí causaría dependencias circulares entre beans.
- */
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -34,8 +23,6 @@ public class SecurityConfig {
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
-            // Conserva la URL original a la que el usuario intentaba acceder
-            // antes de ser redirigido al login, y lo lleva allí tras autenticarse.
             .requestCache(cache -> {
                 HttpSessionRequestCache requestCache = new HttpSessionRequestCache();
                 requestCache.setMatchingRequestParameterName(null);
@@ -51,7 +38,6 @@ public class SecurityConfig {
                 .logoutSuccessUrl("/")
                 .permitAll()
             )
-            // Permitir acceso a la consola H2 (solo desarrollo)
             .csrf(csrf -> csrf
                 .ignoringRequestMatchers("/h2-console/**")
             )

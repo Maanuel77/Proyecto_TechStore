@@ -20,19 +20,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/*
- * Entidad que representa a un usuario de la aplicación.
- *
- * Implementa UserDetails, la interfaz que Spring Security requiere
- * para conocer los datos de autenticación y autorización del usuario.
- * Al implementarla, esta clase se convierte en el objeto que Spring
- * Security maneja internamente durante toda la sesión.
- *
- * Los métodos isAccountNonExpired, isAccountNonLocked, isCredentialsNonExpired
- * e isEnabled están implícitamente activados (devuelven true por defecto
- * en la interfaz desde Spring Security 6), por lo que no es necesario
- * sobreescribirlos salvo que necesitemos lógica específica.
- */
+
 @SuppressWarnings("serial")
 @Data
 @NoArgsConstructor
