@@ -1,55 +1,57 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org" th:fragment="footer">
+
 <body>
-<footer class="bg-dark text-white py-5 mt-5">
-    <div class="container">
-        <div class="row g-4 mb-2">
-            <div class="col-lg-4 col-md-6">
-                <a class="fw-bold fs-5 text-white text-decoration-none d-inline-block mb-2"
-                   th:href="@{/}">TechStore</a>
-                <p class="small text-white text-opacity-50 mb-0">
-                    Electrodomésticos de alta gama con diseño<br>
-                    minimalista y rendimiento excepcional.
-                </p>
-            </div>
-            <div class="col-6 col-lg-2 col-md-3">
-                <div class="ts-fheading">Tienda</div>
-                <ul class="list-unstyled mb-0">
-                    <li class="mb-1"><a th:href="@{/}"        class="ts-flink">Inicio</a></li>
-                    <li class="mb-1"><a th:href="@{/catalogo}" class="ts-flink">Catálogo</a></li>
-                    <li class="mb-1"><a th:href="@{/carrito}"  class="ts-flink">Carrito</a></li>
-                </ul>
-            </div>
-            <div class="col-6 col-lg-2 col-md-3">
-                <div class="ts-fheading">Soporte</div>
-                <ul class="list-unstyled mb-0">
-                    <li class="mb-1"><a href="#" class="ts-flink">Garantías</a></li>
-                    <li class="mb-1"><a href="#" class="ts-flink">Devoluciones</a></li>
-                    <li class="mb-1"><a href="#" class="ts-flink">Contacto</a></li>
-                </ul>
-            </div>
-            <div class="col-6 col-lg-2 col-md-3">
-                <div class="ts-fheading">Legal</div>
-                <ul class="list-unstyled mb-0">
-                    <li class="mb-1"><a href="#" class="ts-flink">Privacidad</a></li>
-                    <li class="mb-1"><a href="#" class="ts-flink">Términos</a></li>
-                    <li class="mb-1"><a href="#" class="ts-flink">Cookies</a></li>
-                </ul>
-            </div>
-        </div>
+	<footer class="bg-dark text-white py-5 mt-5">
+		<div class="container">
+			<div class="row g-4 mb-2">
+				<div class="col-lg-4 col-md-6">
+					<a class="fw-bold fs-5 text-white text-decoration-none d-inline-block mb-2"
+						th:href="@{/}">TechStore</a>
+					<p class="small text-white text-opacity-50 mb-0">
+						Electrodomésticos de alta gama con diseño<br>
+						minimalista y rendimiento excepcional.
+					</p>
+				</div>
+				<div class="col-6 col-lg-2 col-md-3">
+					<div class="ts-fheading">Tienda</div>
+					<ul class="list-unstyled mb-0">
+						<li class="mb-1"><a th:href="@{/}" class="ts-flink">Inicio</a></li>
+						<li class="mb-1"><a th:href="@{/catalogo}" class="ts-flink">Catálogo</a></li>
+						<li class="mb-1"><a th:href="@{/carrito}" class="ts-flink">Carrito</a></li>
+					</ul>
+				</div>
+				<div class="col-6 col-lg-2 col-md-3">
+					<div class="ts-fheading">Soporte</div>
+					<ul class="list-unstyled mb-0">
+						<li class="mb-1"><a href="#" class="ts-flink">Garantías</a></li>
+						<li class="mb-1"><a href="#" class="ts-flink">Devoluciones</a></li>
+						<li class="mb-1"><a href="#" class="ts-flink">Contacto</a></li>
+					</ul>
+				</div>
+				<div class="col-6 col-lg-2 col-md-3">
+					<div class="ts-fheading">Legal</div>
+					<ul class="list-unstyled mb-0">
+						<li class="mb-1"><a href="#" class="ts-flink">Privacidad</a></li>
+						<li class="mb-1"><a href="#" class="ts-flink">Términos</a></li>
+						<li class="mb-1"><a href="#" class="ts-flink">Cookies</a></li>
+					</ul>
+				</div>
+			</div>
 
-        <hr class="border-secondary my-4">
+			<hr class="border-secondary my-4">
 
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-            <span class="ts-fcopy">&copy; 2025 TechStore &mdash; Todos los derechos reservados.</span>
-            <div class="d-flex gap-3">
-				<a href="#" class="ts-fsocial"><i class="bi bi-tiktok"></i></a>
-                <a href="#" class="ts-fsocial"><i class="bi bi-twitter-x"></i></a>
-                <a href="#" class="ts-fsocial"><i class="bi bi-instagram"></i></a>
-                <a href="#" class="ts-fsocial"><i class="bi bi-linkedin"></i></a>
-            </div>
-        </div>
-    </div>
-</footer>
+			<div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+				<span class="ts-fcopy">&copy; 2025 TechStore &mdash; Todos los derechos reservados.</span>
+				<div class="d-flex gap-3">
+					<a href="#" class="ts-fsocial"><i class="bi bi-tiktok"></i></a>
+					<a href="#" class="ts-fsocial"><i class="bi bi-twitter-x"></i></a>
+					<a href="#" class="ts-fsocial"><i class="bi bi-instagram"></i></a>
+					<a href="#" class="ts-fsocial"><i class="bi bi-linkedin"></i></a>
+				</div>
+			</div>
+		</div>
+	</footer>
 </body>
+
 </html>

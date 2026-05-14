@@ -1,105 +1,102 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <head th:replace="~{fragments/head :: head('Catálogo — TechStore', null)}"></head>
+
 <body>
 
-<div th:replace="~{fragments/navbar :: navbar}"></div>
+	<div th:replace="~{fragments/navbar :: navbar}"></div>
 
-<main>
-    <div class="bg-white border-bottom py-4 mb-4">
-        <div class="container">
-            <h1 class="fw-bold mb-1">Catálogo</h1>
-            <p class="text-muted mb-0"
-               th:text="${productos.size()} + ' productos disponibles'"></p>
-        </div>
-    </div>
+	<main>
+		<div class="bg-white border-bottom py-4 mb-4">
+			<div class="container">
+				<h1 class="fw-bold mb-1">Catálogo</h1>
+				<p class="text-muted mb-0" th:text="${productos.size()} + ' productos disponibles'"></p>
+			</div>
+		</div>
 
-    <div class="container pb-5">
-        <div class="card border-0 shadow-sm rounded-3 px-3 py-2 mb-4
+		<div class="container pb-5">
+			<div class="card border-0 shadow-sm rounded-3 px-3 py-2 mb-4
                     d-flex flex-row align-items-center gap-2">
-            <i class="bi bi-search text-muted"></i>
-            <input type="text" id="searchInput"
-                   class="form-control border-0 shadow-none bg-transparent"
-                   placeholder="Buscar por nombre o marca…" autocomplete="off" />
-            <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill"
-                  id="resultCount"
-                  th:text="${productos.size()} + ' resultados'"></span>
-        </div>
+				<i class="bi bi-search text-muted"></i>
+				<input type="text" id="searchInput" class="form-control border-0 shadow-none bg-transparent"
+					placeholder="Buscar por nombre o marca…" autocomplete="off" />
+				<span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill" id="resultCount"
+					th:text="${productos.size()} + ' resultados'"></span>
+			</div>
 
-        <div class="row g-4" id="productGrid">
-            <div class="col-sm-6 col-lg-4" th:each="p : ${productos}"
-                 th:attr="data-search=${#strings.toLowerCase(p.nombre + ' ' + p.marca)}">
-                <div class="card border-0 shadow-sm rounded-4 h-100 ts-hover">
-                    <div class="ratio ratio-4x3 bg-light overflow-hidden rounded-top-4">
-                        <img th:if="${p.imagenUrl != null}"
-                             class="object-fit-contain p-3"
-                             th:src="${p.imagenUrl}" th:alt="${p.nombre}" loading="lazy" />
-                        <div class="ts-img-placeholder d-flex align-items-center justify-content-center"
-                             th:if="${p.imagenUrl == null}">
-                            <i class="bi bi-box-seam fs-1 opacity-50"></i>
-                        </div>
-                    </div>
-                    <div class="card-body d-flex flex-column p-4">
-                        <div class="small text-muted text-uppercase fw-semibold mb-1 ts-label-sm"
-                             th:text="${p.marca}"></div>
-                        <div class="fw-semibold mb-2 flex-grow-1"
-                             th:text="${p.nombre}"></div>
-                        <div class="d-flex flex-wrap gap-1 mb-2">
-                            <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis"
-                                  th:if="${p.refurbished}">Reacondicionado</span>
-                            <span class="badge rounded-pill bg-success-subtle text-success-emphasis"
-                                  th:if="${p.stock > 5}">En stock</span>
-                            <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis"
-                                  th:if="${p.stock <= 5 and p.stock > 0}">
-                                Pocas (<span th:text="${p.stock}"></span>)
-                            </span>
-                            <span class="badge rounded-pill bg-danger-subtle text-danger-emphasis"
-                                  th:if="${p.stock == 0}">Agotado</span>
-                        </div>
-                        <div class="d-flex align-items-center gap-1 mb-2">
-                            <i class="bi bi-patch-check small text-muted"></i>
-                            <span class="text-muted small">
-                                Garantía <span th:text="${p.garantiaMeses}"></span> meses
-                            </span>
-                        </div>
-                        <div class="fw-bold fs-5"
-                             th:text="${#numbers.formatDecimal(p.precio,1,'POINT',2,'COMMA')} + ' €'"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
+			<div class="row g-4" id="productGrid">
+				<div class="col-sm-6 col-lg-4" th:each="p : ${productos}"
+					th:attr="data-search=${#strings.toLowerCase(p.nombre + ' ' + p.marca)}">
+					<div class="card border-0 shadow-sm rounded-4 h-100 ts-hover">
+						<div class="ratio ratio-4x3 bg-light overflow-hidden rounded-top-4">
+							<img th:if="${p.imagenUrl != null}" class="object-fit-contain p-3" th:src="${p.imagenUrl}"
+								th:alt="${p.nombre}" loading="lazy" />
+							<div class="ts-img-placeholder d-flex align-items-center justify-content-center"
+								th:if="${p.imagenUrl == null}">
+								<i class="bi bi-box-seam fs-1 opacity-50"></i>
+							</div>
+						</div>
+						<div class="card-body d-flex flex-column p-4">
+							<div class="small text-muted text-uppercase fw-semibold mb-1 ts-label-sm"
+								th:text="${p.marca}"></div>
+							<div class="fw-semibold mb-2 flex-grow-1" th:text="${p.nombre}"></div>
+							<div class="d-flex flex-wrap gap-1 mb-2">
+								<span class="badge rounded-pill bg-primary-subtle text-primary-emphasis"
+									th:if="${p.refurbished}">Reacondicionado</span>
+								<span class="badge rounded-pill bg-success-subtle text-success-emphasis"
+									th:if="${p.stock > 5}">En stock</span>
+								<span class="badge rounded-pill bg-warning-subtle text-warning-emphasis"
+									th:if="${p.stock <= 5 and p.stock > 0}">
+									Pocas (<span th:text="${p.stock}"></span>)
+								</span>
+								<span class="badge rounded-pill bg-danger-subtle text-danger-emphasis"
+									th:if="${p.stock == 0}">Agotado</span>
+							</div>
+							<div class="d-flex align-items-center gap-1 mb-2">
+								<i class="bi bi-patch-check small text-muted"></i>
+								<span class="text-muted small">
+									Garantía <span th:text="${p.garantiaMeses}"></span> meses
+								</span>
+							</div>
+							<div class="fw-bold fs-5"
+								th:text="${#numbers.formatDecimal(p.precio,1,'POINT',2,'COMMA')} + ' €'"></div>
+						</div>
+					</div>
+				</div>
+			</div>
 
-        <div class="text-center py-5 d-none" id="noResults">
-            <i class="bi bi-search fs-1 text-secondary opacity-25 d-block mb-3"></i>
-            <p class="fw-semibold mb-1">Sin resultados</p>
-            <p class="text-muted small mb-0">Prueba con otro término de búsqueda</p>
-        </div>
-    </div>
-</main>
+			<div class="text-center py-5 d-none" id="noResults">
+				<i class="bi bi-search fs-1 text-secondary opacity-25 d-block mb-3"></i>
+				<p class="fw-semibold mb-1">Sin resultados</p>
+				<p class="text-muted small mb-0">Prueba con otro término de búsqueda</p>
+			</div>
+		</div>
+	</main>
 
-<div th:replace="~{fragments/footer :: footer}"></div>
+	<div th:replace="~{fragments/footer :: footer}"></div>
 
-<script>
-(function () {
-    var input    = document.getElementById('searchInput');
-    var cards    = document.querySelectorAll('#productGrid > [data-search]');
-    var counter  = document.getElementById('resultCount');
-    var noResult = document.getElementById('noResults');
+	<script>
+		(function () {
+			var input = document.getElementById('searchInput');
+			var cards = document.querySelectorAll('#productGrid > [data-search]');
+			var counter = document.getElementById('resultCount');
+			var noResult = document.getElementById('noResults');
 
-    input.addEventListener('input', function () {
-        var q = this.value.toLowerCase();
-        var visible = 0;
-        cards.forEach(function (card) {
-            var match = !q || card.dataset.search.indexOf(q) !== -1;
-            card.style.display = match ? '' : 'none';
-            if (match) visible++;
-        });
-        counter.textContent = visible + ' resultados';
-        noResult.classList.toggle('d-none', visible > 0);
-    });
-})();
-</script>
+			input.addEventListener('input', function () {
+				var q = this.value.toLowerCase();
+				var visible = 0;
+				cards.forEach(function (card) {
+					var match = !q || card.dataset.search.indexOf(q) !== -1;
+					card.style.display = match ? '' : 'none';
+					if (match) visible++;
+				});
+				counter.textContent = visible + ' resultados';
+				noResult.classList.toggle('d-none', visible > 0);
+			});
+		})();
+	</script>
 
 </body>
+
 </html>

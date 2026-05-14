@@ -1,108 +1,108 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
+
 <head th:replace="~{fragments/head :: head('Dashboard — TechStore Admin', null)}"></head>
+
 <body>
 
-<div th:replace="~{fragments/navbar :: navbar}"></div>
+	<div th:replace="~{fragments/navbar :: navbar}"></div>
 
-<main>
-    <div class="bg-white border-bottom py-4 mb-4">
-        <div class="container">
-            <h1 class="fw-bold fs-3 mb-0">Dashboard</h1>
-            <p class="text-muted small mb-0">Panel de administración · TechStore</p>
-        </div>
-    </div>
+	<main>
+		<div class="bg-white border-bottom py-4 mb-4">
+			<div class="container">
+				<h1 class="fw-bold fs-3 mb-0">Dashboard</h1>
+				<p class="text-muted small mb-0">Panel de administración · TechStore</p>
+			</div>
+		</div>
 
-    <div class="container pb-5">
+		<div class="container pb-5">
 
-        <!-- Stat cards -->
-        <div class="row g-3 mb-4">
-            <div class="col-sm-6 col-xl-4">
-                <div class="card border-0 shadow-sm rounded-4 p-4 h-100
+			<div class="row g-3 mb-4">
+				<div class="col-sm-6 col-xl-4">
+					<div class="card border-0 shadow-sm rounded-4 p-4 h-100
                             d-flex flex-row align-items-center gap-3">
-                    <div class="ts-icon-blue rounded-3 p-3 d-flex align-items-center
+						<div class="ts-icon-blue rounded-3 p-3 d-flex align-items-center
                                 justify-content-center flex-shrink-0 fs-4">
-                        <i class="bi bi-box-seam"></i>
-                    </div>
-                    <div>
-                        <div class="fw-bold fs-2 lh-1 mb-1" th:text="${productos}">0</div>
-                        <div class="text-muted small text-uppercase fw-semibold ts-th">Productos</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-6 col-xl-4">
-                <div class="card border-0 shadow-sm rounded-4 p-4 h-100
+							<i class="bi bi-box-seam"></i>
+						</div>
+						<div>
+							<div class="fw-bold fs-2 lh-1 mb-1" th:text="${productos}">0</div>
+							<div class="text-muted small text-uppercase fw-semibold ts-th">Productos</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-6 col-xl-4">
+					<div class="card border-0 shadow-sm rounded-4 p-4 h-100
                             d-flex flex-row align-items-center gap-3">
-                    <div class="ts-icon-green rounded-3 p-3 d-flex align-items-center
+						<div class="ts-icon-green rounded-3 p-3 d-flex align-items-center
                                 justify-content-center flex-shrink-0 fs-4">
-                        <i class="bi bi-bag-check"></i>
-                    </div>
-                    <div>
-                        <div class="fw-bold fs-2 lh-1 mb-1" th:text="${pedidos}">0</div>
-                        <div class="text-muted small text-uppercase fw-semibold ts-th">Pedidos</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-6 col-xl-4">
-                <div class="card border-0 shadow-sm rounded-4 p-4 h-100
+							<i class="bi bi-bag-check"></i>
+						</div>
+						<div>
+							<div class="fw-bold fs-2 lh-1 mb-1" th:text="${pedidos}">0</div>
+							<div class="text-muted small text-uppercase fw-semibold ts-th">Pedidos</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-6 col-xl-4">
+					<div class="card border-0 shadow-sm rounded-4 p-4 h-100
                             d-flex flex-row align-items-center gap-3">
-                    <div class="ts-icon-orange rounded-3 p-3 d-flex align-items-center
+						<div class="ts-icon-orange rounded-3 p-3 d-flex align-items-center
                                 justify-content-center flex-shrink-0 fs-4">
-                        <i class="bi bi-exclamation-triangle"></i>
-                    </div>
-                    <div>
-                        <div class="fw-bold fs-2 lh-1 mb-1" th:text="${bajoStock.size()}">0</div>
-                        <div class="text-muted small text-uppercase fw-semibold ts-th">Stock bajo</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+							<i class="bi bi-exclamation-triangle"></i>
+						</div>
+						<div>
+							<div class="fw-bold fs-2 lh-1 mb-1" th:text="${bajoStock.size()}">0</div>
+							<div class="text-muted small text-uppercase fw-semibold ts-th">Stock bajo</div>
+						</div>
+					</div>
+				</div>
+			</div>
 
-        <!-- Alertas de stock -->
-        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-            <div class="d-flex align-items-center justify-content-between px-4 py-3 border-bottom">
-                <h5 class="mb-0 fw-semibold">Alertas de stock bajo</h5>
-                <span class="badge rounded-pill"
-                      th:classappend="${bajoStock.isEmpty()} ? 'bg-success' : 'bg-warning text-dark'"
-                      th:text="${bajoStock.isEmpty() ? 'Todo OK' : bajoStock.size() + ' alertas'}">
-                </span>
-            </div>
+			<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+				<div class="d-flex align-items-center justify-content-between px-4 py-3 border-bottom">
+					<h5 class="mb-0 fw-semibold">Alertas de stock bajo</h5>
+					<span class="badge rounded-pill"
+						th:classappend="${bajoStock.isEmpty()} ? 'bg-success' : 'bg-warning text-dark'"
+						th:text="${bajoStock.isEmpty() ? 'Todo OK' : bajoStock.size() + ' alertas'}">
+					</span>
+				</div>
 
-            <table class="table table-hover align-middle mb-0"
-                   th:if="${!bajoStock.isEmpty()}">
-                <thead class="table-light">
-                <tr>
-                    <th class="ts-th px-4">Producto</th>
-                    <th class="ts-th">Marca</th>
-                    <th class="ts-th">Stock</th>
-                    <th class="ts-th">Precio</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="p : ${bajoStock}">
-                    <td class="px-4 fw-semibold" th:text="${p.nombre}"></td>
-                    <td th:text="${p.marca}"></td>
-                    <td>
-                        <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis"
-                              th:if="${p.stock > 0}" th:text="${p.stock} + ' uds.'"></span>
-                        <span class="badge rounded-pill bg-danger-subtle text-danger-emphasis"
-                              th:if="${p.stock == 0}">Agotado</span>
-                    </td>
-                    <td th:text="${#numbers.formatDecimal(p.precio,1,'POINT',2,'COMMA')} + ' €'"></td>
-                </tr>
-                </tbody>
-            </table>
+				<table class="table table-hover align-middle mb-0" th:if="${!bajoStock.isEmpty()}">
+					<thead class="table-light">
+						<tr>
+							<th class="ts-th px-4">Producto</th>
+							<th class="ts-th">Marca</th>
+							<th class="ts-th">Stock</th>
+							<th class="ts-th">Precio</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="p : ${bajoStock}">
+							<td class="px-4 fw-semibold" th:text="${p.nombre}"></td>
+							<td th:text="${p.marca}"></td>
+							<td>
+								<span class="badge rounded-pill bg-warning-subtle text-warning-emphasis"
+									th:if="${p.stock > 0}" th:text="${p.stock} + ' uds.'"></span>
+								<span class="badge rounded-pill bg-danger-subtle text-danger-emphasis"
+									th:if="${p.stock == 0}">Agotado</span>
+							</td>
+							<td th:text="${#numbers.formatDecimal(p.precio,1,'POINT',2,'COMMA')} + ' €'"></td>
+						</tr>
+					</tbody>
+				</table>
 
-            <div class="p-4 text-center text-muted small" th:if="${bajoStock.isEmpty()}">
-                <i class="bi bi-check-circle-fill text-success me-1"></i>
-                Todos los productos tienen stock suficiente
-            </div>
-        </div>
+				<div class="p-4 text-center text-muted small" th:if="${bajoStock.isEmpty()}">
+					<i class="bi bi-check-circle-fill text-success me-1"></i>
+					Todos los productos tienen stock suficiente
+				</div>
+			</div>
 
-    </div>
-</main>
+		</div>
+	</main>
 
-<div th:replace="~{fragments/footer :: footer}"></div>
+	<div th:replace="~{fragments/footer :: footer}"></div>
 
 </body>
+
 </html>
