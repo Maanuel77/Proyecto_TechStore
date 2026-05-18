@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.salesianos.triana.techstore.model.Producto;
+import com.salesianos.triana.techstore.service.ClienteService;
 import com.salesianos.triana.techstore.service.PedidoService;
 import com.salesianos.triana.techstore.service.ProductoService;
 
@@ -20,11 +21,13 @@ public class AdminController {
 
     private final ProductoService productoService;
     private final PedidoService pedidoService;
+    private final ClienteService clienteService;
 
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
         model.addAttribute("productos", productoService.findAll().size());
         model.addAttribute("pedidos", pedidoService.findAll().size());
+        model.addAttribute("clientes", clienteService.findAll().size());
         model.addAttribute("bajoStock", productoService.lowStock());
         return "admin/dashboard";
     }
@@ -39,5 +42,11 @@ public class AdminController {
     public String nuevoProductoGuardar(@ModelAttribute Producto producto) {
         productoService.save(producto);
         return "redirect:/admin/dashboard";
+    }
+
+    @GetMapping("/clientes")
+    public String listadoClientes(Model model) {
+        model.addAttribute("clientes", clienteService.findAll());
+        return "admin/clientes/list";
     }
 }
