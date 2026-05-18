@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 
 
 @Configuration
@@ -15,6 +15,12 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
+        // Handler explícito: tras login OK, SIEMPRE redirige a "/"
+        // (no se mira la requestCache ni saved requests, así evitamos
+        // que la página se quede en /auth/login después de loguearse)
+        SimpleUrlAuthenticationSuccessHandler successHandler = new SimpleUrlAuthenticationSuccessHandler("/");
+        successHandler.setAlwaysUseDefaultTargetUrl(true);
+
         http
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/css/**", "/js/**", "/img/**").permitAll()
@@ -23,15 +29,11 @@ public class SecurityConfig {
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
-            .requestCache(cache -> {
-                HttpSessionRequestCache requestCache = new HttpSessionRequestCache();
-                requestCache.setMatchingRequestParameterName(null);
-                cache.requestCache(requestCache);
-            })
             .formLogin(form -> form
                 .loginPage("/auth/login")
                 .loginProcessingUrl("/auth/login")
-                .defaultSuccessUrl("/", true)
+                .successHandler(successHandler)
+                .failureUrl("/auth/login?error=true")
                 .permitAll()
             )
             .logout(logout -> logout
