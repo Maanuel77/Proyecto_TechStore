@@ -22,14 +22,12 @@
 
         <div class="container pb-5">
 
-            <!-- Sin clientes -->
             <div class="card border-0 shadow-sm rounded-4 p-5 text-center text-muted"
                  th:if="${clientes.isEmpty()}">
                 <i class="bi bi-people fs-1 mb-3 d-block"></i>
                 <p class="mb-0">Todavía no hay clientes registrados.</p>
             </div>
 
-            <!-- Tabla de clientes -->
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden"
                  th:if="${!clientes.isEmpty()}">
 

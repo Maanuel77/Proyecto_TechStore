@@ -45,13 +45,10 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
-    /*
-     * Devuelve los permisos/roles del usuario.
-     * Spring Security espera el prefijo "ROLE_", por eso lo concatenamos
-     * con el nombre del enum (ADMIN → ROLE_ADMIN, CLIENTE → ROLE_CLIENTE).
-     */
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
-    }
+	@Override
+	public Collection<? extends GrantedAuthority> getAuthorities() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+ 
 }
