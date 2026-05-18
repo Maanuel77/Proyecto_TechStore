@@ -14,10 +14,7 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
-        // Handler explícito: tras login OK, SIEMPRE redirige a "/"
-        // (no se mira la requestCache ni saved requests, así evitamos
-        // que la página se quede en /auth/login después de loguearse)
+    	
         SimpleUrlAuthenticationSuccessHandler successHandler = new SimpleUrlAuthenticationSuccessHandler("/");
         successHandler.setAlwaysUseDefaultTargetUrl(true);
 
