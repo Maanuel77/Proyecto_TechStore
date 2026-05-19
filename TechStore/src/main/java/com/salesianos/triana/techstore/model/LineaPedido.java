@@ -2,32 +2,39 @@ package com.salesianos.triana.techstore.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class LineaPedido {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue
     private Long id;
 
     private Integer cantidad;
-    private Double  precioUnitario;
-    private Double  subtotal;
+    private Double precioUnitario;
+    private Double subtotal;
     private boolean garantiaExtendida;
-    private Double  costeGarantia;
+    private Double costeGarantia;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_producto",
+        foreignKey = @ForeignKey(name = "fk_lineapedido_producto"))
     private Producto producto;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_pedido",
+        foreignKey = @ForeignKey(name = "fk_lineapedido_pedido"))
     private Pedido pedido;
 }
