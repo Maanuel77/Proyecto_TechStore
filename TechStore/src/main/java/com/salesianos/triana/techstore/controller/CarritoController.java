@@ -24,7 +24,6 @@ public class CarritoController {
     private final CarritoService carritoService;
     private final ProductoService productoService;
 
-    // ── Vista del carrito ────────────────────────────────────────────────────
 
     @GetMapping
     public String verCarrito(Model model) {
@@ -33,7 +32,6 @@ public class CarritoController {
         return "carrito/carrito";
     }
 
-    // ── Añadir producto ──────────────────────────────────────────────────────
 
     @GetMapping("/anadir/{id}")
     public String anadirProducto(@PathVariable Long id, RedirectAttributes ra) {
@@ -44,23 +42,17 @@ public class CarritoController {
         return "redirect:/catalogo";
     }
 
-    // ── Eliminar producto ────────────────────────────────────────────────────
-
     @GetMapping("/eliminar/{id}")
     public String eliminarProducto(@PathVariable Long id) {
         carritoService.removeProducto(id);
         return "redirect:/carrito";
     }
 
-    // ── Toggle garantía extendida ────────────────────────────────────────────
-
     @GetMapping("/garantia/{id}")
     public String toggleGarantia(@PathVariable Long id) {
         carritoService.toggleGarantia(id);
         return "redirect:/carrito";
     }
-
-    // ── Tramitar pedido ──────────────────────────────────────────────────────
 
     @GetMapping("/tramitar")
     public String tramitar(Model model) {
@@ -78,8 +70,6 @@ public class CarritoController {
         model.addAttribute("total", total);
         return "carrito/confirmacion";
     }
-
-    // ── Vaciar carrito ───────────────────────────────────────────────────────
 
     @GetMapping("/vaciar")
     public String vaciar() {
