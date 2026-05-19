@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: head('Carrito — TechStore', null)}"></head>
+
+<body>
+
+	<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+	<main>
+		<div class="bg-white border-bottom py-4 mb-4">
+			<div class="container">
+				<div class="d-flex align-items-center justify-content-between">
+					<div>
+						<h1 class="fw-bold fs-3 mb-0">Mi carrito</h1>
+						<p class="text-muted small mb-0">Revisa tus productos antes de tramitar el pedido</p>
+					</div>
+					<a th:href="@{/catalogo}" class="btn btn-outline-dark btn-sm rounded-pill">
+						<i class="bi bi-arrow-left me-1"></i>Seguir comprando
+					</a>
+				</div>
+			</div>
+		</div>
+
+		<div class="container pb-5">
+
+			<!-- Carrito vacío -->
+			<div th:if="${items.isEmpty()}" class="text-center py-5">
+				<i class="bi bi-bag fs-1 text-secondary opacity-25 d-block mb-3"></i>
+				<h5 class="fw-semibold mb-1">Tu carrito está vacío</h5>
+				<p class="text-muted small mb-4">Añade productos desde el catálogo para empezar</p>
+				<a th:href="@{/catalogo}" class="btn btn-dark rounded-pill px-4">
+					Ir al catálogo
+				</a>
+			</div>
+
+			<!-- Carrito con productos -->
+			<div th:unless="${items.isEmpty()}" class="row g-4 align-items-start">
+
+				<!-- Tabla de productos -->
+				<div class="col-lg-8">
+					<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+						<table class="table table-hover align-middle mb-0">
+							<thead class="table-light">
+								<tr>
+									<th class="ts-th px-4">Producto</th>
+									<th class="ts-th text-end">Precio ud.</th>
+									<th class="ts-th text-center">Cantidad</th>
+									<th class="ts-th text-end">Subtotal</th>
+									<th class="ts-th text-center">Garantía ext.</th>
+									<th class="ts-th"></th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:each="entry : ${items}">
+									<td class="px-4 fw-semibold" th:text="${entry.value.nombre}"></td>
+									<td class="text-end text-muted"
+										th:text="${#numbers.formatDecimal(entry.value.precio,1,'POINT',2,'COMMA')} + ' €'">
+									</td>
+									<td class="text-center">
+										<span class="badge rounded-pill bg-dark px-3 py-2"
+											th:text="${entry.value.cantidad}"></span>
+									</td>
+									<td class="text-end fw-semibold"
+										th:text="${#numbers.formatDecimal(entry.value.subtotal,1,'POINT',2,'COMMA')} + ' €'">
+									</td>
+									<td class="text-center">
+										<a th:href="@{/carrito/garantia/{id}(id=${entry.key})}"
+											class="btn btn-sm rounded-pill"
+											th:classappend="${entry.value.garantiaExtendida} ? 'btn-success' : 'btn-outline-secondary'"
+											th:title="${entry.value.garantiaExtendida} ? 'Quitar garantía extendida' : 'Añadir garantía extendida (+10%)'">
+											<i class="bi bi-patch-check"></i>
+											<span th:if="${entry.value.garantiaExtendida}" class="ms-1 small">Activa</span>
+										</a>
+									</td>
+									<td class="text-center">
+										<a th:href="@{/carrito/eliminar/{id}(id=${entry.key})}"
+											class="btn btn-sm btn-outline-danger rounded-pill">
+											<i class="bi bi-trash"></i>
+										</a>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+
+					<!-- Acciones -->
+					<div class="d-flex justify-content-end mt-3">
+						<a th:href="@{/carrito/vaciar}" class="btn btn-sm btn-outline-secondary rounded-pill">
+							<i class="bi bi-x-circle me-1"></i>Vaciar carrito
+						</a>
+					</div>
+				</div>
+
+				<!-- Resumen del pedido -->
+				<div class="col-lg-4">
+					<div class="card border-0 shadow-sm rounded-4 p-4">
+						<h6 class="fw-semibold mb-3">Resumen del pedido</h6>
+
+						<div th:each="entry : ${items}">
+							<div th:if="${entry.value.garantiaExtendida}"
+								class="d-flex justify-content-between small text-muted mb-1">
+								<span th:text="'+ Garantía ' + ${entry.value.nombre}"></span>
+								<span th:text="${#numbers.formatDecimal(entry.value.costeGarantia,1,'POINT',2,'COMMA')} + ' €'"></span>
+							</div>
+						</div>
+
+						<hr class="my-3">
+
+						<div class="d-flex justify-content-between fw-bold fs-5 mb-4">
+							<span>Total</span>
+							<span th:text="${#numbers.formatDecimal(total,1,'POINT',2,'COMMA')} + ' €'"></span>
+						</div>
+
+						<a th:href="@{/carrito/tramitar}" class="btn btn-dark w-100 rounded-pill py-2">
+							<i class="bi bi-bag-check me-1"></i>Tramitar pedido
+						</a>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</main>
+
+	<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+
+</html>
