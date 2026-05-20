@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="~{fragments/head :: head('Nuevo producto — TechStore Admin', null)}"></head>
+<head th:replace="~{fragments/head :: head(${producto.id != null ? 'Editar producto' : 'Nuevo producto'} + ' — TechStore Admin', null)}"></head>
 
 <body>
 
@@ -11,7 +11,8 @@
         <div class="bg-white border-bottom py-4 mb-4">
             <div class="container d-flex align-items-center justify-content-between">
                 <div>
-                    <h1 class="fw-bold fs-3 mb-0">Nuevo producto</h1>
+                    <h1 class="fw-bold fs-3 mb-0"
+                        th:text="${producto.id != null} ? 'Editar producto' : 'Nuevo producto'">Nuevo producto</h1>
                     <p class="text-muted small mb-0">Panel de administración · TechStore</p>
                 </div>
                 <a th:href="@{/admin/dashboard}" class="btn btn-outline-secondary btn-sm rounded-pill">
@@ -23,7 +24,8 @@
         <div class="container pb-5">
             <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 mx-auto" style="max-width: 640px;">
 
-                <form th:action="@{/admin/producto/nuevo}" th:object="${producto}" method="post">
+                <form th:action="${producto.id != null} ? @{/admin/producto/editar/{id}(id=${producto.id})} : @{/admin/producto/nuevo}"
+                      th:object="${producto}" method="post">
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Nombre</label>
@@ -71,7 +73,8 @@
                     </div>
 
                     <button type="submit" class="btn btn-dark rounded-pill w-100 py-2">
-                        <i class="bi bi-plus-lg me-1"></i>Guardar producto
+                        <i th:class="${producto.id != null} ? 'bi bi-floppy me-1' : 'bi bi-plus-lg me-1'"></i>
+                        <span th:text="${producto.id != null} ? 'Guardar cambios' : 'Guardar producto'">Guardar producto</span>
                     </button>
 
                 </form>

@@ -97,6 +97,7 @@
 							<th class="ts-th">Marca</th>
 							<th class="ts-th">Stock</th>
 							<th class="ts-th">Precio</th>
+							<th class="ts-th text-end pe-4">Acciones</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -110,6 +111,12 @@
 									th:if="${p.stock == 0}">Agotado</span>
 							</td>
 							<td th:text="${#numbers.formatDecimal(p.precio,1,'POINT',2,'COMMA')} + ' €'"></td>
+							<td class="text-end pe-4">
+								<a th:href="@{/admin/producto/editar/{id}(id=${p.id})}"
+								   class="btn btn-outline-secondary btn-sm rounded-pill">
+									<i class="bi bi-pencil me-1"></i>Editar
+								</a>
+							</td>
 						</tr>
 					</tbody>
 				</table>
