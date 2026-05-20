@@ -12,10 +12,6 @@ import org.springframework.context.annotation.Scope;
 import com.salesianos.triana.techstore.model.CarritoItem;
 import com.salesianos.triana.techstore.model.Producto;
 
-/**
- * Servicio de carrito almacenado en sesión HTTP.
- * Cada usuario tiene su propia instancia del carrito (igual que el ejemplo del profesor).
- */
 @Service
 @Scope(value = WebApplicationContext.SCOPE_SESSION, proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class CarritoService {
