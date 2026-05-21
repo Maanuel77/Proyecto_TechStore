@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import com.salesianos.triana.techstore.security.User;
 import com.salesianos.triana.techstore.security.UserRepository;
+import com.salesianos.triana.techstore.security.UserRole;
 import com.salesianos.triana.techstore.service.base.BaseServiceImpl;
 
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,30 @@ public class UserService extends BaseServiceImpl<User, Long, UserRepository> {
     public void cambiarPassword(Long id, String nuevaPassword) {
         User user = repository.findById(id).orElseThrow();
         user.setPassword(passwordEncoder.encode(nuevaPassword));
+        repository.save(user);
+    }
+
+
+    public boolean existeUsername(String username) {
+        return repository.existsByUsername(username);
+    }
+
+    /**
+     * Registra un nuevo usuario con rol CLIENTE por defecto.
+     * Codifica la contraseña antes de guardarla.
+     */
+    public User registrar(User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRole(UserRole.CLIENTE);
+        return repository.save(user);
+    }
+
+    /**
+     * Cambia el rol del usuario: si es CLIENTE pasa a ADMIN y viceversa.
+     */
+    public void toggleRole(Long id) {
+        User user = repository.findById(id).orElseThrow();
+        user.setRole(user.getRole() == UserRole.ADMIN ? UserRole.CLIENTE : UserRole.ADMIN);
         repository.save(user);
     }
 }
