@@ -12,6 +12,7 @@ import com.salesianos.triana.techstore.model.Producto;
 import com.salesianos.triana.techstore.service.ClienteService;
 import com.salesianos.triana.techstore.service.PedidoService;
 import com.salesianos.triana.techstore.service.ProductoService;
+import com.salesianos.triana.techstore.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,12 +24,13 @@ public class AdminController {
     private final ProductoService productoService;
     private final PedidoService pedidoService;
     private final ClienteService clienteService;
+    private final UserService userService;
 
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
         model.addAttribute("productos", productoService.findAll().size());
         model.addAttribute("pedidos", pedidoService.findAll().size());
-        model.addAttribute("clientes", clienteService.findAll().size());
+        model.addAttribute("clientes", userService.findAll().size());
         model.addAttribute("bajoStock", productoService.lowStock());
         return "admin/dashboard";
     }
@@ -61,7 +63,13 @@ public class AdminController {
 
     @GetMapping("/clientes")
     public String listadoClientes(Model model) {
-        model.addAttribute("clientes", clienteService.findAll());
+        model.addAttribute("usuarios", userService.findAll());
         return "admin/clientes/list";
+    }
+
+    @GetMapping("/clientes/toggle-role/{id}")
+    public String toggleRole(@PathVariable Long id) {
+        userService.toggleRole(id);
+        return "redirect:/admin/clientes";
     }
 }

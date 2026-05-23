@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: head('Crear cuenta — TechStore', null)}"></head>
+
+<body class="min-vh-100 d-flex align-items-center justify-content-center bg-light py-4">
+
+	<div class="ts-login-card card border-0 shadow-lg rounded-4 p-4 p-sm-5 mx-auto">
+
+		<a class="text-dark fw-bold fs-4 text-decoration-none d-block text-center mb-1" th:href="@{/}">TechStore</a>
+		<p class="text-muted text-center small mb-4">Crear una cuenta nueva</p>
+
+		<form method="post" th:action="@{/auth/registro}" th:object="${usuario}">
+
+			<!-- Usuario -->
+			<div class="mb-3">
+				<label class="form-label small fw-semibold text-muted text-uppercase ts-label-sm">
+					Nombre de usuario
+				</label>
+				<input type="text" th:field="*{username}"
+					class="form-control"
+					th:classappend="${#fields.hasErrors('username')} ? 'is-invalid'"
+					autocomplete="username"
+					minlength="3" maxlength="20"
+					required autofocus />
+				<div class="invalid-feedback" th:if="${#fields.hasErrors('username')}"
+					th:errors="*{username}"></div>
+			</div>
+
+			<!-- Contraseña -->
+			<div class="mb-3">
+				<label class="form-label small fw-semibold text-muted text-uppercase ts-label-sm">
+					Contraseña
+				</label>
+				<input type="password" th:field="*{password}"
+					class="form-control"
+					th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'"
+					autocomplete="new-password"
+					minlength="4"
+					required />
+				<div class="invalid-feedback" th:if="${#fields.hasErrors('password')}"
+					th:errors="*{password}"></div>
+			</div>
+
+			<!-- Nombre completo -->
+			<div class="mb-3">
+				<label class="form-label small fw-semibold text-muted text-uppercase ts-label-sm">
+					Nombre completo
+				</label>
+				<input type="text" th:field="*{fullname}"
+					class="form-control"
+					th:classappend="${#fields.hasErrors('fullname')} ? 'is-invalid'"
+					required />
+				<div class="invalid-feedback" th:if="${#fields.hasErrors('fullname')}"
+					th:errors="*{fullname}"></div>
+			</div>
+
+			<!-- Email -->
+			<div class="mb-3">
+				<label class="form-label small fw-semibold text-muted text-uppercase ts-label-sm">
+					Email
+				</label>
+				<input type="email" th:field="*{email}"
+					class="form-control"
+					th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"
+					autocomplete="email"
+					placeholder="ejemplo@dominio.com"
+					required />
+				<div class="invalid-feedback" th:if="${#fields.hasErrors('email')}"
+					th:errors="*{email}"></div>
+			</div>
+
+			<!-- Teléfono -->
+			<div class="mb-4">
+				<label class="form-label small fw-semibold text-muted text-uppercase ts-label-sm">
+					Teléfono <span class="text-muted fw-normal text-lowercase">(opcional)</span>
+				</label>
+				<input type="tel" th:field="*{telefono}"
+					class="form-control"
+					th:classappend="${#fields.hasErrors('telefono')} ? 'is-invalid'"
+					autocomplete="tel"
+					pattern="[0-9]{9}"
+					placeholder="9 dígitos, sin espacios"
+					title="9 dígitos numéricos sin espacios" />
+				<div class="invalid-feedback" th:if="${#fields.hasErrors('telefono')}"
+					th:errors="*{telefono}"></div>
+			</div>
+
+			<button type="submit" class="btn btn-dark rounded-pill w-100 py-2">
+				Crear cuenta
+			</button>
+		</form>
+
+		<p class="text-center text-muted small mt-4 mb-0">
+			¿Ya tienes cuenta?
+			<a th:href="@{/auth/login}" class="text-dark fw-semibold text-decoration-none">
+				Inicia sesión
+			</a>
+		</p>
+
+	</div>
+
+</body>
+
+</html>
