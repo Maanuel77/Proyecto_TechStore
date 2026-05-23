@@ -2,6 +2,7 @@ package com.salesianos.triana.techstore.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,6 +13,7 @@ import com.salesianos.triana.techstore.service.ClienteService;
 import com.salesianos.triana.techstore.service.PedidoService;
 import com.salesianos.triana.techstore.service.ProductoService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @Controller
@@ -39,7 +41,15 @@ public class AdminController {
     }
 
     @PostMapping("/producto/nuevo")
-    public String nuevoProductoGuardar(@ModelAttribute Producto producto) {
+    public String nuevoProductoGuardar(@Valid @ModelAttribute("producto") Producto producto,
+                                       BindingResult bindingResult) {
+        // Gestión de errores de Validación con @Valid
+        if (bindingResult.hasErrors()) {
+            // Si hay errores, regresa al formulario manteniendo los mensajes
+            return "admin/producto/form";
+        }
+        // Si el precio supera el límite el service lanza IllegalArgumentException
+        // que captura nuestro ExceptionControllerAdvice
         productoService.save(producto);
         return "redirect:/admin/dashboard";
     }

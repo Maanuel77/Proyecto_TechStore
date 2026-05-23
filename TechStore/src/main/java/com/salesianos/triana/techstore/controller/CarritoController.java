@@ -8,9 +8,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.salesianos.triana.techstore.model.CarritoItem;
+import com.salesianos.triana.techstore.model.Producto;
 import com.salesianos.triana.techstore.service.CarritoService;
 import com.salesianos.triana.techstore.service.ProductoService;
 
@@ -34,11 +34,12 @@ public class CarritoController {
 
 
     @GetMapping("/anadir/{id}")
-    public String anadirProducto(@PathVariable Long id, RedirectAttributes ra) {
-        productoService.findById(id).ifPresentOrElse(
-            carritoService::addProducto,
-            () -> ra.addFlashAttribute("errorCarrito", "Producto no encontrado")
-        );
+    public String anadirProducto(@PathVariable Long id) {
+        // Si no existe, buscarPorId lanza NoSuchElementException
+        // Si no hay stock, addProducto lanza SinStockException
+        // Ambas las captura nuestro ExceptionControllerAdvice
+        Producto p = productoService.buscarPorId(id);
+        carritoService.addProducto(p);
         return "redirect:/catalogo";
     }
 

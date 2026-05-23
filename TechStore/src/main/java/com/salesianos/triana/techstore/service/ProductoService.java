@@ -1,6 +1,7 @@
 package com.salesianos.triana.techstore.service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.springframework.stereotype.Service;
 
@@ -21,5 +22,25 @@ public class ProductoService extends BaseServiceImpl<Producto, Long, ProductoRep
 
     public List<Object[]> findVentasPorMarca() {
         return repository.findVentasPorMarca();
+    }
+
+    /**
+     * Devuelve el producto con ese id o lanza {@link NoSuchElementException}
+     * si no existe. La excepción es capturada por el ControllerAdvice global
+     * que la transforma en una página de error amigable.
+     */
+    public Producto buscarPorId(Long id) {
+        // Si no se encuentra, lanza una excepción nativa de Java (NoSuchElementException)
+        return repository.findById(id).orElseThrow(() -> new NoSuchElementException());
+    }
+
+    @Override
+    public Producto save(Producto producto) {
+        // Uso de excepción del API de Java (uso preventivo)
+        if (producto.getPrecio() != null && producto.getPrecio() > 50000.0) {
+            throw new IllegalArgumentException(
+                "Por política de la tienda, no se permiten productos de más de 50.000 €.");
+        }
+        return super.save(producto);
     }
 }

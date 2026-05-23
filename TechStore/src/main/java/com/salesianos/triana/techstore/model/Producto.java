@@ -7,6 +7,7 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,25 +20,32 @@ import lombok.NoArgsConstructor;
 @Entity
 public class Producto {
 
+    /*Aquí podemos ver la utilización de algunas validaciones
+     * automáticas de jakarta.validation como @NotBlank o @Min*/
+
     @Id @GeneratedValue
     private Long id;
 
-    @NotBlank
+    @NotBlank(message = "El nombre del producto no puede estar vacío.")
+    @Size(min = 2, max = 100, message = "El nombre debe tener entre 2 y 100 caracteres.")
     private String nombre;
 
-    @NotBlank
+    @NotBlank(message = "La marca es obligatoria.")
     private String marca;
 
-    @NotNull @DecimalMin("0.0")
+    @NotNull(message = "El precio es obligatorio.")
+    @DecimalMin(value = "0.0", message = "El precio no puede ser negativo.")
     private Double precio;
 
-    @NotNull @Min(0)
+    @NotNull(message = "El stock es obligatorio.")
+    @Min(value = 0, message = "El stock no puede ser negativo.")
     private Integer stock;
 
-    @NotNull @Min(0)
+    @NotNull(message = "La garantía en meses es obligatoria.")
+    @Min(value = 0, message = "La garantía no puede ser negativa.")
     private Integer garantiaMeses;
 
-    @NotNull
+    @NotNull(message = "Debes indicar si el producto es reacondicionado.")
     private Boolean refurbished;
 
     private String imagenUrl;

@@ -2,11 +2,13 @@ package com.salesianos.triana.techstore.service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.salesianos.triana.techstore.exceptions.SinStockException;
 import com.salesianos.triana.techstore.model.Pedido;
 import com.salesianos.triana.techstore.model.Producto;
 import com.salesianos.triana.techstore.repository.PedidoRepository;
@@ -50,7 +52,18 @@ public class PedidoService extends BaseServiceImpl<Pedido, Long, PedidoRepositor
         }
 
         pedido.getLineas().forEach(linea -> {
-            Producto p = productoRepository.findById(linea.getProducto().getId()).orElseThrow();
+            // Si el producto no existe, lanzamos NoSuchElementException
+            Producto p = productoRepository.findById(linea.getProducto().getId())
+                    .orElseThrow(() -> new NoSuchElementException());
+
+            // Si no hay stock suficiente, lanzamos nuestra excepción personalizada
+            if (linea.getCantidad() > p.getStock()) {
+                throw new SinStockException(
+                    "No hay stock suficiente del producto '" + p.getNombre()
+                    + "'. Solicitadas " + linea.getCantidad()
+                    + " unidades, disponibles " + p.getStock() + ".");
+            }
+
             p.setStock(p.getStock() - linea.getCantidad());
             productoRepository.save(p);
             linea.setPedido(pedido);

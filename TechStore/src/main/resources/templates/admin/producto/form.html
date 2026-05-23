@@ -23,35 +23,42 @@
         <div class="container pb-5">
             <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 mx-auto" style="max-width: 640px;">
 
-                <form th:action="@{/admin/producto/nuevo}" th:object="${producto}" method="post">
+                <form th:action="@{/admin/producto/nuevo}" th:object="${producto}" method="post" novalidate>
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Nombre</label>
-                        <input type="text" class="form-control" th:field="*{nombre}" required />
+                        <input type="text" th:field="*{nombre}"
+                               th:errorclass="is-invalid" class="form-control" />
+                        <div class="invalid-feedback" th:errors="*{nombre}"></div>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Marca</label>
-                        <input type="text" class="form-control" th:field="*{marca}" required />
+                        <input type="text" th:field="*{marca}"
+                               th:errorclass="is-invalid" class="form-control" />
+                        <div class="invalid-feedback" th:errors="*{marca}"></div>
                     </div>
 
                     <div class="row g-3 mb-3">
                         <div class="col-sm-6">
                             <label class="form-label fw-semibold">Precio (€)</label>
-                            <input type="number" class="form-control" th:field="*{precio}"
-                                   step="0.01" min="0" required />
+                            <input type="number" th:field="*{precio}"
+                                   th:errorclass="is-invalid" class="form-control" step="0.01" />
+                            <div class="invalid-feedback" th:errors="*{precio}"></div>
                         </div>
                         <div class="col-sm-6">
                             <label class="form-label fw-semibold">Stock (uds.)</label>
-                            <input type="number" class="form-control" th:field="*{stock}"
-                                   min="0" required />
+                            <input type="number" th:field="*{stock}"
+                                   th:errorclass="is-invalid" class="form-control" />
+                            <div class="invalid-feedback" th:errors="*{stock}"></div>
                         </div>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Garantía (meses)</label>
-                        <input type="number" class="form-control" th:field="*{garantiaMeses}"
-                               min="0" required />
+                        <input type="number" th:field="*{garantiaMeses}"
+                               th:errorclass="is-invalid" class="form-control" />
+                        <div class="invalid-feedback" th:errors="*{garantiaMeses}"></div>
                     </div>
 
                     <div class="mb-3">

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.context.annotation.Scope;
 
+import com.salesianos.triana.techstore.exceptions.SinStockException;
 import com.salesianos.triana.techstore.model.CarritoItem;
 import com.salesianos.triana.techstore.model.Producto;
 
@@ -26,12 +27,30 @@ public class CarritoService {
     /**
      * Añade un producto al carrito.
      * Si ya existe, incrementa la cantidad en 1.
+     *
+     * Lanza {@link SinStockException} si la cantidad pedida supera el stock
+     * disponible. La excepción es capturada por el ControllerAdvice global.
      */
     public void addProducto(Producto p) {
         if (items.containsKey(p.getId())) {
             CarritoItem item = items.get(p.getId());
+
+            // Uso de nuestra excepción personalizada de negocio
+            if (item.getCantidad() + 1 > p.getStock()) {
+                throw new SinStockException(
+                    "No queda más stock disponible del producto '" + p.getNombre()
+                    + "'. Solo hay " + p.getStock() + " unidades.");
+            }
+
             item.setCantidad(item.getCantidad() + 1);
         } else {
+
+            // Uso de nuestra excepción personalizada de negocio
+            if (p.getStock() < 1) {
+                throw new SinStockException(
+                    "El producto '" + p.getNombre() + "' está agotado.");
+            }
+
             items.put(p.getId(),
                 new CarritoItem(p.getId(), p.getNombre(), p.getPrecio(), 1, p.getGarantiaMeses()));
         }
