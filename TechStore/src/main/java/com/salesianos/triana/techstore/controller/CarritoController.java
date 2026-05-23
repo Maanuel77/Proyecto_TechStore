@@ -3,6 +3,7 @@ package com.salesianos.triana.techstore.controller;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,8 +11,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.salesianos.triana.techstore.model.CarritoItem;
+import com.salesianos.triana.techstore.model.Cliente;
+import com.salesianos.triana.techstore.model.LineaPedido;
+import com.salesianos.triana.techstore.model.Pedido;
 import com.salesianos.triana.techstore.model.Producto;
+import com.salesianos.triana.techstore.security.User;
 import com.salesianos.triana.techstore.service.CarritoService;
+import com.salesianos.triana.techstore.service.ClienteService;
+import com.salesianos.triana.techstore.service.PedidoService;
 import com.salesianos.triana.techstore.service.ProductoService;
 
 import lombok.RequiredArgsConstructor;
@@ -23,6 +30,8 @@ public class CarritoController {
 
     private final CarritoService carritoService;
     private final ProductoService productoService;
+    private final PedidoService pedidoService;
+    private final ClienteService clienteService;
 
 
     @GetMapping
@@ -56,15 +65,43 @@ public class CarritoController {
     }
 
     @GetMapping("/tramitar")
-    public String tramitar(Model model) {
+    public String tramitar(@AuthenticationPrincipal User usuario, Model model) {
         if (carritoService.isEmpty()) {
             return "redirect:/carrito";
         }
 
-        // Copiamos los datos ANTES de vaciar el carrito para mostrarlos en la confirmación
+        // Copiamos los datos ANTES de tocar nada para poder mostrarlos en la confirmación
         Map<Long, CarritoItem> itemsConfirmados = new LinkedHashMap<>(carritoService.getItems());
         double total = carritoService.calcularTotal();
 
+        // 1. Buscar (o crear si es su primera compra) el Cliente del dominio
+        //    asociado al usuario logueado.
+        Cliente cliente = clienteService.findOrCreateForUser(usuario);
+
+        // 2. Construir el Pedido con sus líneas a partir del carrito.
+        Pedido pedido = Pedido.builder()
+                .cliente(cliente)
+                .build();
+
+        for (CarritoItem item : itemsConfirmados.values()) {
+            LineaPedido linea = LineaPedido.builder()
+                    .producto(Producto.builder().id(item.getProductoId()).build())
+                    .cantidad(item.getCantidad())
+                    .garantiaExtendida(item.isGarantiaExtendida())
+                    .costeGarantia(item.getCosteGarantia())
+                    .build();
+            pedido.addLineaPedido(linea);
+        }
+
+        // 3. Persistir el Pedido. Esta llamada:
+        //    - reduce el stock de cada producto
+        //    - lanza SinStockException si alguna línea pide más unidades que las disponibles
+        //    - lanza NoSuchElementException si algún producto no existe
+        //    Ambas son capturadas por nuestro ExceptionControllerAdvice.
+        //    Como guardarPedido es @Transactional, si algo falla se hace rollback.
+        pedidoService.guardarPedido(pedido);
+
+        // 4. Solo si todo ha ido bien, vaciamos el carrito.
         carritoService.vaciarCarrito();
 
         model.addAttribute("items", itemsConfirmados);
