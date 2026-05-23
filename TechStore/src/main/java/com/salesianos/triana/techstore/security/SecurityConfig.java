@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 
 
 @Configuration
@@ -13,15 +14,20 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    	
+
         http
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/css/**", "/js/**", "/img/**").permitAll()
-                .requestMatchers("/", "/catalogo", "/auth/login").permitAll()
+                .requestMatchers("/", "/catalogo", "/auth/login", "/auth/registro").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
+            .requestCache(cache -> {
+                HttpSessionRequestCache requestCache = new HttpSessionRequestCache();
+                requestCache.setMatchingRequestParameterName(null);
+                cache.requestCache(requestCache);
+            })
             .formLogin(form -> form
                 .loginPage("/auth/login")
                 .loginProcessingUrl("/auth/login")
