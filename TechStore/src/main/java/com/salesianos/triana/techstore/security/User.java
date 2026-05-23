@@ -61,6 +61,13 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
+    /**
+     * Marca al superadmin del sistema. No se puede degradar de ADMIN
+     * ni eliminar, sea quien sea el admin que intente hacerlo.
+     * Solo se asigna en el UserDataSeed al primer admin.
+     */
+    private boolean superadmin;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));

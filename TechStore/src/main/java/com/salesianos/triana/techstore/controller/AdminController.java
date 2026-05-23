@@ -1,5 +1,7 @@
 package com.salesianos.triana.techstore.controller;
 
+import java.security.Principal;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -7,6 +9,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.salesianos.triana.techstore.model.Producto;
 import com.salesianos.triana.techstore.service.ClienteService;
@@ -68,8 +71,14 @@ public class AdminController {
     }
 
     @GetMapping("/clientes/toggle-role/{id}")
-    public String toggleRole(@PathVariable Long id) {
-        userService.toggleRole(id);
+    public String toggleRole(@PathVariable Long id,
+                             Principal principal,
+                             RedirectAttributes redirectAttributes) {
+        try {
+            userService.toggleRole(id, principal.getName());
+        } catch (IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errorRol", e.getMessage());
+        }
         return "redirect:/admin/clientes";
     }
 }

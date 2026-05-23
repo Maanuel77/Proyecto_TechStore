@@ -27,6 +27,7 @@ public class UserDataSeed {
                 .fullname("Administrador TechStore")
                 .telefono("600000001")
                 .role(UserRole.ADMIN)
+                .superadmin(true)
                 .build();
         
         User cliente = User.builder()

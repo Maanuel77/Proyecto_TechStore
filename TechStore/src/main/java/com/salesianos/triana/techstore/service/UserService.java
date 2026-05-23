@@ -48,9 +48,26 @@ public class UserService extends BaseServiceImpl<User, Long, UserRepository> {
 
     /**
      * Cambia el rol del usuario: si es CLIENTE pasa a ADMIN y viceversa.
+     *
+     * Verificaciones de seguridad:
+     *   - No se puede cambiar el rol del superadmin (es inmutable).
+     *   - Un admin no puede cambiarse el rol a sí mismo (evita autodegradarse).
+     *
+     * @param id                identificador del usuario al que se le cambia el rol
+     * @param usernameSolicitante username del admin que ejecuta la acción
+     * @throws IllegalStateException si la operación viola alguna regla de seguridad
      */
-    public void toggleRole(Long id) {
+    public void toggleRole(Long id, String usernameSolicitante) {
         User user = repository.findById(id).orElseThrow();
+
+        if (user.isSuperadmin()) {
+            throw new IllegalStateException("No se puede cambiar el rol del superadmin");
+        }
+
+        if (user.getUsername().equals(usernameSolicitante)) {
+            throw new IllegalStateException("No puedes cambiar tu propio rol");
+        }
+
         user.setRole(user.getRole() == UserRole.ADMIN ? UserRole.CLIENTE : UserRole.ADMIN);
         repository.save(user);
     }

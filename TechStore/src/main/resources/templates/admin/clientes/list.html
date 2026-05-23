@@ -22,6 +22,12 @@
 
         <div class="container pb-5">
 
+            <div class="alert alert-danger border-0 rounded-3 small py-2"
+                 th:if="${errorRol}">
+                <i class="bi bi-shield-exclamation me-1"></i>
+                <span th:text="${errorRol}">Mensaje de error</span>
+            </div>
+
             <div class="card border-0 shadow-sm rounded-4 p-5 text-center text-muted"
                  th:if="${usuarios.isEmpty()}">
                 <i class="bi bi-people fs-1 mb-3 d-block"></i>
@@ -61,19 +67,31 @@
                             </td>
                             <td class="text-muted small" th:text="${u.telefono}"></td>
                             <td>
-                                <span class="badge rounded-pill"
+                                <!-- Badge especial para el superadmin -->
+                                <span th:if="${u.superadmin}"
+                                      class="badge rounded-pill bg-warning text-dark">
+                                    <i class="bi bi-shield-fill-check me-1"></i>SUPERADMIN
+                                </span>
+                                <span th:if="${!u.superadmin}"
+                                      class="badge rounded-pill"
                                       th:classappend="${u.role.name() == 'ADMIN'} ? 'bg-dark text-white' : 'bg-primary-subtle text-primary-emphasis'"
                                       th:text="${u.role.name()}"></span>
                             </td>
                             <td class="text-end pe-4">
-                                <!-- No mostramos el botón en el usuario logueado para que no se autodemote -->
-                                <a th:if="${u.username != #authentication.name}"
+                                <!-- 1. El superadmin es intocable -->
+                                <span th:if="${u.superadmin}"
+                                      class="text-warning-emphasis small fst-italic">
+                                    <i class="bi bi-lock-fill me-1"></i>Protegido
+                                </span>
+                                <!-- 2. No mostramos el botón en el usuario logueado para que no se autodemote -->
+                                <span th:if="${!u.superadmin and u.username == #authentication.name}"
+                                      class="text-muted small fst-italic">Tú mismo</span>
+                                <!-- 3. El resto sí se pueden togglear -->
+                                <a th:if="${!u.superadmin and u.username != #authentication.name}"
                                    th:href="@{/admin/clientes/toggle-role/{id}(id=${u.id})}"
                                    class="btn btn-sm rounded-pill"
                                    th:classappend="${u.role.name() == 'ADMIN'} ? 'btn-outline-danger' : 'btn-outline-success'"
                                    th:text="${u.role.name() == 'ADMIN'} ? 'Quitar admin' : 'Hacer admin'"></a>
-                                <span th:if="${u.username == #authentication.name}"
-                                      class="text-muted small fst-italic">Tú mismo</span>
                             </td>
                         </tr>
                     </tbody>
