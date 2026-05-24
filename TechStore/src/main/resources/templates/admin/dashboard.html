@@ -10,15 +10,8 @@
 	<main>
 		<div class="bg-white border-bottom py-4 mb-4">
 			<div class="container">
-				<div class="d-flex align-items-center justify-content-between">
-					<div>
-						<h1 class="fw-bold fs-3 mb-0">Dashboard</h1>
-						<p class="text-muted small mb-0">Panel de administración · TechStore</p>
-					</div>
-					<a th:href="@{/admin/producto/nuevo}" class="btn btn-dark btn-sm rounded-pill">
-						<i class="bi bi-plus-lg me-1"></i>Añadir producto
-					</a>
-				</div>
+				<h1 class="fw-bold fs-3 mb-0">Dashboard</h1>
+				<p class="text-muted small mb-0">Panel de administración · TechStore</p>
 			</div>
 		</div>
 
@@ -26,17 +19,19 @@
 
 			<div class="row g-3 mb-4">
 				<div class="col-sm-6 col-xl-4">
-					<div class="card border-0 shadow-sm rounded-4 p-4 h-100
-                            d-flex flex-row align-items-center gap-3">
-						<div class="ts-icon-blue rounded-3 p-3 d-flex align-items-center
-                                justify-content-center flex-shrink-0 fs-4">
-							<i class="bi bi-box-seam"></i>
+					<a th:href="@{/admin/productos}" class="text-decoration-none">
+						<div class="card border-0 shadow-sm rounded-4 p-4 h-100
+	                            d-flex flex-row align-items-center gap-3">
+							<div class="ts-icon-blue rounded-3 p-3 d-flex align-items-center
+	                                justify-content-center flex-shrink-0 fs-4">
+								<i class="bi bi-box-seam"></i>
+							</div>
+							<div>
+								<div class="fw-bold fs-2 lh-1 mb-1" th:text="${productos}">0</div>
+								<div class="text-muted small text-uppercase fw-semibold ts-th">Productos</div>
+							</div>
 						</div>
-						<div>
-							<div class="fw-bold fs-2 lh-1 mb-1" th:text="${productos}">0</div>
-							<div class="text-muted small text-uppercase fw-semibold ts-th">Productos</div>
-						</div>
-					</div>
+					</a>
 				</div>
 				<div class="col-sm-6 col-xl-4">
 					<div class="card border-0 shadow-sm rounded-4 p-4 h-100
@@ -96,8 +91,7 @@
 							<th class="ts-th px-4">Producto</th>
 							<th class="ts-th">Marca</th>
 							<th class="ts-th">Stock</th>
-							<th class="ts-th">Precio</th>
-							<th class="ts-th text-end pe-4">Acciones</th>
+							<th class="ts-th pe-4">Precio</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -110,18 +104,7 @@
 								<span class="badge rounded-pill bg-danger-subtle text-danger-emphasis"
 									th:if="${p.stock == 0}">Agotado</span>
 							</td>
-							<td th:text="${#numbers.formatDecimal(p.precio,1,'POINT',2,'COMMA')} + ' €'"></td>
-							<td class="text-end pe-4">
-								<a th:href="@{/admin/producto/editar/{id}(id=${p.id})}"
-								   class="btn btn-outline-secondary btn-sm rounded-pill">
-									<i class="bi bi-pencil me-1"></i>Editar
-								</a>
-								<a th:href="@{/admin/producto/eliminar/{id}(id=${p.id})}"
-								   class="btn btn-outline-danger btn-sm rounded-pill ms-1"
-								   onclick="return confirm('¿Eliminar este producto? Esta acción no se puede deshacer.');">
-									<i class="bi bi-trash me-1"></i>Eliminar
-								</a>
-							</td>
+							<td class="pe-4" th:text="${#numbers.formatDecimal(p.precio,1,'POINT',2,'COMMA')} + ' €'"></td>
 						</tr>
 					</tbody>
 				</table>
