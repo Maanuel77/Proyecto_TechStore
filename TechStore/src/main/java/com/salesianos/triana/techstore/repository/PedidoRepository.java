@@ -12,6 +12,18 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
     List<Pedido> findByFechaBetween(LocalDate inicio, LocalDate fin);
 
     /**
+     * Todos los pedidos ordenados por fecha descendente (más reciente primero).
+     * Para el listado de admin.
+     */
+    List<Pedido> findAllByOrderByFechaDesc();
+
+    /**
+     * Pedidos en un rango de fechas, ordenados por fecha descendente.
+     * Para el filtro del listado de admin.
+     */
+    List<Pedido> findByFechaBetweenOrderByFechaDesc(LocalDate inicio, LocalDate fin);
+
+    /**
      * Devuelve todos los pedidos de un cliente identificado por email,
      * ordenados por fecha descendente (más reciente primero).
      */

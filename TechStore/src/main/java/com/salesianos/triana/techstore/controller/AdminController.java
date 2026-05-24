@@ -1,7 +1,10 @@
 package com.salesianos.triana.techstore.controller;
 
 import java.security.Principal;
+import java.time.LocalDate;
+import java.util.List;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -10,8 +13,10 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.salesianos.triana.techstore.model.Pedido;
 import com.salesianos.triana.techstore.model.Producto;
 import com.salesianos.triana.techstore.service.ClienteService;
 import com.salesianos.triana.techstore.service.PedidoService;
@@ -44,6 +49,33 @@ public class AdminController {
     public String listadoProductos(Model model) {
         model.addAttribute("productos", productoService.findAll());
         return "admin/productos/list";
+    }
+
+    /**
+     * Listado de todos los pedidos del sistema, con filtro opcional por rango de fechas.
+     * Si llegan ambos parámetros (desde y hasta), filtramos; si no, mostramos todos.
+     */
+    @GetMapping("/pedidos")
+    public String listadoPedidos(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
+            Model model) {
+
+        List<Pedido> pedidos;
+        if (desde != null && hasta != null) {
+            pedidos = pedidoService.findByFechaBetweenOrdered(desde, hasta);
+        } else {
+            pedidos = pedidoService.findAllOrdered();
+        }
+
+        model.addAttribute("pedidos", pedidos);
+        model.addAttribute("desde", desde);
+        model.addAttribute("hasta", hasta);
+        // Stats globales (no se ven afectadas por el filtro: muestran el total histórico)
+        model.addAttribute("totalPedidos", pedidoService.findAll().size());
+        model.addAttribute("ingresos", pedidoService.getTotalIngresos());
+        model.addAttribute("ticketMedio", pedidoService.getTicketMedio());
+        return "admin/pedidos/list";
     }
 
     @GetMapping("/producto/nuevo")

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{fragments/head :: head('Pedidos — TechStore Admin', null)}"></head>
+
+<body>
+
+	<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+	<main>
+		<div class="bg-white border-bottom py-4 mb-4">
+			<div class="container d-flex align-items-center justify-content-between">
+				<div>
+					<h1 class="fw-bold fs-3 mb-0">Pedidos</h1>
+					<p class="text-muted small mb-0">Listado de todos los pedidos realizados por los clientes</p>
+				</div>
+				<a th:href="@{/admin/dashboard}" class="btn btn-outline-secondary btn-sm rounded-pill">
+					<i class="bi bi-arrow-left me-1"></i>Volver al dashboard
+				</a>
+			</div>
+		</div>
+
+		<div class="container pb-5">
+
+			<!-- Cabecera de estadísticas globales -->
+			<div class="row g-3 mb-4">
+				<div class="col-sm-6 col-xl-4">
+					<div class="card border-0 shadow-sm rounded-4 p-4 h-100
+					            d-flex flex-row align-items-center gap-3">
+						<div class="ts-icon-green rounded-3 p-3 d-flex align-items-center
+						            justify-content-center flex-shrink-0 fs-4">
+							<i class="bi bi-bag-check"></i>
+						</div>
+						<div>
+							<div class="fw-bold fs-2 lh-1 mb-1" th:text="${totalPedidos}">0</div>
+							<div class="text-muted small text-uppercase fw-semibold ts-th">Total pedidos</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-6 col-xl-4">
+					<div class="card border-0 shadow-sm rounded-4 p-4 h-100
+					            d-flex flex-row align-items-center gap-3">
+						<div class="ts-icon-blue rounded-3 p-3 d-flex align-items-center
+						            justify-content-center flex-shrink-0 fs-4">
+							<i class="bi bi-cash-coin"></i>
+						</div>
+						<div>
+							<div class="fw-bold fs-2 lh-1 mb-1"
+							     th:text="${#numbers.formatDecimal(ingresos,1,'POINT',2,'COMMA')} + ' €'">0,00 €</div>
+							<div class="text-muted small text-uppercase fw-semibold ts-th">Ingresos totales</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-6 col-xl-4">
+					<div class="card border-0 shadow-sm rounded-4 p-4 h-100
+					            d-flex flex-row align-items-center gap-3">
+						<div class="ts-icon-orange rounded-3 p-3 d-flex align-items-center
+						            justify-content-center flex-shrink-0 fs-4">
+							<i class="bi bi-graph-up"></i>
+						</div>
+						<div>
+							<div class="fw-bold fs-2 lh-1 mb-1"
+							     th:text="${#numbers.formatDecimal(ticketMedio,1,'POINT',2,'COMMA')} + ' €'">0,00 €</div>
+							<div class="text-muted small text-uppercase fw-semibold ts-th">Ticket medio</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Filtro por rango de fechas -->
+			<div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
+				<form method="get" th:action="@{/admin/pedidos}" class="row g-2 align-items-end">
+					<div class="col-sm-4">
+						<label class="form-label small fw-semibold text-muted text-uppercase ts-label-sm mb-1">
+							Desde
+						</label>
+						<input type="date" name="desde" class="form-control"
+						       th:value="${desde}" />
+					</div>
+					<div class="col-sm-4">
+						<label class="form-label small fw-semibold text-muted text-uppercase ts-label-sm mb-1">
+							Hasta
+						</label>
+						<input type="date" name="hasta" class="form-control"
+						       th:value="${hasta}" />
+					</div>
+					<div class="col-sm-4 d-flex gap-2">
+						<button type="submit" class="btn btn-dark rounded-pill flex-fill">
+							<i class="bi bi-funnel me-1"></i>Filtrar
+						</button>
+						<a th:href="@{/admin/pedidos}"
+						   class="btn btn-outline-secondary rounded-pill"
+						   th:if="${desde != null or hasta != null}">
+							<i class="bi bi-x-lg"></i>
+						</a>
+					</div>
+				</form>
+			</div>
+
+			<!-- Empty state -->
+			<div class="card border-0 shadow-sm rounded-4 p-5 text-center text-muted"
+			     th:if="${pedidos.isEmpty()}">
+				<i class="bi bi-bag fs-1 mb-3 d-block"></i>
+				<p class="mb-0" th:if="${desde == null and hasta == null}">
+					Todavía no hay pedidos registrados.
+				</p>
+				<p class="mb-0" th:if="${desde != null or hasta != null}">
+					No hay pedidos en ese rango de fechas.
+				</p>
+			</div>
+
+			<!-- Tabla de pedidos -->
+			<div class="card border-0 shadow-sm rounded-4 overflow-hidden"
+			     th:if="${!pedidos.isEmpty()}">
+
+				<div class="d-flex align-items-center justify-content-between px-4 py-3 border-bottom">
+					<h5 class="mb-0 fw-semibold">Listado de pedidos</h5>
+					<span class="badge bg-dark rounded-pill"
+					      th:text="${pedidos.size()} + ' pedidos'"></span>
+				</div>
+
+				<table class="table table-hover align-middle mb-0">
+					<thead class="table-light">
+						<tr>
+							<th class="ts-th px-4">Código</th>
+							<th class="ts-th">Fecha</th>
+							<th class="ts-th">Cliente</th>
+							<th class="ts-th">Productos</th>
+							<th class="ts-th">Total</th>
+							<th class="ts-th text-end pe-4">Acciones</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="ped : ${pedidos}">
+							<td class="px-4 fw-semibold" th:text="${ped.codigo}"></td>
+							<td class="text-muted small"
+							    th:text="${#temporals.format(ped.fecha, 'dd/MM/yyyy')}"></td>
+							<td>
+								<div class="fw-semibold" th:text="${ped.cliente != null} ? ${ped.cliente.nombre} : '—'"></div>
+								<small class="text-muted"
+								       th:if="${ped.cliente != null}" th:text="${ped.cliente.email}"></small>
+							</td>
+							<td class="text-muted small">
+								<span th:text="${ped.lineas.size()}"></span>
+								<span th:text="${ped.lineas.size() == 1} ? 'producto' : 'productos'"></span>
+							</td>
+							<td class="fw-bold"
+							    th:text="${#numbers.formatDecimal(ped.total,1,'POINT',2,'COMMA')} + ' €'"></td>
+							<td class="text-end pe-4">
+								<button type="button"
+								        class="btn btn-outline-secondary btn-sm rounded-pill"
+								        data-bs-toggle="modal"
+								        data-bs-target="#pedidoModal"
+								        th:data-codigo="${ped.codigo}"
+								        th:data-fecha="${#temporals.format(ped.fecha, 'dd/MM/yyyy')}"
+								        th:data-cliente="${ped.cliente != null} ? ${ped.cliente.nombre} : '—'"
+								        th:data-email="${ped.cliente != null} ? ${ped.cliente.email} : ''"
+								        th:data-total="${#numbers.formatDecimal(ped.total,1,'POINT',2,'COMMA')}"
+								        th:data-lineas="${ped.id}">
+									<i class="bi bi-eye me-1"></i>Ver detalle
+								</button>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</main>
+
+	<!-- =================================================== -->
+	<!-- MODAL DE DETALLE DE PEDIDO                           -->
+	<!-- Mismo truco que en pedidos/historial.html:           -->
+	<!-- las líneas de todos los pedidos están ocultas, el    -->
+	<!-- JS muestra solo las del pedido pulsado.             -->
+	<!-- =================================================== -->
+	<div class="modal fade" id="pedidoModal" tabindex="-1" aria-labelledby="pedidoModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+			<div class="modal-content border-0 rounded-4 shadow-lg">
+
+				<div class="modal-header border-0 pb-0">
+					<div>
+						<h5 class="fw-bold mb-0" id="modalCodigo">Pedido</h5>
+						<small class="text-muted">
+							Realizado el <span id="modalFecha">--/--/----</span>
+							por <span id="modalCliente" class="fw-semibold">—</span>
+							<span id="modalEmail" class="text-muted"></span>
+						</small>
+					</div>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+				</div>
+
+				<div class="modal-body p-4">
+
+					<table class="table align-middle mb-3">
+						<thead class="table-light">
+							<tr>
+								<th class="ts-th">Producto</th>
+								<th class="ts-th text-center">Cantidad</th>
+								<th class="ts-th text-end">Precio uds.</th>
+								<th class="ts-th text-end">Subtotal</th>
+							</tr>
+						</thead>
+						<tbody>
+							<th:block th:each="ped : ${pedidos}">
+								<tr th:each="l : ${ped.lineas}"
+								    class="lineas-pedido d-none"
+								    th:attr="data-pedido=${ped.id}">
+									<td>
+										<div class="fw-semibold" th:text="${l.producto.nombre}"></div>
+										<small class="text-muted"
+										       th:if="${l.garantiaExtendida}">
+											<i class="bi bi-shield-check me-1"></i>Con garantía extendida
+										</small>
+									</td>
+									<td class="text-center" th:text="${l.cantidad}"></td>
+									<td class="text-end"
+									    th:text="${#numbers.formatDecimal(l.precioUnitario,1,'POINT',2,'COMMA')} + ' €'"></td>
+									<td class="text-end">
+										<div th:text="${#numbers.formatDecimal(l.subtotal,1,'POINT',2,'COMMA')} + ' €'"></div>
+										<small class="text-muted"
+										       th:if="${l.costeGarantia != null and l.costeGarantia > 0}"
+										       th:text="'+ ' + ${#numbers.formatDecimal(l.costeGarantia,1,'POINT',2,'COMMA')} + ' € garantía'">
+										</small>
+									</td>
+								</tr>
+							</th:block>
+						</tbody>
+					</table>
+
+					<div class="d-flex justify-content-between align-items-center pt-3 border-top">
+						<span class="fw-semibold">Total</span>
+						<span class="fw-bold fs-4">
+							<span id="modalTotal">0,00</span> €
+						</span>
+					</div>
+				</div>
+
+				<div class="modal-footer border-0 pt-0">
+					<button type="button" class="btn btn-dark rounded-pill px-4" data-bs-dismiss="modal">Cerrar</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div th:replace="~{fragments/footer :: footer}"></div>
+
+	<script>
+		(function () {
+			var modal = document.getElementById('pedidoModal');
+			if (!modal) return;
+
+			modal.addEventListener('show.bs.modal', function (event) {
+				var btn = event.relatedTarget;
+				if (!btn) return;
+				var d = btn.dataset;
+
+				document.getElementById('modalCodigo').textContent = 'Pedido ' + d.codigo;
+				document.getElementById('modalFecha').textContent = d.fecha;
+				document.getElementById('modalCliente').textContent = d.cliente;
+				document.getElementById('modalEmail').textContent = d.email ? '(' + d.email + ')' : '';
+				document.getElementById('modalTotal').textContent = d.total;
+
+				// Ocultar todas las filas y mostrar solo las del pedido pulsado
+				document.querySelectorAll('.lineas-pedido').forEach(function (row) {
+					row.classList.add('d-none');
+				});
+				document.querySelectorAll('.lineas-pedido[data-pedido="' + d.lineas + '"]')
+					.forEach(function (row) {
+						row.classList.remove('d-none');
+					});
+			});
+		})();
+	</script>
+
+</body>
+</html>

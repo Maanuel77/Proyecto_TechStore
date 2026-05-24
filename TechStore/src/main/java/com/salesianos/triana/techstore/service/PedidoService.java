@@ -26,6 +26,16 @@ public class PedidoService extends BaseServiceImpl<Pedido, Long, PedidoRepositor
         return repository.findByFechaBetween(desde, hasta);
     }
 
+    /** Todos los pedidos ordenados por fecha descendente. */
+    public List<Pedido> findAllOrdered() {
+        return repository.findAllByOrderByFechaDesc();
+    }
+
+    /** Pedidos en un rango de fechas, ordenados por fecha descendente. */
+    public List<Pedido> findByFechaBetweenOrdered(LocalDate desde, LocalDate hasta) {
+        return repository.findByFechaBetweenOrderByFechaDesc(desde, hasta);
+    }
+
     /**
      * Devuelve el historial de pedidos del usuario logueado.
      * Une User (seguridad) y Cliente (dominio) por el email, igual que

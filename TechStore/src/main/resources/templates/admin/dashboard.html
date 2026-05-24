@@ -34,17 +34,19 @@
 					</a>
 				</div>
 				<div class="col-sm-6 col-xl-4">
-					<div class="card border-0 shadow-sm rounded-4 p-4 h-100
-                            d-flex flex-row align-items-center gap-3">
-						<div class="ts-icon-green rounded-3 p-3 d-flex align-items-center
-                                justify-content-center flex-shrink-0 fs-4">
-							<i class="bi bi-bag-check"></i>
+					<a th:href="@{/admin/pedidos}" class="text-decoration-none">
+						<div class="card border-0 shadow-sm rounded-4 p-4 h-100
+	                            d-flex flex-row align-items-center gap-3">
+							<div class="ts-icon-green rounded-3 p-3 d-flex align-items-center
+	                                justify-content-center flex-shrink-0 fs-4">
+								<i class="bi bi-bag-check"></i>
+							</div>
+							<div>
+								<div class="fw-bold fs-2 lh-1 mb-1" th:text="${pedidos}">0</div>
+								<div class="text-muted small text-uppercase fw-semibold ts-th">Pedidos</div>
+							</div>
 						</div>
-						<div>
-							<div class="fw-bold fs-2 lh-1 mb-1" th:text="${pedidos}">0</div>
-							<div class="text-muted small text-uppercase fw-semibold ts-th">Pedidos</div>
-						</div>
-					</div>
+					</a>
 				</div>
 				<div class="col-sm-6 col-xl-4">
 					<div class="card border-0 shadow-sm rounded-4 p-4 h-100
