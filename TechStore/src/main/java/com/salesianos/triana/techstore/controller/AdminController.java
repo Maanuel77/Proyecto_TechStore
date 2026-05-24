@@ -40,6 +40,12 @@ public class AdminController {
         return "admin/dashboard";
     }
 
+    @GetMapping("/productos")
+    public String listadoProductos(Model model) {
+        model.addAttribute("productos", productoService.findAll());
+        return "admin/productos/list";
+    }
+
     @GetMapping("/producto/nuevo")
     public String nuevoProductoForm(Model model) {
         model.addAttribute("producto", new Producto());
