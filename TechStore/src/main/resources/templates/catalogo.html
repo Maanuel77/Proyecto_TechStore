@@ -156,8 +156,11 @@
 
 							<div class="fw-bold fs-2 mb-4" id="modalPrecio">0,00 €</div>
 
-							<!-- Formulario de añadir al carrito con cantidad -->
-							<form id="modalForm" method="post" action="">
+							<!-- Formulario de añadir al carrito con cantidad.
+							     Usamos GET (igual que el botón "+" de la tarjeta) para no chocar
+							     con la protección CSRF de Spring Security. La cantidad viaja
+							     como query parameter: /carrito/anadir/{id}?cantidad=N -->
+							<form id="modalForm" method="get" action="">
 								<label class="form-label small fw-semibold text-muted text-uppercase ts-label-sm">
 									Cantidad
 								</label>

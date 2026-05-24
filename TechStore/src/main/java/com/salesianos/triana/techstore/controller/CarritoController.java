@@ -8,7 +8,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -44,23 +43,18 @@ public class CarritoController {
     }
 
 
-    @GetMapping("/anadir/{id}")
-    public String anadirProducto(@PathVariable Long id) {
-        // Si no existe, buscarPorId lanza NoSuchElementException
-        // Si no hay stock, addProducto lanza SinStockException
-        // Ambas las captura nuestro ExceptionControllerAdvice
-        Producto p = productoService.buscarPorId(id);
-        carritoService.addProducto(p);
-        return "redirect:/catalogo";
-    }
-
     /**
-     * Añade al carrito una cantidad concreta de unidades.
-     * Lo usa el modal de detalle del catálogo (formulario con selector de cantidad).
+     * Añade un producto al carrito.
+     * Usado tanto por el botón "+" de la tarjeta (sin cantidad → defaults a 1)
+     * como por el formulario del modal de detalle (con cantidad en query param).
+     *
+     * Si no existe, buscarPorId lanza NoSuchElementException.
+     * Si no hay stock, addProducto lanza SinStockException.
+     * Ambas las captura nuestro ExceptionControllerAdvice.
      */
-    @PostMapping("/anadir/{id}")
-    public String anadirProductoConCantidad(@PathVariable Long id,
-                                            @RequestParam(defaultValue = "1") Integer cantidad) {
+    @GetMapping("/anadir/{id}")
+    public String anadirProducto(@PathVariable Long id,
+                                 @RequestParam(defaultValue = "1") Integer cantidad) {
         Producto p = productoService.buscarPorId(id);
         carritoService.addProducto(p, cantidad);
         return "redirect:/catalogo";
