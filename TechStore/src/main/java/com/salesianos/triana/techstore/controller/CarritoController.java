@@ -8,7 +8,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.salesianos.triana.techstore.model.CarritoItem;
 import com.salesianos.triana.techstore.model.Cliente;
@@ -49,6 +51,18 @@ public class CarritoController {
         // Ambas las captura nuestro ExceptionControllerAdvice
         Producto p = productoService.buscarPorId(id);
         carritoService.addProducto(p);
+        return "redirect:/catalogo";
+    }
+
+    /**
+     * Añade al carrito una cantidad concreta de unidades.
+     * Lo usa el modal de detalle del catálogo (formulario con selector de cantidad).
+     */
+    @PostMapping("/anadir/{id}")
+    public String anadirProductoConCantidad(@PathVariable Long id,
+                                            @RequestParam(defaultValue = "1") Integer cantidad) {
+        Producto p = productoService.buscarPorId(id);
+        carritoService.addProducto(p, cantidad);
         return "redirect:/catalogo";
     }
 
@@ -93,12 +107,6 @@ public class CarritoController {
             pedido.addLineaPedido(linea);
         }
 
-        // 3. Persistir el Pedido. Esta llamada:
-        //    - reduce el stock de cada producto
-        //    - lanza SinStockException si alguna línea pide más unidades que las disponibles
-        //    - lanza NoSuchElementException si algún producto no existe
-        //    Ambas son capturadas por nuestro ExceptionControllerAdvice.
-        //    Como guardarPedido es @Transactional, si algo falla se hace rollback.
         pedidoService.guardarPedido(pedido);
 
         // 4. Solo si todo ha ido bien, vaciamos el carrito.

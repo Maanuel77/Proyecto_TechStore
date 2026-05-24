@@ -24,7 +24,7 @@ public class ExceptionControllerAdvice {
     public String handleSinStock(SinStockException ex, Model model) {
         model.addAttribute("errorTitulo", "Producto sin stock");
         model.addAttribute("errorMensaje", ex.getMessage());
-        return "error";
+        return "errores/general";
     }
 
     // 2. Manejo de una excepción propia del API de Java
@@ -33,7 +33,7 @@ public class ExceptionControllerAdvice {
     public String handleNotFound(NoSuchElementException ex, Model model) {
         model.addAttribute("errorTitulo", "Elemento No Encontrado");
         model.addAttribute("errorMensaje", "El elemento solicitado no existe en nuestra base de datos.");
-        return "error";
+        return "errores/general";
     }
 
     // 3. Manejo de otra excepción del API de Java
@@ -42,6 +42,6 @@ public class ExceptionControllerAdvice {
     public String handleIllegalArgument(IllegalArgumentException ex, Model model) {
         model.addAttribute("errorTitulo", "Operación Inválida");
         model.addAttribute("errorMensaje", ex.getMessage());
-        return "error";
+        return "errores/general";
     }
 }

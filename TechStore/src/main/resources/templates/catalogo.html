@@ -28,7 +28,18 @@
 			<div class="row g-4" id="productGrid">
 				<div class="col-sm-6 col-lg-4" th:each="p : ${productos}"
 					th:attr="data-search=${#strings.toLowerCase(p.nombre + ' ' + p.marca)}">
-					<div class="card border-0 shadow-sm rounded-4 h-100 ts-hover">
+					<div class="card border-0 shadow-sm rounded-4 h-100 ts-hover ts-card-clickable"
+						 data-bs-toggle="modal"
+						 data-bs-target="#productoModal"
+						 th:data-id="${p.id}"
+						 th:data-nombre="${p.nombre}"
+						 th:data-marca="${p.marca}"
+						 th:data-precio="${p.precio}"
+						 th:data-stock="${p.stock}"
+						 th:data-garantia="${p.garantiaMeses}"
+						 th:data-refurbished="${p.refurbished}"
+						 th:data-imagen="${p.imagenUrl}"
+						 style="cursor: pointer;">
 						<div class="ratio ratio-4x3 bg-light overflow-hidden rounded-top-4">
 							<img th:if="${p.imagenUrl != null}" class="object-fit-contain p-3" th:src="${p.imagenUrl}"
 								th:alt="${p.nombre}" loading="lazy" />
@@ -62,10 +73,12 @@
 							<div class="d-flex align-items-center justify-content-between mt-auto">
 								<div class="fw-bold fs-5"
 									th:text="${#numbers.formatDecimal(p.precio,1,'POINT',2,'COMMA')} + ' €'"></div>
+								<!-- onclick stopPropagation evita que el click abra el modal -->
 								<a th:href="@{/carrito/anadir/{id}(id=${p.id})}"
 									class="btn btn-dark btn-sm rounded-pill"
 									th:classappend="${p.stock == 0} ? 'disabled'"
-									th:title="${p.stock == 0} ? 'Sin stock' : 'Añadir al carrito'">
+									th:title="${p.stock == 0} ? 'Sin stock' : 'Añadir al carrito'"
+									onclick="event.stopPropagation();">
 									<i class="bi bi-bag-plus"></i>
 								</a>
 							</div>
@@ -81,6 +94,97 @@
 			</div>
 		</div>
 	</main>
+
+
+	<div class="modal fade" id="productoModal" tabindex="-1" aria-labelledby="productoModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg modal-dialog-centered">
+			<div class="modal-content border-0 rounded-4 shadow-lg">
+
+				<div class="modal-header border-0 pb-0">
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+				</div>
+
+				<div class="modal-body p-4 p-md-5 pt-0">
+					<div class="row g-4 align-items-center">
+
+						<!-- Imagen -->
+						<div class="col-md-6">
+							<div class="ratio ratio-1x1 bg-light rounded-4 overflow-hidden">
+								<img id="modalImg" class="object-fit-contain p-4" src="" alt="" />
+							</div>
+						</div>
+
+						<!-- Información -->
+						<div class="col-md-6 d-flex flex-column">
+							<div class="small text-muted text-uppercase fw-semibold mb-1 ts-label-sm"
+								id="modalMarca">Marca</div>
+							<h3 class="fw-bold mb-3" id="modalNombre">Nombre del producto</h3>
+
+							<!-- Badges (solo el aplicable se muestra) -->
+							<div class="d-flex flex-wrap gap-1 mb-3">
+								<span id="modalBadgeRefurbished"
+									class="badge rounded-pill bg-primary-subtle text-primary-emphasis d-none">
+									Reacondicionado
+								</span>
+								<span id="modalBadgeEnStock"
+									class="badge rounded-pill bg-success-subtle text-success-emphasis d-none">
+									En stock
+								</span>
+								<span id="modalBadgePocas"
+									class="badge rounded-pill bg-warning-subtle text-warning-emphasis d-none">
+									Pocas unidades
+								</span>
+								<span id="modalBadgeAgotado"
+									class="badge rounded-pill bg-danger-subtle text-danger-emphasis d-none">
+									Agotado
+								</span>
+							</div>
+
+							<div class="d-flex align-items-center gap-1 mb-2">
+								<i class="bi bi-patch-check small text-muted"></i>
+								<span class="text-muted small">
+									Garantía <span id="modalGarantia">0</span> meses
+								</span>
+							</div>
+
+							<div class="d-flex align-items-center gap-1 mb-4">
+								<i class="bi bi-box-seam small text-muted"></i>
+								<span class="text-muted small">
+									<span id="modalStock">0</span> uds. disponibles
+								</span>
+							</div>
+
+							<div class="fw-bold fs-2 mb-4" id="modalPrecio">0,00 €</div>
+
+							<!-- Formulario de añadir al carrito con cantidad -->
+							<form id="modalForm" method="post" action="">
+								<label class="form-label small fw-semibold text-muted text-uppercase ts-label-sm">
+									Cantidad
+								</label>
+								<div class="input-group mb-3" style="max-width: 180px;">
+									<button class="btn btn-outline-secondary" type="button" id="btnMenos">
+										<i class="bi bi-dash"></i>
+									</button>
+									<input type="number" name="cantidad" id="modalCantidad"
+										   class="form-control text-center"
+										   value="1" min="1" max="99" required />
+									<button class="btn btn-outline-secondary" type="button" id="btnMas">
+										<i class="bi bi-plus"></i>
+									</button>
+								</div>
+
+								<button type="submit" id="modalBtnAnadir"
+										class="btn btn-dark rounded-pill w-100 py-2">
+									<i class="bi bi-bag-plus me-1"></i>Añadir al carrito
+								</button>
+							</form>
+
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 
 	<div th:replace="~{fragments/footer :: footer}"></div>
 
@@ -102,6 +206,63 @@
 				counter.textContent = visible + ' resultados';
 				noResult.classList.toggle('d-none', visible > 0);
 			});
+		})();
+
+		(function () {
+			var modal = document.getElementById('productoModal');
+			var cantidadInput = document.getElementById('modalCantidad');
+			var btnMenos = document.getElementById('btnMenos');
+			var btnMas = document.getElementById('btnMas');
+			var btnAnadir = document.getElementById('modalBtnAnadir');
+			var form = document.getElementById('modalForm');
+
+			modal.addEventListener('show.bs.modal', function (event) {
+				var card = event.relatedTarget;
+				if (!card) return;
+				var d = card.dataset;
+
+				document.getElementById('modalImg').src = d.imagen && d.imagen !== 'null' ? d.imagen : '';
+				document.getElementById('modalImg').alt = d.nombre;
+
+				document.getElementById('modalMarca').textContent = d.marca;
+				document.getElementById('modalNombre').textContent = d.nombre;
+				document.getElementById('modalGarantia').textContent = d.garantia;
+				document.getElementById('modalStock').textContent = d.stock;
+				document.getElementById('modalPrecio').textContent =
+					Number(d.precio).toFixed(2).replace('.', ',') + ' €';
+
+				var stock = parseInt(d.stock, 10);
+				toggle('modalBadgeRefurbished', d.refurbished === 'true');
+				toggle('modalBadgeEnStock', stock > 5);
+				toggle('modalBadgePocas', stock <= 5 && stock > 0);
+				toggle('modalBadgeAgotado', stock === 0);
+
+				form.action = '/carrito/anadir/' + d.id;
+				cantidadInput.value = stock > 0 ? 1 : 0;
+				cantidadInput.min = stock > 0 ? 1 : 0;
+				cantidadInput.max = stock;
+				cantidadInput.disabled = stock === 0;
+				btnMenos.disabled = stock === 0;
+				btnMas.disabled = stock === 0;
+				btnAnadir.disabled = stock === 0;
+				btnAnadir.innerHTML = stock === 0
+					? '<i class="bi bi-x-circle me-1"></i>Sin stock'
+					: '<i class="bi bi-bag-plus me-1"></i>Añadir al carrito';
+			});
+
+			btnMenos.addEventListener('click', function () {
+				var v = parseInt(cantidadInput.value, 10) || 1;
+				if (v > parseInt(cantidadInput.min, 10)) cantidadInput.value = v - 1;
+			});
+			btnMas.addEventListener('click', function () {
+				var v = parseInt(cantidadInput.value, 10) || 1;
+				var max = parseInt(cantidadInput.max, 10);
+				if (v < max) cantidadInput.value = v + 1;
+			});
+
+			function toggle(id, show) {
+				document.getElementById(id).classList.toggle('d-none', !show);
+			}
 		})();
 	</script>
 

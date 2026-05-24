@@ -24,14 +24,14 @@ public class CarritoService {
      * Añade un producto al carrito.
      * Si ya existe, incrementa la cantidad en 1.
      *
-     * Lanza {@link SinStockException} si la cantidad pedida supera el stock
+     * Lanza SinStockException si la cantidad pedida supera el stock
      * disponible. La excepción es capturada por el ControllerAdvice global.
      */
     public void addProducto(Producto p) {
         if (items.containsKey(p.getId())) {
             CarritoItem item = items.get(p.getId());
 
-            // Uso de nuestra excepción personalizada de negocio
+            // Uso de excepción sin stock
             if (item.getCantidad() + 1 > p.getStock()) {
                 throw new SinStockException(
                     "No queda más stock disponible del producto '" + p.getNombre()
@@ -49,6 +49,48 @@ public class CarritoService {
 
             items.put(p.getId(),
                 new CarritoItem(p.getId(), p.getNombre(), p.getPrecio(), 1, p.getGarantiaMeses()));
+        }
+    }
+
+    /**
+     * Añade al carrito una cantidad concreta del producto.
+     * Lo usa el modal de detalle del catálogo, donde el usuario elige cuántas unidades quiere.
+     *
+     * Lanza IllegalArgumentException si la cantidad es menor que 1.
+     * Lanza SinStockException si la cantidad solicitada (o la acumulada en el carrito)
+     * supera el stock disponible. Ambas las captura el ControllerAdvice global.
+     */
+    public void addProducto(Producto p, int cantidad) {
+
+        if (cantidad < 1) {
+            throw new IllegalArgumentException("La cantidad debe ser al menos 1.");
+        }
+
+        if (items.containsKey(p.getId())) {
+            CarritoItem item = items.get(p.getId());
+            int nuevaCantidad = item.getCantidad() + cantidad;
+
+            if (nuevaCantidad > p.getStock()) {
+                throw new SinStockException(
+                    "No queda stock suficiente del producto '" + p.getNombre()
+                    + "'. Solo hay " + p.getStock() + " unidades disponibles.");
+            }
+
+            item.setCantidad(nuevaCantidad);
+        } else {
+
+            if (p.getStock() < 1) {
+                throw new SinStockException(
+                    "El producto '" + p.getNombre() + "' está agotado.");
+            }
+            if (cantidad > p.getStock()) {
+                throw new SinStockException(
+                    "No hay tantas unidades del producto '" + p.getNombre()
+                    + "'. Solo hay " + p.getStock() + " disponibles.");
+            }
+
+            items.put(p.getId(),
+                new CarritoItem(p.getId(), p.getNombre(), p.getPrecio(), cantidad, p.getGarantiaMeses()));
         }
     }
 
