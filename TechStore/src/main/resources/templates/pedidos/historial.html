@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{fragments/head :: head('Mis pedidos — TechStore', null)}"></head>
+
+<body>
+
+	<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+	<main>
+		<div class="bg-white border-bottom py-4 mb-4">
+			<div class="container">
+				<h1 class="fw-bold fs-3 mb-0">Mis pedidos</h1>
+				<p class="text-muted small mb-0">Historial de tus compras en TechStore</p>
+			</div>
+		</div>
+
+		<div class="container pb-5">
+
+			<!-- Empty state -->
+			<div class="card border-0 shadow-sm rounded-4 p-5 text-center text-muted"
+			     th:if="${pedidos.isEmpty()}">
+				<i class="bi bi-bag fs-1 mb-3 d-block"></i>
+				<p class="mb-1 fw-semibold">Todavía no has hecho ningún pedido</p>
+				<p class="mb-3 small">Cuando hagas tu primera compra, aparecerá aquí.</p>
+				<a th:href="@{/catalogo}" class="btn btn-dark rounded-pill px-4 align-self-center">
+					<i class="bi bi-shop me-1"></i>Ir al catálogo
+				</a>
+			</div>
+
+			<!-- Tabla de pedidos -->
+			<div class="card border-0 shadow-sm rounded-4 overflow-hidden"
+			     th:if="${!pedidos.isEmpty()}">
+
+				<div class="d-flex align-items-center justify-content-between px-4 py-3 border-bottom">
+					<h5 class="mb-0 fw-semibold">Pedidos realizados</h5>
+					<span class="badge bg-dark rounded-pill"
+					      th:text="${pedidos.size()} + ' pedidos'"></span>
+				</div>
+
+				<table class="table table-hover align-middle mb-0">
+					<thead class="table-light">
+						<tr>
+							<th class="ts-th px-4">Código</th>
+							<th class="ts-th">Fecha</th>
+							<th class="ts-th">Productos</th>
+							<th class="ts-th">Total</th>
+							<th class="ts-th text-end pe-4">Acciones</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="ped : ${pedidos}"
+						    th:data-codigo="${ped.codigo}"
+						    th:data-fecha="${#temporals.format(ped.fecha, 'dd/MM/yyyy')}"
+						    th:data-total="${#numbers.formatDecimal(ped.total,1,'POINT',2,'COMMA')}">
+							<td class="px-4 fw-semibold" th:text="${ped.codigo}"></td>
+							<td class="text-muted small" th:text="${#temporals.format(ped.fecha, 'dd/MM/yyyy')}"></td>
+							<td class="text-muted small">
+								<span th:text="${ped.lineas.size()}"></span>
+								<span th:text="${ped.lineas.size() == 1} ? 'producto' : 'productos'"></span>
+							</td>
+							<td class="fw-bold"
+							    th:text="${#numbers.formatDecimal(ped.total,1,'POINT',2,'COMMA')} + ' €'"></td>
+							<td class="text-end pe-4">
+								<button type="button"
+								        class="btn btn-outline-secondary btn-sm rounded-pill"
+								        data-bs-toggle="modal"
+								        data-bs-target="#pedidoModal"
+								        th:data-codigo="${ped.codigo}"
+								        th:data-fecha="${#temporals.format(ped.fecha, 'dd/MM/yyyy')}"
+								        th:data-total="${#numbers.formatDecimal(ped.total,1,'POINT',2,'COMMA')}"
+								        th:data-lineas="${ped.id}">
+									<i class="bi bi-eye me-1"></i>Ver detalle
+								</button>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</main>
+
+	<!-- =================================================== -->
+	<!-- MODAL DE DETALLE DE PEDIDO                           -->
+	<!-- Un único modal reutilizable: se rellena con JS.     -->
+	<!-- Las líneas se renderizan ya desde Thymeleaf en       -->
+	<!-- bloques ocultos por pedido, y el JS muestra solo     -->
+	<!-- el bloque del pedido que se ha pulsado.             -->
+	<!-- =================================================== -->
+	<div class="modal fade" id="pedidoModal" tabindex="-1" aria-labelledby="pedidoModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+			<div class="modal-content border-0 rounded-4 shadow-lg">
+
+				<div class="modal-header border-0 pb-0">
+					<div>
+						<h5 class="fw-bold mb-0" id="modalCodigo">Pedido</h5>
+						<small class="text-muted">
+							Realizado el <span id="modalFecha">--/--/----</span>
+						</small>
+					</div>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+				</div>
+
+				<div class="modal-body p-4">
+
+					<table class="table align-middle mb-3">
+						<thead class="table-light">
+							<tr>
+								<th class="ts-th">Producto</th>
+								<th class="ts-th text-center">Cantidad</th>
+								<th class="ts-th text-end">Precio uds.</th>
+								<th class="ts-th text-end">Subtotal</th>
+							</tr>
+						</thead>
+						<tbody>
+							<!-- Una sección por pedido (oculta por defecto).
+							     El JS muestra solo la del pedido pulsado. -->
+							<th:block th:each="ped : ${pedidos}">
+								<tr th:each="l : ${ped.lineas}"
+								    class="lineas-pedido d-none"
+								    th:attr="data-pedido=${ped.id}">
+									<td>
+										<div class="fw-semibold" th:text="${l.producto.nombre}"></div>
+										<small class="text-muted"
+										       th:if="${l.garantiaExtendida}">
+											<i class="bi bi-shield-check me-1"></i>Con garantía extendida
+										</small>
+									</td>
+									<td class="text-center" th:text="${l.cantidad}"></td>
+									<td class="text-end"
+									    th:text="${#numbers.formatDecimal(l.precioUnitario,1,'POINT',2,'COMMA')} + ' €'"></td>
+									<td class="text-end">
+										<div th:text="${#numbers.formatDecimal(l.subtotal,1,'POINT',2,'COMMA')} + ' €'"></div>
+										<small class="text-muted"
+										       th:if="${l.costeGarantia != null and l.costeGarantia > 0}"
+										       th:text="'+ ' + ${#numbers.formatDecimal(l.costeGarantia,1,'POINT',2,'COMMA')} + ' € garantía'">
+										</small>
+									</td>
+								</tr>
+							</th:block>
+						</tbody>
+					</table>
+
+					<div class="d-flex justify-content-between align-items-center pt-3 border-top">
+						<span class="fw-semibold">Total</span>
+						<span class="fw-bold fs-4">
+							<span id="modalTotal">0,00</span> €
+						</span>
+					</div>
+				</div>
+
+				<div class="modal-footer border-0 pt-0">
+					<button type="button" class="btn btn-dark rounded-pill px-4" data-bs-dismiss="modal">Cerrar</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div th:replace="~{fragments/footer :: footer}"></div>
+
+	<script>
+		(function () {
+			var modal = document.getElementById('pedidoModal');
+			if (!modal) return;
+
+			modal.addEventListener('show.bs.modal', function (event) {
+				var btn = event.relatedTarget;
+				if (!btn) return;
+				var d = btn.dataset;
+
+				document.getElementById('modalCodigo').textContent = 'Pedido ' + d.codigo;
+				document.getElementById('modalFecha').textContent = d.fecha;
+				document.getElementById('modalTotal').textContent = d.total;
+
+				// Ocultar todas las filas de líneas, mostrar solo las de este pedido
+				document.querySelectorAll('.lineas-pedido').forEach(function (row) {
+					row.classList.add('d-none');
+				});
+				document.querySelectorAll('.lineas-pedido[data-pedido="' + d.lineas + '"]')
+					.forEach(function (row) {
+						row.classList.remove('d-none');
+					});
+			});
+		})();
+	</script>
+
+</body>
+</html>

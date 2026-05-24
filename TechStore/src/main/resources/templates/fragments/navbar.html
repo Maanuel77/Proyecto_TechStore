@@ -20,13 +20,18 @@
 					<li class="nav-item">
 						<a class="nav-link text-secondary" th:href="@{/catalogo}">Catálogo</a>
 					</li>
-					<li class="nav-item">
+					<li class="nav-item" sec:authorize="hasRole('CLIENTE')">
 						<a class="nav-link text-secondary position-relative" th:href="@{/carrito}">
 							<i class="bi bi-bag me-1"></i>Carrito
 							<span class="badge rounded-pill bg-dark position-absolute top-0 start-100 translate-middle"
 								th:if="${cantidad_carrito != null and cantidad_carrito > 0}"
 								th:text="${cantidad_carrito}"
 								style="font-size: 0.65rem;"></span>
+						</a>
+					</li>
+					<li class="nav-item" sec:authorize="hasRole('CLIENTE')">
+						<a class="nav-link text-secondary" th:href="@{/pedidos}">
+							<i class="bi bi-clock-history me-1"></i>Mis pedidos
 						</a>
 					</li>
 					<li class="nav-item" sec:authorize="hasRole('ADMIN')">

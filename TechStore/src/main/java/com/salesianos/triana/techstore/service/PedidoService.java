@@ -13,6 +13,7 @@ import com.salesianos.triana.techstore.model.Pedido;
 import com.salesianos.triana.techstore.model.Producto;
 import com.salesianos.triana.techstore.repository.PedidoRepository;
 import com.salesianos.triana.techstore.repository.ProductoRepository;
+import com.salesianos.triana.techstore.security.User;
 import com.salesianos.triana.techstore.service.base.BaseServiceImpl;
 
 @Service
@@ -23,6 +24,15 @@ public class PedidoService extends BaseServiceImpl<Pedido, Long, PedidoRepositor
 
     public List<Pedido> findByFechaBetween(LocalDate desde, LocalDate hasta) {
         return repository.findByFechaBetween(desde, hasta);
+    }
+
+    /**
+     * Devuelve el historial de pedidos del usuario logueado.
+     * Une User (seguridad) y Cliente (dominio) por el email, igual que
+     * hace ClienteService.findOrCreateForUser al crear pedidos.
+     */
+    public List<Pedido> findByUser(User user) {
+        return repository.findByClienteEmailOrderByFechaDesc(user.getEmail());
     }
 
     public List<Object[]> findClientesConMayorGasto() {

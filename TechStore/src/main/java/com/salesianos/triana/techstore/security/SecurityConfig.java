@@ -21,6 +21,9 @@ public class SecurityConfig {
                 .requestMatchers("/", "/catalogo", "/auth/login", "/auth/registro").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
+                // El carrito y el historial de pedidos son exclusivos de clientes:
+                // los admins no compran ni tienen pedidos.
+                .requestMatchers("/carrito/**", "/pedidos/**").hasRole("CLIENTE")
                 .anyRequest().authenticated()
             )
             .requestCache(cache -> {
