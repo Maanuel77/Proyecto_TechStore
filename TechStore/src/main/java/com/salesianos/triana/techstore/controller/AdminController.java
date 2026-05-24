@@ -74,6 +74,17 @@ public class AdminController {
         return "redirect:/admin/dashboard";
     }
 
+    /**
+     * Elimina un producto. Si no existe lanza NoSuchElementException
+     * y si está en pedidos históricos lanza IllegalArgumentException.
+     * Ambas las captura el ExceptionControllerAdvice global.
+     */
+    @GetMapping("/producto/eliminar/{id}")
+    public String eliminarProducto(@PathVariable Long id) {
+        productoService.eliminar(id);
+        return "redirect:/admin/dashboard";
+    }
+
     @GetMapping("/clientes")
     public String listadoClientes(Model model) {
         model.addAttribute("usuarios", userService.findAll());

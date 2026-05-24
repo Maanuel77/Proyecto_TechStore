@@ -116,6 +116,11 @@
 								   class="btn btn-outline-secondary btn-sm rounded-pill">
 									<i class="bi bi-pencil me-1"></i>Editar
 								</a>
+								<a th:href="@{/admin/producto/eliminar/{id}(id=${p.id})}"
+								   class="btn btn-outline-danger btn-sm rounded-pill ms-1"
+								   onclick="return confirm('¿Eliminar este producto? Esta acción no se puede deshacer.');">
+									<i class="bi bi-trash me-1"></i>Eliminar
+								</a>
 							</td>
 						</tr>
 					</tbody>
