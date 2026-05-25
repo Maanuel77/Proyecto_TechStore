@@ -32,7 +32,10 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
          + "from LineaPedido lp "
          + "group by lp.producto "
          + "order by sum(lp.cantidad) desc")
+    
+    //Por qué no se le puede poner limit?
     List<Object[]> findTopVendidos(Pageable pageable);
+    
 
     // Igual que findTopVendidos pero filtrando por rango de fechas del pedido.
     @Query("select lp.producto, sum(lp.cantidad), sum(lp.subtotal) "

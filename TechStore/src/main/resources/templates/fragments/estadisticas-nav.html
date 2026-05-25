@@ -1,0 +1,23 @@
+<!-- Subnav de píldoras para la sección de Estadísticas. Se incluye con:
+       <div th:replace="~{fragments/estadisticas-nav :: nav}"></div>
+     y el controller pasa `seccion` = "productos" | "pedidos" para resaltar la activa. -->
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+	<div th:fragment="nav" class="d-flex flex-wrap gap-2 mb-4">
+		<a th:href="@{/admin/estadisticas/productos}"
+		   class="btn rounded-pill px-4 py-2 fw-semibold"
+		   th:classappend="${seccion == 'productos'} ? 'btn-dark' : 'btn-outline-secondary'">
+			<i class="bi bi-bar-chart-fill me-1"></i>Productos más vendidos
+		</a>
+		<a th:href="@{/admin/estadisticas/pedidos}"
+		   class="btn rounded-pill px-4 py-2 fw-semibold"
+		   th:classappend="${seccion == 'pedidos'} ? 'btn-dark' : 'btn-outline-secondary'">
+			<i class="bi bi-graph-up me-1"></i>Pedidos por fecha
+		</a>
+	</div>
+
+</body>
+</html>

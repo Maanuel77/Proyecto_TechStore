@@ -25,9 +25,12 @@
 
 		<div class="container pb-5">
 
+			<!-- Subnav de secciones de estadísticas -->
+			<div th:replace="~{fragments/estadisticas-nav :: nav}"></div>
+
 			<!-- Filtro por rango de fechas -->
 			<div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
-				<form method="get" th:action="@{/admin/estadisticas}" class="row g-2 align-items-end">
+				<form method="get" th:action="@{/admin/estadisticas/productos}" class="row g-2 align-items-end">
 					<div class="col-sm-4">
 						<label class="form-label small fw-semibold text-muted text-uppercase ts-label-sm mb-1">
 							Desde
@@ -44,7 +47,7 @@
 						<button type="submit" class="btn btn-dark rounded-pill flex-fill">
 							<i class="bi bi-funnel me-1"></i>Filtrar
 						</button>
-						<a th:href="@{/admin/estadisticas}"
+						<a th:href="@{/admin/estadisticas/productos}"
 						   class="btn btn-outline-secondary rounded-pill"
 						   th:if="${desde != null or hasta != null}">
 							<i class="bi bi-x-lg"></i>

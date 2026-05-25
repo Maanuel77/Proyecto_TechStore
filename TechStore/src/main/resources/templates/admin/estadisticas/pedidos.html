@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: head('Pedidos por fecha — TechStore Admin', null)}"></head>
+
+<body>
+
+	<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+	<main>
+		<!-- Cabecera -->
+		<div class="bg-white border-bottom py-4 mb-4">
+			<div class="container d-flex align-items-center justify-content-between">
+				<div>
+					<h1 class="fw-bold fs-3 mb-0">Estadísticas</h1>
+					<p class="text-muted small mb-0">Evolución de pedidos por fecha</p>
+				</div>
+				<a th:href="@{/admin/dashboard}" class="btn btn-outline-secondary btn-sm rounded-pill">
+					<i class="bi bi-arrow-left me-1"></i>Volver al dashboard
+				</a>
+			</div>
+		</div>
+
+		<div th:replace="~{fragments/alerts :: alerts}"></div>
+
+		<div class="container pb-5">
+
+			<!-- Subnav de secciones de estadísticas -->
+			<div th:replace="~{fragments/estadisticas-nav :: nav}"></div>
+
+			<!-- Filtro por rango de fechas -->
+			<div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
+				<form method="get" th:action="@{/admin/estadisticas/pedidos}" class="row g-2 align-items-end">
+					<div class="col-sm-4">
+						<label class="form-label small fw-semibold text-muted text-uppercase ts-label-sm mb-1">
+							Desde
+						</label>
+						<input type="date" name="desde" class="form-control" th:value="${desde}" />
+					</div>
+					<div class="col-sm-4">
+						<label class="form-label small fw-semibold text-muted text-uppercase ts-label-sm mb-1">
+							Hasta
+						</label>
+						<input type="date" name="hasta" class="form-control" th:value="${hasta}" />
+					</div>
+					<div class="col-sm-4 d-flex gap-2">
+						<button type="submit" class="btn btn-dark rounded-pill flex-fill">
+							<i class="bi bi-funnel me-1"></i>Filtrar
+						</button>
+						<a th:href="@{/admin/estadisticas/pedidos}"
+						   class="btn btn-outline-secondary rounded-pill"
+						   title="Restablecer al rango por defecto (últimos 30 días)">
+							<i class="bi bi-x-lg"></i>
+						</a>
+					</div>
+				</form>
+			</div>
+
+			<!-- KPIs del rango -->
+			<div class="row g-3 mb-4">
+				<div class="col-sm-6 col-xl-4">
+					<div class="card border-0 shadow-sm rounded-4 p-4 h-100
+					            d-flex flex-row align-items-center gap-3">
+						<div class="ts-icon-blue rounded-3 p-3 d-flex align-items-center
+						            justify-content-center flex-shrink-0 fs-4">
+							<i class="bi bi-bag-check"></i>
+						</div>
+						<div>
+							<div class="fw-bold fs-2 lh-1 mb-1" th:text="${totalPedidos}">0</div>
+							<div class="text-muted small text-uppercase fw-semibold ts-th">Pedidos en el rango</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-6 col-xl-4">
+					<div class="card border-0 shadow-sm rounded-4 p-4 h-100
+					            d-flex flex-row align-items-center gap-3">
+						<div class="ts-icon-green rounded-3 p-3 d-flex align-items-center
+						            justify-content-center flex-shrink-0 fs-4">
+							<i class="bi bi-cash-coin"></i>
+						</div>
+						<div>
+							<div class="fw-bold fs-2 lh-1 mb-1"
+							     th:text="${#numbers.formatDecimal(ingresos,1,'POINT',2,'COMMA')} + ' €'">0,00 €</div>
+							<div class="text-muted small text-uppercase fw-semibold ts-th">Ingresos</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-6 col-xl-4">
+					<div class="card border-0 shadow-sm rounded-4 p-4 h-100
+					            d-flex flex-row align-items-center gap-3">
+						<div class="ts-icon-orange rounded-3 p-3 d-flex align-items-center
+						            justify-content-center flex-shrink-0 fs-4">
+							<i class="bi bi-graph-up"></i>
+						</div>
+						<div>
+							<div class="fw-bold fs-2 lh-1 mb-1"
+							     th:text="${#numbers.formatDecimal(ticketMedio,1,'POINT',2,'COMMA')} + ' €'">0,00 €</div>
+							<div class="text-muted small text-uppercase fw-semibold ts-th">Ticket medio</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Empty state -->
+			<div class="card border-0 shadow-sm rounded-4 p-5 text-center text-muted"
+			     th:if="${serie.isEmpty()}">
+				<i class="bi bi-calendar-x fs-1 mb-3 d-block"></i>
+				<p class="mb-0">No hay pedidos en ese rango de fechas.</p>
+			</div>
+
+			<div th:if="${!serie.isEmpty()}">
+
+				<!-- Gráfico de línea con área sombreada -->
+				<div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+					<div class="d-flex align-items-center justify-content-between px-4 py-3 border-bottom">
+						<h5 class="mb-0 fw-semibold">
+							<i class="bi bi-graph-up-arrow me-2"></i>Evolución de pedidos
+						</h5>
+						<span class="badge bg-dark rounded-pill"
+						      th:text="${agruparPorMes} ? 'Vista mensual' : 'Vista diaria'"></span>
+					</div>
+					<div class="p-4" style="height: 360px;">
+						<canvas id="chartPedidos"></canvas>
+					</div>
+				</div>
+
+				<!-- Tabla detalle. Los data-* alimentan el chart. -->
+				<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+					<div class="d-flex align-items-center justify-content-between px-4 py-3 border-bottom">
+						<h5 class="mb-0 fw-semibold">
+							<span th:text="${agruparPorMes} ? 'Pedidos por mes' : 'Pedidos por día'"></span>
+						</h5>
+						<span class="badge bg-secondary rounded-pill"
+						      th:text="${serie.size()} + (${agruparPorMes} ? ' meses' : ' días')"></span>
+					</div>
+
+					<table class="table table-hover align-middle mb-0" id="tablaPedidos">
+						<thead class="table-light">
+							<tr>
+								<th class="ts-th px-4" th:text="${agruparPorMes} ? 'Mes' : 'Fecha'">Fecha</th>
+								<th class="ts-th text-end">Pedidos</th>
+								<th class="ts-th text-end pe-4">Ingresos</th>
+							</tr>
+						</thead>
+
+						<!-- Vista diaria: serie[0]=LocalDate, [1]=count, [2]=sum -->
+						<tbody th:if="${!agruparPorMes}">
+							<tr th:each="fila : ${serie}"
+							    th:data-etiqueta="${#temporals.format(fila[0], 'dd MMM')}"
+							    th:data-pedidos="${fila[1]}"
+							    th:data-ingresos="${fila[2]}">
+								<td class="px-4 fw-semibold"
+								    th:text="${#temporals.format(fila[0], 'dd/MM/yyyy')}"></td>
+								<td class="text-end fw-bold" th:text="${fila[1]}"></td>
+								<td class="text-end pe-4 fw-semibold"
+								    th:text="${#numbers.formatDecimal(fila[2],1,'POINT',2,'COMMA')} + ' €'"></td>
+							</tr>
+						</tbody>
+
+						<!-- Vista mensual: serie[0]=año, [1]=mes, [2]=count, [3]=sum -->
+						<tbody th:if="${agruparPorMes}">
+							<tr th:each="fila : ${serie}"
+							    th:with="etiqueta=${fila[1] + '/' + fila[0]}"
+							    th:data-etiqueta="${etiqueta}"
+							    th:data-pedidos="${fila[2]}"
+							    th:data-ingresos="${fila[3]}">
+								<td class="px-4 fw-semibold" th:text="${etiqueta}"></td>
+								<td class="text-end fw-bold" th:text="${fila[2]}"></td>
+								<td class="text-end pe-4 fw-semibold"
+								    th:text="${#numbers.formatDecimal(fila[3],1,'POINT',2,'COMMA')} + ' €'"></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+
+			</div>
+
+		</div>
+	</main>
+
+	<div th:replace="~{fragments/footer :: footer}"></div>
+
+	<!-- Chart.js + JS propio. defer asegura el orden de carga y espera al DOM. -->
+	<script th:if="${!serie.isEmpty()}"
+	        src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+	<script th:if="${!serie.isEmpty()}" th:src="@{/js/estadisticas/pedidos.js}" defer></script>
+
+</body>
+</html>

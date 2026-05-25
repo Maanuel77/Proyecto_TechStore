@@ -26,6 +26,10 @@ public class PedidoService extends BaseServiceImpl<Pedido, Long, PedidoRepositor
         return repository.findByFechaBetween(desde, hasta);
     }
 
+    // PREGUNTAR EN BBDD: aquí traemos TODOS los pedidos, y cada Pedido tiene
+    // lineas (@OneToMany EAGER) + cliente (@ManyToOne EAGER). ¿Esto provoca
+    // el problema N+1 al iterarlos en el listado del admin? ¿La solución sería
+    // poner LAZY en las relaciones y usar @EntityGraph o JOIN FETCH en la query?
     public List<Pedido> findAllOrdered() {
         return repository.findAllByOrderByFechaDesc();
     }
@@ -58,6 +62,31 @@ public class PedidoService extends BaseServiceImpl<Pedido, Long, PedidoRepositor
     public Long countClientesActivos() {
         Long val = repository.countClientesActivos();
         return val != null ? val : 0L;
+    }
+
+    // KPIs por rango de fechas (todos null-safe).
+    public long countPedidosBetween(LocalDate desde, LocalDate hasta) {
+        return repository.countByFechaBetween(desde, hasta);
+    }
+    
+    //Cuando coalesce no protege y es necesario el null-check en Java
+    public Double getTotalIngresosBetween(LocalDate desde, LocalDate hasta) {
+        Double v = repository.getTotalIngresosBetween(desde, hasta);
+        return v != null ? v : 0.0;
+    }
+
+    public Double getTicketMedioBetween(LocalDate desde, LocalDate hasta) {
+        Double v = repository.getTicketMedioBetween(desde, hasta);
+        return v != null ? v : 0.0;
+    }
+
+    // Evolución temporal: día a día si el rango es corto, mes a mes si es largo.
+    public List<Object[]> findPedidosPorDia(LocalDate desde, LocalDate hasta) {
+        return repository.findPedidosPorDia(desde, hasta);
+    }
+
+    public List<Object[]> findPedidosPorMes(LocalDate desde, LocalDate hasta) {
+        return repository.findPedidosPorMes(desde, hasta);
     }
 
     // Persiste el pedido y descuenta stock. @Transactional para que cualquier

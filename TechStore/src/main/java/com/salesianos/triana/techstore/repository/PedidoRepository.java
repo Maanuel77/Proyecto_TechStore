@@ -32,4 +32,30 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
 
     @Query("select count(distinct p.cliente) from Pedido p where p.cliente is not null")
     Long countClientesActivos();
+
+    // KPIs del rango de fechas (todos protegidos con coalesce contra null).
+    @Query("select coalesce(sum(p.total), 0) from Pedido p where p.fecha between :desde and :hasta")
+    Double getTotalIngresosBetween(LocalDate desde, LocalDate hasta);
+
+    @Query("select coalesce(avg(p.total), 0) from Pedido p where p.fecha between :desde and :hasta")
+    Double getTicketMedioBetween(LocalDate desde, LocalDate hasta);
+
+    long countByFechaBetween(LocalDate desde, LocalDate hasta);
+
+    // Agregaciones para el gráfico de evolución temporal.
+    // Diaria: [fecha, nPedidos, ingresos] por cada día con ventas en el rango.
+    @Query("select p.fecha, count(p), sum(p.total) "
+         + "from Pedido p "
+         + "where p.fecha between :desde and :hasta "
+         + "group by p.fecha "
+         + "order by p.fecha asc")
+    List<Object[]> findPedidosPorDia(LocalDate desde, LocalDate hasta);
+
+    // Mensual: [año, mes, nPedidos, ingresos]. Se usa cuando el rango es amplio.
+    @Query("select extract(year from p.fecha), extract(month from p.fecha), count(p), sum(p.total) "
+         + "from Pedido p "
+         + "where p.fecha between :desde and :hasta "
+         + "group by extract(year from p.fecha), extract(month from p.fecha) "
+         + "order by extract(year from p.fecha), extract(month from p.fecha)")
+    List<Object[]> findPedidosPorMes(LocalDate desde, LocalDate hasta);
 }
