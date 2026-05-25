@@ -7,10 +7,15 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 
+import lombok.RequiredArgsConstructor;
+
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -41,6 +46,11 @@ public class SecurityConfig {
             .logout(logout -> logout
                 .logoutSuccessUrl("/")
                 .permitAll()
+            )
+            // Gestión de accesos denegados (403): en lugar de la Whitelabel,
+            // redirigimos al usuario con un flash message amigable.
+            .exceptionHandling(ex -> ex
+                .accessDeniedHandler(customAccessDeniedHandler)
             )
             .csrf(csrf -> csrf
                 .ignoringRequestMatchers("/h2-console/**")

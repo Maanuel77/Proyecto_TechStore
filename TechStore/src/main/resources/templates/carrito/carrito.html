@@ -22,6 +22,8 @@
 			</div>
 		</div>
 
+		<div th:replace="~{fragments/alerts :: alerts}"></div>
+
 		<div class="container pb-5">
 
 			<div th:if="${items.isEmpty()}" class="text-center py-5">

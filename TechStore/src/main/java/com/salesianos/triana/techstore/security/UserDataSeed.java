@@ -39,7 +39,7 @@ public class UserDataSeed {
                 .role(UserRole.CLIENTE)
                 .build();
         
-        User adminSara = User.builder()
+        User clienteSara = User.builder()
                 .username("sara.ruiz")
                 .password(passwordEncoder.encode("sara123"))
                 .email("sara.ruiz@techstore.com")
@@ -96,8 +96,8 @@ public class UserDataSeed {
                 .build();
 
         userRepository.saveAll(List.of(
-                admin, adminSara,
-                cliente, clienteLucia, clienteJavier, clienteMarta, clienteCarlos, clienteAna
+                admin, cliente,
+                clienteSara, clienteLucia, clienteJavier, clienteMarta, clienteCarlos, clienteAna
         ));
     }
 }

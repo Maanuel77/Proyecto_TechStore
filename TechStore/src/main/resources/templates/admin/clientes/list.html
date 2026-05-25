@@ -20,13 +20,9 @@
             </div>
         </div>
 
-        <div class="container pb-5">
+        <div th:replace="~{fragments/alerts :: alerts}"></div>
 
-            <div class="alert alert-danger border-0 rounded-3 small py-2"
-                 th:if="${errorRol}">
-                <i class="bi bi-shield-exclamation me-1"></i>
-                <span th:text="${errorRol}">Mensaje de error</span>
-            </div>
+        <div class="container pb-5">
 
             <div class="card border-0 shadow-sm rounded-4 p-5 text-center text-muted"
                  th:if="${usuarios.isEmpty()}">

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<!--
+  Fragmento reutilizable de alertas tipo "flash".
+  Lee distintos flash attributes que pueden venir desde:
+    - ExceptionControllerAdvice (errorCarrito)
+    - CustomAccessDeniedHandler  (errorAcceso)
+    - AdminController.toggleRole (errorRol)
+    - Controladores que quieran avisar de éxito (exitoMensaje)
+
+  Cualquier página que quiera mostrar estos avisos solo tiene que incluir:
+    <div th:replace="~{fragments/alerts :: alerts}"></div>
+  justo al principio de su <main> o <container>.
+-->
+<body>
+
+  <div th:fragment="alerts" class="container pt-3">
+
+    <div th:if="${errorCarrito}" class="alert alert-danger alert-dismissible fade show shadow-sm rounded-3 border-0" role="alert">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      <span th:text="${errorCarrito}">Mensaje de error</span>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+
+    <div th:if="${errorAcceso}" class="alert alert-warning alert-dismissible fade show shadow-sm rounded-3 border-0" role="alert">
+      <i class="bi bi-shield-lock-fill me-2"></i>
+      <span th:text="${errorAcceso}">Acceso denegado</span>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+
+    <div th:if="${errorRol}" class="alert alert-danger alert-dismissible fade show shadow-sm rounded-3 border-0" role="alert">
+      <i class="bi bi-person-x-fill me-2"></i>
+      <span th:text="${errorRol}">Error de rol</span>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+
+    <div th:if="${exitoMensaje}" class="alert alert-success alert-dismissible fade show shadow-sm rounded-3 border-0" role="alert">
+      <i class="bi bi-check-circle-fill me-2"></i>
+      <span th:text="${exitoMensaje}">Operación realizada</span>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+
+  </div>
+
+</body>
+</html>
