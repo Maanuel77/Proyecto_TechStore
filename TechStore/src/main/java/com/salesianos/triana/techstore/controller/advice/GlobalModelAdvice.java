@@ -7,10 +7,8 @@ import com.salesianos.triana.techstore.service.CarritoService;
 
 import lombok.RequiredArgsConstructor;
 
-/**
- * Inyecta la cantidad de items del carrito en todos los modelos de la app,
- * para que el navbar pueda mostrar el badge sin repetir código en cada controlador.
- */
+// Inyecta `cantidad_carrito` en TODAS las vistas, para que el navbar pueda
+// pintar el badge sin que cada controlador tenga que añadirlo a mano.
 @ControllerAdvice
 @RequiredArgsConstructor
 public class GlobalModelAdvice {

@@ -63,7 +63,7 @@
                             </td>
                             <td class="text-muted small" th:text="${u.telefono}"></td>
                             <td>
-                                <!-- Badge especial para el superadmin -->
+                                <!-- Superadmin tiene badge especial; el resto muestra su rol. -->
                                 <span th:if="${u.superadmin}"
                                       class="badge rounded-pill bg-warning text-dark">
                                     <i class="bi bi-shield-fill-check me-1"></i>SUPERADMIN
@@ -74,15 +74,13 @@
                                       th:text="${u.role.name()}"></span>
                             </td>
                             <td class="text-end pe-4">
-                                <!-- 1. El superadmin es intocable -->
+                                <!-- Botón toggle solo para "resto de usuarios": ni superadmin ni uno mismo. -->
                                 <span th:if="${u.superadmin}"
                                       class="text-warning-emphasis small fst-italic">
                                     <i class="bi bi-lock-fill me-1"></i>Protegido
                                 </span>
-                                <!-- 2. No mostramos el botón en el usuario logueado para que no se autodemote -->
                                 <span th:if="${!u.superadmin and u.username == #authentication.name}"
                                       class="text-muted small fst-italic">Tú mismo</span>
-                                <!-- 3. El resto sí se pueden togglear -->
                                 <a th:if="${!u.superadmin and u.username != #authentication.name}"
                                    th:href="@{/admin/clientes/toggle-role/{id}(id=${u.id})}"
                                    class="btn btn-sm rounded-pill"

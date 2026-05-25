@@ -80,13 +80,8 @@
 		</div>
 	</main>
 
-	<!-- =================================================== -->
-	<!-- MODAL DE DETALLE DE PEDIDO                           -->
-	<!-- Un único modal reutilizable: se rellena con JS.     -->
-	<!-- Las líneas se renderizan ya desde Thymeleaf en       -->
-	<!-- bloques ocultos por pedido, y el JS muestra solo     -->
-	<!-- el bloque del pedido que se ha pulsado.             -->
-	<!-- =================================================== -->
+	<!-- Modal de detalle. Todas las líneas se pintan ocultas y el JS muestra
+	     solo el bloque del pedido seleccionado al abrir el modal. -->
 	<div class="modal fade" id="pedidoModal" tabindex="-1" aria-labelledby="pedidoModalLabel" aria-hidden="true">
 		<div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
 			<div class="modal-content border-0 rounded-4 shadow-lg">
@@ -113,8 +108,8 @@
 							</tr>
 						</thead>
 						<tbody>
-							<!-- Una sección por pedido (oculta por defecto).
-							     El JS muestra solo la del pedido pulsado. -->
+							<!-- Filas ocultas por pedido (data-pedido = id). El JS solo muestra
+							     las del pedido seleccionado. -->
 							<th:block th:each="ped : ${pedidos}">
 								<tr th:each="l : ${ped.lineas}"
 								    class="lineas-pedido d-none"

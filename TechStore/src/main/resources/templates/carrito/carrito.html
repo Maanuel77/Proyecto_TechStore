@@ -26,6 +26,7 @@
 
 		<div class="container pb-5">
 
+			<!-- Carrito vacío -->
 			<div th:if="${items.isEmpty()}" class="text-center py-5">
 				<i class="bi bi-bag fs-1 text-secondary opacity-25 d-block mb-3"></i>
 				<h5 class="fw-semibold mb-1">Tu carrito está vacío</h5>
@@ -35,6 +36,7 @@
 				</a>
 			</div>
 
+			<!-- Carrito con productos: tabla a la izquierda, resumen a la derecha -->
 			<div th:unless="${items.isEmpty()}" class="row g-4 align-items-start">
 
 				<div class="col-lg-8">
@@ -90,6 +92,7 @@
 					</div>
 				</div>
 
+				<!-- Resumen lateral con total y botón de tramitar -->
 				<div class="col-lg-4">
 					<div class="card border-0 shadow-sm rounded-4 p-4">
 						<h6 class="fw-semibold mb-3">Resumen del pedido</h6>

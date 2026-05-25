@@ -19,6 +19,7 @@
 
 		<div class="container pb-5">
 
+			<!-- Tarjetas-resumen con contadores y enlaces a cada sección -->
 			<div class="row g-3 mb-4">
 				<div class="col-sm-6 col-xl-4">
 					<a th:href="@{/admin/productos}" class="text-decoration-none">
@@ -80,6 +81,7 @@
 				</div>
 			</div>
 
+			<!-- Tabla de alertas: productos con stock bajo (de ProductoService.lowStock) -->
 			<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
 				<div class="d-flex align-items-center justify-content-between px-4 py-3 border-bottom">
 					<h5 class="mb-0 fw-semibold">Alertas de stock bajo</h5>

@@ -10,6 +10,8 @@
 		<a class="text-dark fw-bold fs-4 text-decoration-none d-block text-center mb-1" th:href="@{/}">TechStore</a>
 		<p class="text-muted text-center small mb-4">Crear una cuenta nueva</p>
 
+		<!-- Cada bloque enlaza un campo de User con th:field; los errores de
+		     validación se muestran junto al campo con is-invalid + th:errors. -->
 		<form method="post" th:action="@{/auth/registro}" th:object="${usuario}">
 
 			<!-- Usuario -->

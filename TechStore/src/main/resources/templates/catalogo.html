@@ -18,6 +18,7 @@
 		<div th:replace="~{fragments/alerts :: alerts}"></div>
 
 		<div class="container pb-5">
+			<!-- Buscador (filtro por nombre/marca con JS en el cliente) -->
 			<div class="card border-0 shadow-sm rounded-3 px-3 py-2 mb-4
                     d-flex flex-row align-items-center gap-2">
 				<i class="bi bi-search text-muted"></i>
@@ -27,6 +28,7 @@
 					th:text="${productos.size()} + ' resultados'"></span>
 			</div>
 
+			<!-- Grid de tarjetas de producto. Cada tarjeta abre un modal de detalle. -->
 			<div class="row g-4" id="productGrid">
 				<div class="col-sm-6 col-lg-4" th:each="p : ${productos}"
 					th:attr="data-search=${#strings.toLowerCase(p.nombre + ' ' + p.marca)}">
@@ -76,6 +78,7 @@
 								<div class="fw-bold fs-5"
 									th:text="${#numbers.formatDecimal(p.precio,1,'POINT',2,'COMMA')} + ' €'"></div>
 								<!-- onclick stopPropagation evita que el click abra el modal -->
+								<!-- stopPropagation: el click en "+" no abre el modal -->
 								<a th:href="@{/carrito/anadir/{id}(id=${p.id})}"
 									class="btn btn-dark btn-sm rounded-pill"
 									th:classappend="${p.stock == 0} ? 'disabled'"
@@ -98,6 +101,7 @@
 	</main>
 
 
+	<!-- Modal de detalle del producto con selector de cantidad -->
 	<div class="modal fade" id="productoModal" tabindex="-1" aria-labelledby="productoModalLabel" aria-hidden="true">
 		<div class="modal-dialog modal-lg modal-dialog-centered">
 			<div class="modal-content border-0 rounded-4 shadow-lg">
@@ -158,10 +162,7 @@
 
 							<div class="fw-bold fs-2 mb-4" id="modalPrecio">0,00 €</div>
 
-							<!-- Formulario de añadir al carrito con cantidad.
-							     Usamos GET (igual que el botón "+" de la tarjeta) para no chocar
-							     con la protección CSRF de Spring Security. La cantidad viaja
-							     como query parameter: /carrito/anadir/{id}?cantidad=N -->
+							<!-- Formulario GET (evita CSRF). La cantidad va como query param. -->
 							<form id="modalForm" method="get" action="">
 								<label class="form-label small fw-semibold text-muted text-uppercase ts-label-sm">
 									Cantidad
@@ -193,6 +194,7 @@
 
 	<div th:replace="~{fragments/footer :: footer}"></div>
 
+	<!-- Búsqueda en cliente + rellenado del modal con datos de la tarjeta -->
 	<script>
 		(function () {
 			var input = document.getElementById('searchInput');

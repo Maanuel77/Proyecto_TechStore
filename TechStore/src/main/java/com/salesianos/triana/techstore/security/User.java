@@ -25,6 +25,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 
+// Usuario de la aplicación. Implementa UserDetails para que Spring Security
+// lo use directamente en el login (sin necesidad de DTO intermedio).
 @SuppressWarnings("serial")
 @Data
 @NoArgsConstructor
@@ -61,13 +63,11 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
-    /**
-     * Marca al superadmin del sistema. No se puede degradar de ADMIN
-     * ni eliminar, sea quien sea el admin que intente hacerlo.
-     * Solo se asigna en el UserDataSeed al primer admin.
-     */
+    // Marca al admin "raíz": ningún otro admin puede degradarlo ni borrarlo.
+    // Solo se asigna en UserDataSeed.
     private boolean superadmin;
 
+    // Spring Security espera autoridades con prefijo "ROLE_".
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));

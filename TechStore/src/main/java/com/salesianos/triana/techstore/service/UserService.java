@@ -16,6 +16,7 @@ public class UserService extends BaseServiceImpl<User, Long, UserRepository> {
 
     private final PasswordEncoder passwordEncoder;
 
+    // Actualiza los datos de perfil (no toca la contraseña ni el rol).
     public void editarDatos(Long id, String username, String email, String fullname, String telefono) {
         User user = repository.findById(id).orElseThrow();
         user.setUsername(username);
@@ -25,6 +26,7 @@ public class UserService extends BaseServiceImpl<User, Long, UserRepository> {
         repository.save(user);
     }
 
+    // La nueva password se codifica con BCrypt antes de persistir.
     public void cambiarPassword(Long id, String nuevaPassword) {
         User user = repository.findById(id).orElseThrow();
         user.setPassword(passwordEncoder.encode(nuevaPassword));
@@ -36,27 +38,16 @@ public class UserService extends BaseServiceImpl<User, Long, UserRepository> {
         return repository.existsByUsername(username);
     }
 
-    /**
-     * Registra un nuevo usuario con rol CLIENTE por defecto.
-     * Codifica la contraseña antes de guardarla.
-     */
+    // Alta desde el formulario de registro: codifica la contraseña y fuerza
+    // rol CLIENTE (los ADMIN solo se crean en el seed o vía toggleRole).
     public User registrar(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole(UserRole.CLIENTE);
         return repository.save(user);
     }
 
-    /**
-     * Cambia el rol del usuario: si es CLIENTE pasa a ADMIN y viceversa.
-     *
-     * Verificaciones de seguridad:
-     *   - No se puede cambiar el rol del superadmin (es inmutable).
-     *   - Un admin no puede cambiarse el rol a sí mismo (evita autodegradarse).
-     *
-     * @param id                identificador del usuario al que se le cambia el rol
-     * @param usernameSolicitante username del admin que ejecuta la acción
-     * @throws IllegalStateException si la operación viola alguna regla de seguridad
-     */
+    // Alterna ADMIN <-> CLIENTE.
+    // Restricciones: el superadmin es intocable y nadie puede degradarse a sí mismo.
     public void toggleRole(Long id, String usernameSolicitante) {
         User user = repository.findById(id).orElseThrow();
 

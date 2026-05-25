@@ -7,6 +7,8 @@
 
     <div th:replace="~{fragments/navbar :: navbar}"></div>
 
+    <!-- Fallback para errores sin contexto de referer. Hoy el flujo normal
+         no llega aquí (todos los errores van por flash + redirect). -->
     <main>
         <div class="container py-5" style="max-width: 640px;">
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden">

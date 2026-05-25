@@ -26,6 +26,7 @@ import com.salesianos.triana.techstore.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+// Panel de administración: dashboard, CRUD de productos, pedidos y usuarios.
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/admin")
@@ -51,10 +52,7 @@ public class AdminController {
         return "admin/productos/list";
     }
 
-    /**
-     * Listado de todos los pedidos del sistema, con filtro opcional por rango de fechas.
-     * Si llegan ambos parámetros (desde y hasta), filtramos; si no, mostramos todos.
-     */
+    // Listado de pedidos con filtro opcional por rango de fechas.
     @GetMapping("/pedidos")
     public String listadoPedidos(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
@@ -71,7 +69,7 @@ public class AdminController {
         model.addAttribute("pedidos", pedidos);
         model.addAttribute("desde", desde);
         model.addAttribute("hasta", hasta);
-        // Stats globales (no se ven afectadas por el filtro: muestran el total histórico)
+        // Stats globales (no se filtran: muestran el histórico completo).
         model.addAttribute("totalPedidos", pedidoService.findAll().size());
         model.addAttribute("ingresos", pedidoService.getTotalIngresos());
         model.addAttribute("ticketMedio", pedidoService.getTicketMedio());
@@ -87,13 +85,12 @@ public class AdminController {
     @PostMapping("/producto/nuevo")
     public String nuevoProductoGuardar(@Valid @ModelAttribute("producto") Producto producto,
                                        BindingResult bindingResult) {
-        // Gestión de errores de Validación con @Valid
+        // Si fallan las validaciones (@NotBlank, @Min...) volvemos al form.
         if (bindingResult.hasErrors()) {
-            // Si hay errores, regresa al formulario manteniendo los mensajes
             return "admin/producto/form";
         }
-        // Si el precio supera el límite el service lanza IllegalArgumentException
-        // que captura nuestro ExceptionControllerAdvice
+        // El service valida el precio máximo y lanza IllegalArgumentException
+        // si se supera (la captura el ControllerAdvice y aparece como flash).
         productoService.save(producto);
         return "redirect:/admin/dashboard";
     }
@@ -112,11 +109,8 @@ public class AdminController {
         return "redirect:/admin/dashboard";
     }
 
-    /**
-     * Elimina un producto. Si no existe lanza NoSuchElementException
-     * y si está en pedidos históricos lanza IllegalArgumentException.
-     * Ambas las captura el ExceptionControllerAdvice global.
-     */
+    // Eliminar producto. El service lanza IllegalArgumentException si está
+    // referenciado en pedidos antiguos (FK), gestionado por el ControllerAdvice.
     @GetMapping("/producto/eliminar/{id}")
     public String eliminarProducto(@PathVariable Long id) {
         productoService.eliminar(id);
@@ -129,6 +123,9 @@ public class AdminController {
         return "admin/clientes/list";
     }
 
+    // Cambiar rol (ADMIN <-> CLIENTE). Las restricciones (superadmin, propio
+    // usuario) se validan en el service; aquí capturamos el error y lo pasamos
+    // como flash a la vista del listado.
     @GetMapping("/clientes/toggle-role/{id}")
     public String toggleRole(@PathVariable Long id,
                              Principal principal,

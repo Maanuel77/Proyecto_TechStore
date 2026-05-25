@@ -12,19 +12,10 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-/**
- * Maneja los errores 403 de Spring Security (AccessDeniedException) sin
- * mostrar la página "Whitelabel Error" por defecto.
- *
- * Caso típico que queremos resolver: un usuario con rol ADMIN intenta acceder
- * a /carrito o /pedidos (restringidos a CLIENTE en SecurityConfig). En lugar
- * de un error feo, dejamos un mensaje en un FlashMap y le redirigimos a una
- * página válida (el catálogo) donde el banner se muestra y desaparece solo.
- *
- * Como esta excepción la lanza el filtro de Spring Security (no el controlador),
- * el @ControllerAdvice de la app no la captura: hay que registrar este handler
- * directamente en la configuración de seguridad.
- */
+// Maneja los 403 de Spring Security sin mostrar el Whitelabel.
+// Como la excepción la lanza el filtro (no el controlador), el
+// @ControllerAdvice no la captura: hay que registrar este handler
+// directamente en SecurityConfig.
 @Component
 public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
@@ -38,6 +29,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
         String uri = request.getRequestURI();
         String target;
 
+        // Mensaje y destino según la zona a la que intentaba entrar.
         if (uri.startsWith("/carrito") || uri.startsWith("/pedidos")) {
             flashMap.put("errorAcceso",
                 "Los administradores no pueden realizar pedidos ni acceder al historial de cliente. "
@@ -53,7 +45,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
             target = "/";
         }
 
-        // Guardamos el flash en sesión para que sobreviva al redirect.
+        // El flash se guarda en sesión para sobrevivir al redirect.
         new SessionFlashMapManager().saveOutputFlashMap(flashMap, request, response);
         response.sendRedirect(request.getContextPath() + target);
     }

@@ -16,11 +16,9 @@ import com.salesianos.triana.techstore.repository.ProductoRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 
-/**
- * Carga datos de ejemplo al arrancar la aplicación.
- * Como ddl-auto=create-drop, la base de datos se recrea cada vez,
- * por lo que estos datos se insertan en cada arranque.
- */
+// Carga productos, clientes y pedidos de ejemplo al arrancar.
+// Solo inserta si la tabla de productos está vacía (compatible con
+// ddl-auto=update si en algún momento se cambia).
 @Component
 @RequiredArgsConstructor
 public class DataSeed {
@@ -31,8 +29,6 @@ public class DataSeed {
 
     @PostConstruct
     public void init() {
-
-        // Si ya hay productos (otro perfil con ddl-auto=update), no duplicamos
         if (productoRepository.count() > 0) return;
 
         List<Producto> productos = seedProductos();
@@ -146,6 +142,7 @@ public class DataSeed {
 
         clienteRepository.saveAll(List.of(c1, c2, c3));
 
+        // Tres pedidos de ejemplo para que el dashboard tenga datos.
         // Pedido 1: Lucía compra MacBook Air + AirPods
         Pedido pedido1 = Pedido.builder()
                 .codigo("PED-0001")

@@ -6,11 +6,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+// NO es entidad JPA: vive en la sesión HTTP del usuario mientras compra.
+// Solo cuando tramita el pedido se convierte en LineaPedido y se persiste.
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class CarritoItem implements Serializable {
 
+    // La garantía extendida añade un 10% del precio por unidad.
     private static final double COSTE_GARANTIA_PORCENTAJE = 0.10;
 
     private Long productoId;

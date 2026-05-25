@@ -13,25 +13,20 @@ import com.salesianos.triana.techstore.exceptions.SinStockException;
 import com.salesianos.triana.techstore.model.CarritoItem;
 import com.salesianos.triana.techstore.model.Producto;
 
+// Carrito en sesión: cada usuario tiene su propia instancia mientras
+// dura su sesión HTTP. Solo se persiste en BD al tramitar el pedido.
 @Service
 @Scope(value = WebApplicationContext.SCOPE_SESSION, proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class CarritoService {
 
-    // clave = productoId, valor = CarritoItem con todos los datos del producto
+    // LinkedHashMap para conservar el orden en que se añadieron los productos.
     private final Map<Long, CarritoItem> items = new LinkedHashMap<>();
 
-    /**
-     * Añade un producto al carrito.
-     * Si ya existe, incrementa la cantidad en 1.
-     *
-     * Lanza SinStockException si la cantidad pedida supera el stock
-     * disponible. La excepción es capturada por el ControllerAdvice global.
-     */
+    // Añade 1 unidad. Si ya estaba en el carrito incrementa la cantidad.
     public void addProducto(Producto p) {
         if (items.containsKey(p.getId())) {
             CarritoItem item = items.get(p.getId());
 
-            // Uso de excepción sin stock
             if (item.getCantidad() + 1 > p.getStock()) {
                 throw new SinStockException(
                     "No queda más stock disponible del producto '" + p.getNombre()
@@ -41,7 +36,6 @@ public class CarritoService {
             item.setCantidad(item.getCantidad() + 1);
         } else {
 
-            // Uso de nuestra excepción personalizada de negocio
             if (p.getStock() < 1) {
                 throw new SinStockException(
                     "El producto '" + p.getNombre() + "' está agotado.");
@@ -52,14 +46,8 @@ public class CarritoService {
         }
     }
 
-    /**
-     * Añade al carrito una cantidad concreta del producto.
-     * Lo usa el modal de detalle del catálogo, donde el usuario elige cuántas unidades quiere.
-     *
-     * Lanza IllegalArgumentException si la cantidad es menor que 1.
-     * Lanza SinStockException si la cantidad solicitada (o la acumulada en el carrito)
-     * supera el stock disponible. Ambas las captura el ControllerAdvice global.
-     */
+    // Versión con cantidad explícita (la usa el modal del catálogo).
+    // Valida cantidad mínima y stock acumulado en el carrito.
     public void addProducto(Producto p, int cantidad) {
 
         if (cantidad < 1) {
@@ -94,41 +82,29 @@ public class CarritoService {
         }
     }
 
-    /**
-     * Elimina completamente un producto del carrito por su id.
-     */
     public void removeProducto(Long productoId) {
         items.remove(productoId);
     }
 
-    /**
-     * Devuelve una vista no modificable del carrito.
-     */
+    // Vista inmodificable para que las plantillas no manipulen el carrito.
     public Map<Long, CarritoItem> getItems() {
         return Collections.unmodifiableMap(items);
     }
 
-    /**
-     * Calcula el total del carrito sumando subtotal + coste de garantía de cada línea.
-     */
+    // Total = suma de subtotales + costes de garantía extendida.
     public double calcularTotal() {
         return items.values().stream()
                 .mapToDouble(item -> item.getSubtotal() + item.getCosteGarantia())
                 .sum();
     }
 
-    /**
-     * Devuelve el número total de unidades en el carrito (para el badge del navbar).
-     */
+    // Total de unidades para el badge del navbar.
     public int getCantidadTotal() {
         return items.values().stream()
                 .mapToInt(CarritoItem::getCantidad)
                 .sum();
     }
 
-    /**
-     * Activa/desactiva la garantía extendida de un item.
-     */
     public void toggleGarantia(Long productoId) {
         CarritoItem item = items.get(productoId);
         if (item != null) {
@@ -136,9 +112,6 @@ public class CarritoService {
         }
     }
 
-    /**
-     * Vacía el carrito por completo.
-     */
     public void vaciarCarrito() {
         items.clear();
     }

@@ -11,6 +11,7 @@ import com.salesianos.triana.techstore.service.PedidoService;
 
 import lombok.RequiredArgsConstructor;
 
+// Historial privado de pedidos del cliente. Solo CLIENTE (ver SecurityConfig).
 @Controller
 @RequestMapping("/pedidos")
 @RequiredArgsConstructor
@@ -18,10 +19,6 @@ public class PedidoController {
 
     private final PedidoService pedidoService;
 
-    /**
-     * Historial privado de pedidos del usuario logueado.
-     * Solo accesible para CLIENTE (configurado en SecurityConfig).
-     */
     @GetMapping
     public String historial(@AuthenticationPrincipal User usuario, Model model) {
         model.addAttribute("pedidos", pedidoService.findByUser(usuario));

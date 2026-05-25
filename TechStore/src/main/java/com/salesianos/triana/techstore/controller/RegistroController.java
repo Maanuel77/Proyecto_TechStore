@@ -14,6 +14,7 @@ import com.salesianos.triana.techstore.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+// Alta de nuevos clientes desde el formulario público de registro.
 @Controller
 @RequestMapping("/auth/registro")
 @RequiredArgsConstructor
@@ -32,13 +33,12 @@ public class RegistroController {
                                    BindingResult bindingResult,
                                    Model model) {
 
-        // Si hay errores de validación (email mal formado, teléfono mal, etc.)
-        // volvemos al formulario para que los corrija
+        // 1) Validaciones de Jakarta (@Email, @Pattern, @Size...).
         if (bindingResult.hasErrors()) {
             return "auth/registro";
         }
 
-        // Comprobamos que el nombre de usuario no esté ya en uso
+        // 2) Username único: lo comprobamos aparte porque depende de BD.
         if (userService.existeUsername(usuario.getUsername())) {
             bindingResult.rejectValue("username", "username.exists",
                 "Ese nombre de usuario ya está en uso, elige otro");

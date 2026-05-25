@@ -27,12 +27,14 @@
 
 		<div class="container pb-5">
 
+			<!-- Empty state -->
 			<div class="card border-0 shadow-sm rounded-4 p-5 text-center text-muted"
 			     th:if="${productos.isEmpty()}">
 				<i class="bi bi-box-seam fs-1 mb-3 d-block"></i>
 				<p class="mb-0">Todavía no hay productos registrados.</p>
 			</div>
 
+			<!-- Grid de tarjetas con acciones editar/eliminar -->
 			<div class="row g-4" th:if="${!productos.isEmpty()}">
 				<div class="col-sm-6 col-lg-4" th:each="p : ${productos}">
 					<div class="card border-0 shadow-sm rounded-4 h-100 ts-hover">

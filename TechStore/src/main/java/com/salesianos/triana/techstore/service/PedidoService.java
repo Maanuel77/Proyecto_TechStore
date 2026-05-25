@@ -26,21 +26,16 @@ public class PedidoService extends BaseServiceImpl<Pedido, Long, PedidoRepositor
         return repository.findByFechaBetween(desde, hasta);
     }
 
-    /** Todos los pedidos ordenados por fecha descendente. */
     public List<Pedido> findAllOrdered() {
         return repository.findAllByOrderByFechaDesc();
     }
 
-    /** Pedidos en un rango de fechas, ordenados por fecha descendente. */
     public List<Pedido> findByFechaBetweenOrdered(LocalDate desde, LocalDate hasta) {
         return repository.findByFechaBetweenOrderByFechaDesc(desde, hasta);
     }
 
-    /**
-     * Devuelve el historial de pedidos del usuario logueado.
-     * Une User (seguridad) y Cliente (dominio) por el email, igual que
-     * hace ClienteService.findOrCreateForUser al crear pedidos.
-     */
+    // Historial del cliente logueado. Une User (security) con Cliente (dominio)
+    // por email, igual que hace ClienteService al crear pedidos.
     public List<Pedido> findByUser(User user) {
         return repository.findByClienteEmailOrderByFechaDesc(user.getEmail());
     }
@@ -49,6 +44,7 @@ public class PedidoService extends BaseServiceImpl<Pedido, Long, PedidoRepositor
         return repository.findClientesConMayorGasto();
     }
 
+    // Las tres siguientes protegen contra null cuando aún no hay pedidos en BD.
     public Double getTotalIngresos() {
         Double val = repository.getTotalIngresos();
         return val != null ? val : 0.0;
@@ -64,6 +60,8 @@ public class PedidoService extends BaseServiceImpl<Pedido, Long, PedidoRepositor
         return val != null ? val : 0L;
     }
 
+    // Persiste el pedido y descuenta stock. @Transactional para que cualquier
+    // fallo (producto inexistente, sin stock...) revierta TODOS los cambios.
     @Transactional
     public Pedido guardarPedido(Pedido pedido) {
         pedido.setFecha(LocalDate.now());
@@ -72,11 +70,9 @@ public class PedidoService extends BaseServiceImpl<Pedido, Long, PedidoRepositor
         }
 
         pedido.getLineas().forEach(linea -> {
-            // Si el producto no existe, lanzamos NoSuchElementException
             Producto p = productoRepository.findById(linea.getProducto().getId())
                     .orElseThrow(() -> new NoSuchElementException());
 
-            // Si no hay stock suficiente, lanzamos nuestra excepción personalizada
             if (linea.getCantidad() > p.getStock()) {
                 throw new SinStockException(
                     "No hay stock suficiente del producto '" + p.getNombre()
@@ -84,6 +80,7 @@ public class PedidoService extends BaseServiceImpl<Pedido, Long, PedidoRepositor
                     + " unidades, disponibles " + p.getStock() + ".");
             }
 
+            // Descontamos stock y congelamos el precio del producto en la línea.
             p.setStock(p.getStock() - linea.getCantidad());
             productoRepository.save(p);
             linea.setPedido(pedido);

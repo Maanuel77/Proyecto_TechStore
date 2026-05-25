@@ -12,6 +12,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+// Cada línea representa un producto dentro de un pedido.
+// Guardamos precioUnitario y subtotal en el momento de la compra para que
+// los pedidos históricos no cambien si después se actualiza el precio.
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

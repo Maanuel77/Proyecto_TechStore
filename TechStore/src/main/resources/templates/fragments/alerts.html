@@ -1,18 +1,9 @@
+<!-- Banners flash reutilizables. Cada div solo aparece si su flash existe.
+     Atributos: errorCarrito (negocio), errorAcceso (403), errorRol (admin),
+     exitoMensaje (operación OK). -->
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
-<!--
-  Fragmento reutilizable de alertas tipo "flash".
-  Lee distintos flash attributes que pueden venir desde:
-    - ExceptionControllerAdvice (errorCarrito)
-    - CustomAccessDeniedHandler  (errorAcceso)
-    - AdminController.toggleRole (errorRol)
-    - Controladores que quieran avisar de éxito (exitoMensaje)
-
-  Cualquier página que quiera mostrar estos avisos solo tiene que incluir:
-    <div th:replace="~{fragments/alerts :: alerts}"></div>
-  justo al principio de su <main> o <container>.
--->
 <body>
 
   <div th:fragment="alerts" class="container pt-3">

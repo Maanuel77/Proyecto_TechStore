@@ -1,3 +1,5 @@
+<!-- Navbar global. Los enlaces se muestran según el rol del usuario logueado
+     gracias a sec:authorize (Spring Security extras de Thymeleaf). -->
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	th:fragment="navbar">
@@ -20,6 +22,7 @@
 					<li class="nav-item">
 						<a class="nav-link text-secondary" th:href="@{/catalogo}">Catálogo</a>
 					</li>
+					<!-- Carrito con badge de cantidad (lo inyecta GlobalModelAdvice). -->
 					<li class="nav-item" sec:authorize="hasRole('CLIENTE')">
 						<a class="nav-link text-secondary position-relative" th:href="@{/carrito}">
 							<i class="bi bi-bag me-1"></i>Carrito

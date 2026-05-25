@@ -24,6 +24,7 @@
         <div class="container pb-5">
             <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 mx-auto" style="max-width: 640px;">
 
+                <!-- Mismo form para crear y editar: el action cambia según haya id o no. -->
                 <form th:action="${producto.id != null} ? @{/admin/producto/editar/{id}(id=${producto.id})} : @{/admin/producto/nuevo}"
                       th:object="${producto}" method="post">
 

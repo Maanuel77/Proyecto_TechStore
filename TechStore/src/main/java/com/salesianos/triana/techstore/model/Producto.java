@@ -13,15 +13,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+// Producto del catálogo. Las validaciones (@NotBlank, @Min, @DecimalMin)
+// se aplican al guardarlo desde el formulario del admin.
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Entity
 public class Producto {
-
-    /*Aquí podemos ver la utilización de algunas validaciones
-     * automáticas de jakarta.validation como @NotBlank o @Min*/
 
     @Id @GeneratedValue
     private Long id;

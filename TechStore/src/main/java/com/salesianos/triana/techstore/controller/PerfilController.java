@@ -14,6 +14,7 @@ import com.salesianos.triana.techstore.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 
+// Perfil del usuario logueado: ver, editar datos y cambiar contraseña.
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/perfil")

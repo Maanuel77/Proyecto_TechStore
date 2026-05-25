@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 
+// Punto de entrada que Spring Security usa para cargar el usuario al loguear.
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {

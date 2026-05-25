@@ -10,11 +10,8 @@ import com.salesianos.triana.techstore.service.base.BaseServiceImpl;
 @Service
 public class ClienteService extends BaseServiceImpl<Cliente, Long, ClienteRepository> {
 
-    /**
-     * Busca el Cliente del dominio asociado al usuario logueado por su email.
-     * Si todavía no existe (es la primera compra del usuario), lo crea con
-     * los datos de su cuenta (fullname, email, telefono).
-     */
+    // Puente entre el User de seguridad y el Cliente del dominio: se enlazan
+    // por email. La primera vez que un usuario compra se crea su Cliente.
     public Cliente findOrCreateForUser(User user) {
         return repository.findByEmail(user.getEmail())
                 .orElseGet(() -> repository.save(Cliente.builder()

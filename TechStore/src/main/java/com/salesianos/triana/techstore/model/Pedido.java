@@ -20,6 +20,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+// Pedido de un cliente. El código se genera al guardarlo en PedidoService.
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -41,12 +42,14 @@ public class Pedido {
         foreignKey = @ForeignKey(name = "fk_pedido_cliente"))
     private Cliente cliente;
 
+    // CASCADE.ALL + orphanRemoval: al borrar un pedido se borran sus líneas,
+    // y al quitar una línea de la lista también desaparece de BD.
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @ToString.Exclude
     @Builder.Default
     private List<LineaPedido> lineas = new ArrayList<>();
 
-    // Métodos helper de la asociación bidireccional Pedido - LineaPedido
+    // Helpers para mantener coherente la relación bidireccional.
     public void addLineaPedido(LineaPedido linea) {
         linea.setPedido(this);
         lineas.add(linea);

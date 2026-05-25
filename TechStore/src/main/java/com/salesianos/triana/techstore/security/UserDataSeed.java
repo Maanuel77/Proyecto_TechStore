@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 
+// Carga usuarios de prueba al arrancar la app (solo si la tabla está vacía).
 @Component
 @RequiredArgsConstructor
 public class UserDataSeed {
@@ -18,6 +19,7 @@ public class UserDataSeed {
     @PostConstruct
     public void init() {
 
+        // Evita duplicar datos si la BD se mantiene entre arranques.
         if (userRepository.count() > 0) return;
 
         User admin = User.builder()

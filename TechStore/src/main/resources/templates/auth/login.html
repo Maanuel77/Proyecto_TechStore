@@ -10,6 +10,7 @@
 		<a class="text-dark fw-bold fs-4 text-decoration-none d-block text-center mb-1" th:href="@{/}">TechStore</a>
 		<p class="text-muted text-center small mb-4">Accede a tu cuenta</p>
 
+		<!-- Avisos según parámetros que pasa Spring Security tras login/logout/registro -->
 		<div class="alert alert-danger border-0 rounded-3 small py-2" th:if="${param.error}">
 			<i class="bi bi-exclamation-circle me-1"></i>
 			Usuario o contraseña incorrectos.
@@ -48,6 +49,7 @@
 			</a>
 		</p>
 
+		<!-- Credenciales de demo a la vista para facilitar las pruebas -->
 		<div class="bg-light rounded-3 p-3 d-flex gap-3 mt-3">
 			<div class="flex-fill text-center">
 				<div class="text-muted small text-uppercase fw-semibold ts-label-sm mb-1">Admin</div>

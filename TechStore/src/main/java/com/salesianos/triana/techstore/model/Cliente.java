@@ -17,6 +17,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+// Cliente del dominio (asociado a los pedidos). Es distinto del User
+// de seguridad: ambos se enlazan por email cuando el usuario tramita
+// su primer pedido (ver ClienteService.findOrCreateForUser).
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -37,12 +40,14 @@ public class Cliente {
     @NotBlank
     private String telefono;
 
+    // Relación 1:N con Pedido. EAGER para poder mostrar el historial sin
+    // problemas de sesión cerrada en las vistas.
     @OneToMany(mappedBy = "cliente", fetch = FetchType.EAGER)
     @ToString.Exclude
     @Builder.Default
     private List<Pedido> pedidos = new ArrayList<>();
 
-    // Métodos helper de la asociación bidireccional Cliente - Pedido
+    // Helpers para mantener la coherencia de la relación bidireccional.
     public void addPedido(Pedido pedido) {
         pedido.setCliente(this);
         pedidos.add(pedido);

@@ -21,13 +21,13 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
+            // Reglas de autorización por URL. Los admins NO acceden al carrito
+            // ni al historial de cliente (son funcionalidad exclusiva CLIENTE).
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/css/**", "/js/**", "/img/**").permitAll()
                 .requestMatchers("/", "/catalogo", "/auth/login", "/auth/registro").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                // El carrito y el historial de pedidos son exclusivos de clientes:
-                // los admins no compran ni tienen pedidos.
                 .requestMatchers("/carrito/**", "/pedidos/**").hasRole("CLIENTE")
                 .anyRequest().authenticated()
             )
@@ -47,8 +47,7 @@ public class SecurityConfig {
                 .logoutSuccessUrl("/")
                 .permitAll()
             )
-            // Gestión de accesos denegados (403): en lugar de la Whitelabel,
-            // redirigimos al usuario con un flash message amigable.
+            // En lugar del Whitelabel de 403, redirige con flash message.
             .exceptionHandling(ex -> ex
                 .accessDeniedHandler(customAccessDeniedHandler)
             )

@@ -24,6 +24,7 @@ import com.salesianos.triana.techstore.service.ProductoService;
 
 import lombok.RequiredArgsConstructor;
 
+// Operaciones del carrito (en sesión) y tramitación del pedido. Solo CLIENTE.
 @Controller
 @RequestMapping("/carrito")
 @RequiredArgsConstructor
@@ -42,16 +43,8 @@ public class CarritoController {
         return "carrito/carrito";
     }
 
-
-    /**
-     * Añade un producto al carrito.
-     * Usado tanto por el botón "+" de la tarjeta (sin cantidad → defaults a 1)
-     * como por el formulario del modal de detalle (con cantidad en query param).
-     *
-     * Si no existe, buscarPorId lanza NoSuchElementException.
-     * Si no hay stock, addProducto lanza SinStockException.
-     * Ambas las captura nuestro ExceptionControllerAdvice.
-     */
+    // Usado por el botón "+" del catálogo (cantidad=1 por defecto) y por el
+    // modal de detalle (que envía la cantidad como query param).
     @GetMapping("/anadir/{id}")
     public String anadirProducto(@PathVariable Long id,
                                  @RequestParam(defaultValue = "1") Integer cantidad) {
@@ -72,21 +65,22 @@ public class CarritoController {
         return "redirect:/carrito";
     }
 
+    // Convierte el carrito en sesión en un Pedido persistido en BD.
     @GetMapping("/tramitar")
     public String tramitar(@AuthenticationPrincipal User usuario, Model model) {
         if (carritoService.isEmpty()) {
             return "redirect:/carrito";
         }
 
-        // Copiamos los datos ANTES de tocar nada para poder mostrarlos en la confirmación
+        // Copia previa: si el guardado falla, el carrito sigue intacto;
+        // si va bien, mostramos esta copia en la página de confirmación.
         Map<Long, CarritoItem> itemsConfirmados = new LinkedHashMap<>(carritoService.getItems());
         double total = carritoService.calcularTotal();
 
-        // 1. Buscar (o crear si es su primera compra) el Cliente del dominio
-        //    asociado al usuario logueado.
+        // Cliente del dominio asociado al usuario (lo crea si es su 1ª compra).
         Cliente cliente = clienteService.findOrCreateForUser(usuario);
 
-        // 2. Construir el Pedido con sus líneas a partir del carrito.
+        // Construimos el Pedido y sus líneas a partir del carrito.
         Pedido pedido = Pedido.builder()
                 .cliente(cliente)
                 .build();
@@ -103,7 +97,7 @@ public class CarritoController {
 
         pedidoService.guardarPedido(pedido);
 
-        // 4. Solo si todo ha ido bien, vaciamos el carrito.
+        // Solo si todo ha ido bien vaciamos el carrito.
         carritoService.vaciarCarrito();
 
         model.addAttribute("items", itemsConfirmados);
