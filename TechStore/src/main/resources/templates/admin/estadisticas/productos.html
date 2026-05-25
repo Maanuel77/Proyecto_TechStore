@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: head('Estadísticas — TechStore Admin', null)}"></head>
+
+<body>
+
+	<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+	<main>
+		<!-- Cabecera con título y botón de volver -->
+		<div class="bg-white border-bottom py-4 mb-4">
+			<div class="container d-flex align-items-center justify-content-between">
+				<div>
+					<h1 class="fw-bold fs-3 mb-0">Estadísticas</h1>
+					<p class="text-muted small mb-0">Productos más vendidos</p>
+				</div>
+				<a th:href="@{/admin/dashboard}" class="btn btn-outline-secondary btn-sm rounded-pill">
+					<i class="bi bi-arrow-left me-1"></i>Volver al dashboard
+				</a>
+			</div>
+		</div>
+
+		<div th:replace="~{fragments/alerts :: alerts}"></div>
+
+		<div class="container pb-5">
+
+			<!-- Filtro por rango de fechas -->
+			<div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
+				<form method="get" th:action="@{/admin/estadisticas}" class="row g-2 align-items-end">
+					<div class="col-sm-4">
+						<label class="form-label small fw-semibold text-muted text-uppercase ts-label-sm mb-1">
+							Desde
+						</label>
+						<input type="date" name="desde" class="form-control" th:value="${desde}" />
+					</div>
+					<div class="col-sm-4">
+						<label class="form-label small fw-semibold text-muted text-uppercase ts-label-sm mb-1">
+							Hasta
+						</label>
+						<input type="date" name="hasta" class="form-control" th:value="${hasta}" />
+					</div>
+					<div class="col-sm-4 d-flex gap-2">
+						<button type="submit" class="btn btn-dark rounded-pill flex-fill">
+							<i class="bi bi-funnel me-1"></i>Filtrar
+						</button>
+						<a th:href="@{/admin/estadisticas}"
+						   class="btn btn-outline-secondary rounded-pill"
+						   th:if="${desde != null or hasta != null}">
+							<i class="bi bi-x-lg"></i>
+						</a>
+					</div>
+				</form>
+			</div>
+
+			<!-- Empty state -->
+			<div class="card border-0 shadow-sm rounded-4 p-5 text-center text-muted"
+			     th:if="${top.isEmpty()}">
+				<i class="bi bi-bar-chart fs-1 mb-3 d-block"></i>
+				<p class="mb-0" th:if="${desde == null and hasta == null}">
+					Todavía no se ha vendido ningún producto.
+				</p>
+				<p class="mb-0" th:if="${desde != null or hasta != null}">
+					No hay ventas en ese rango de fechas.
+				</p>
+			</div>
+
+			<div th:if="${!top.isEmpty()}">
+
+				<!-- Gráfico de barras horizontales (Chart.js) -->
+				<div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+					<div class="d-flex align-items-center justify-content-between px-4 py-3 border-bottom">
+						<h5 class="mb-0 fw-semibold">
+							<i class="bi bi-bar-chart-fill me-2"></i>Top 10 productos más vendidos
+						</h5>
+						<span class="badge bg-dark rounded-pill"
+						      th:text="${top.size()} + ' productos'"></span>
+					</div>
+					<!-- Altura fija para que maintainAspectRatio:false funcione bien. -->
+					<div class="p-4" style="height: 380px;">
+						<canvas id="chartTop"></canvas>
+					</div>
+				</div>
+
+				<!-- Tabla detallada. Los data-* alimentan el chart. -->
+				<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+					<div class="d-flex align-items-center justify-content-between px-4 py-3 border-bottom">
+						<h5 class="mb-0 fw-semibold">Detalle del ranking</h5>
+					</div>
+
+					<table class="table table-hover align-middle mb-0" id="tablaTop">
+						<thead class="table-light">
+							<tr>
+								<th class="ts-th px-4">#</th>
+								<th class="ts-th">Producto</th>
+								<th class="ts-th">Marca</th>
+								<th class="ts-th text-end">Unidades</th>
+								<th class="ts-th text-end pe-4">Ingresos</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="fila, iter : ${top}"
+							    th:data-nombre="${fila[0].nombre}"
+							    th:data-unidades="${fila[1]}">
+								<td class="px-4">
+									<span class="badge rounded-pill"
+									      th:classappend="${iter.index == 0} ? 'bg-warning text-dark' :
+									                      (${iter.index == 1} ? 'bg-secondary' :
+									                      (${iter.index == 2} ? 'bg-bronze' : 'bg-light text-muted'))"
+									      th:text="'#' + ${iter.index + 1}"></span>
+								</td>
+								<td>
+									<div class="d-flex align-items-center gap-3">
+										<div class="bg-light rounded-3 overflow-hidden flex-shrink-0"
+										     style="width:48px; height:48px;">
+											<img th:if="${fila[0].imagenUrl != null}"
+											     th:src="${fila[0].imagenUrl}"
+											     th:alt="${fila[0].nombre}"
+											     class="w-100 h-100 object-fit-contain p-1"
+											     loading="lazy" />
+											<div class="d-flex w-100 h-100 align-items-center justify-content-center"
+											     th:if="${fila[0].imagenUrl == null}">
+												<i class="bi bi-box-seam text-muted"></i>
+											</div>
+										</div>
+										<div class="fw-semibold" th:text="${fila[0].nombre}"></div>
+									</div>
+								</td>
+								<td class="text-muted small" th:text="${fila[0].marca}"></td>
+								<td class="text-end fw-bold" th:text="${fila[1]}"></td>
+								<td class="text-end pe-4 fw-semibold"
+								    th:text="${#numbers.formatDecimal(fila[2],1,'POINT',2,'COMMA')} + ' €'"></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+
+			</div>
+
+		</div>
+	</main>
+
+	<div th:replace="~{fragments/footer :: footer}"></div>
+
+	<!-- Chart.js (CDN) + script propio. defer en ambos garantiza el orden:
+	     Chart se carga antes de que nuestro JS lo use, y ambos esperan al DOM. -->
+	<script th:if="${!top.isEmpty()}"
+	        src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+	<script th:if="${!top.isEmpty()}" th:src="@{/js/estadisticas/productos.js}" defer></script>
+
+</body>
+</html>

@@ -1,9 +1,11 @@
 package com.salesianos.triana.techstore.service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.salesianos.triana.techstore.model.Producto;
@@ -23,6 +25,16 @@ public class ProductoService extends BaseServiceImpl<Producto, Long, ProductoRep
 
     public List<Object[]> findVentasPorMarca() {
         return repository.findVentasPorMarca();
+    }
+
+    // Top N productos más vendidos. Cada fila es [Producto, unidades, ingresos].
+    public List<Object[]> findTopVendidos(int limit) {
+        return repository.findTopVendidos(PageRequest.of(0, limit));
+    }
+
+    // Igual, pero filtrando por rango de fechas del pedido.
+    public List<Object[]> findTopVendidosBetween(LocalDate desde, LocalDate hasta, int limit) {
+        return repository.findTopVendidosBetween(desde, hasta, PageRequest.of(0, limit));
     }
 
     // Si no existe lanzamos NoSuchElementException (la captura el ControllerAdvice

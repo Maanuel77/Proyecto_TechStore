@@ -1,7 +1,9 @@
 package com.salesianos.triana.techstore.repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -23,4 +25,20 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
     // Devuelve pares [marca, totalUnidades] agrupando por marca.
     @Query("select lp.producto.marca, sum(lp.cantidad) from LineaPedido lp group by lp.producto.marca order by sum(lp.cantidad) desc")
     List<Object[]> findVentasPorMarca();
+
+    // Ranking de productos: [Producto, unidades vendidas, ingresos generados].
+    // Pageable se usa para limitar el top (p.ej. PageRequest.of(0, 10)).
+    @Query("select lp.producto, sum(lp.cantidad), sum(lp.subtotal) "
+         + "from LineaPedido lp "
+         + "group by lp.producto "
+         + "order by sum(lp.cantidad) desc")
+    List<Object[]> findTopVendidos(Pageable pageable);
+
+    // Igual que findTopVendidos pero filtrando por rango de fechas del pedido.
+    @Query("select lp.producto, sum(lp.cantidad), sum(lp.subtotal) "
+         + "from LineaPedido lp "
+         + "where lp.pedido.fecha between :desde and :hasta "
+         + "group by lp.producto "
+         + "order by sum(lp.cantidad) desc")
+    List<Object[]> findTopVendidosBetween(LocalDate desde, LocalDate hasta, Pageable pageable);
 }
