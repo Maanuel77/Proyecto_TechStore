@@ -239,33 +239,7 @@
 
 	<div th:replace="~{fragments/footer :: footer}"></div>
 
-	<script>
-		(function () {
-			var modal = document.getElementById('pedidoModal');
-			if (!modal) return;
-
-			modal.addEventListener('show.bs.modal', function (event) {
-				var btn = event.relatedTarget;
-				if (!btn) return;
-				var d = btn.dataset;
-
-				document.getElementById('modalCodigo').textContent = 'Pedido ' + d.codigo;
-				document.getElementById('modalFecha').textContent = d.fecha;
-				document.getElementById('modalCliente').textContent = d.cliente;
-				document.getElementById('modalEmail').textContent = d.email ? '(' + d.email + ')' : '';
-				document.getElementById('modalTotal').textContent = d.total;
-
-				// Ocultar todas las filas y mostrar solo las del pedido pulsado
-				document.querySelectorAll('.lineas-pedido').forEach(function (row) {
-					row.classList.add('d-none');
-				});
-				document.querySelectorAll('.lineas-pedido[data-pedido="' + d.lineas + '"]')
-					.forEach(function (row) {
-						row.classList.remove('d-none');
-					});
-			});
-		})();
-	</script>
+	<script th:src="@{/js/admin/pedidos.js}" defer></script>
 
 </body>
 </html>
