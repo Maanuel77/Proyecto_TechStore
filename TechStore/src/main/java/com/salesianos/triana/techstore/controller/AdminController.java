@@ -3,6 +3,7 @@ package com.salesianos.triana.techstore.controller;
 import java.security.Principal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
@@ -18,7 +19,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.salesianos.triana.techstore.model.Pedido;
 import com.salesianos.triana.techstore.model.Producto;
-import com.salesianos.triana.techstore.service.ClienteService;
 import com.salesianos.triana.techstore.service.PedidoService;
 import com.salesianos.triana.techstore.service.ProductoService;
 import com.salesianos.triana.techstore.service.UserService;
@@ -34,14 +34,14 @@ public class AdminController {
 
     private final ProductoService productoService;
     private final PedidoService pedidoService;
-    private final ClienteService clienteService;
     private final UserService userService;
 
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
-        model.addAttribute("productos", productoService.findAll().size());
-        model.addAttribute("pedidos", pedidoService.findAll().size());
-        model.addAttribute("clientes", userService.findAll().size());
+        // count() emite SELECT COUNT(*), no trae las filas a memoria.
+        model.addAttribute("productos", productoService.count());
+        model.addAttribute("pedidos",   pedidoService.count());
+        model.addAttribute("clientes",  userService.count());
         model.addAttribute("bajoStock", productoService.lowStock());
         return "admin/dashboard";
     }
@@ -70,7 +70,7 @@ public class AdminController {
         model.addAttribute("desde", desde);
         model.addAttribute("hasta", hasta);
         // Stats globales (no se filtran: muestran el histórico completo).
-        model.addAttribute("totalPedidos", pedidoService.findAll().size());
+        model.addAttribute("totalPedidos", pedidoService.count());
         model.addAttribute("ingresos", pedidoService.getTotalIngresos());
         model.addAttribute("ticketMedio", pedidoService.getTicketMedio());
         return "admin/pedidos/list";
@@ -97,7 +97,9 @@ public class AdminController {
 
     @GetMapping("/producto/editar/{id}")
     public String editarProductoForm(@PathVariable Long id, Model model) {
-        Producto producto = productoService.findById(id).orElseThrow();
+        Producto producto = productoService.findById(id)
+                .orElseThrow(() -> new NoSuchElementException(
+                        "No se ha encontrado el producto con id " + id));
         model.addAttribute("producto", producto);
         return "admin/producto/form";
     }

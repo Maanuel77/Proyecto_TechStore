@@ -43,4 +43,9 @@ public abstract class BaseServiceImpl<T, ID, R extends JpaRepository<T, ID>>
     public void deleteById(ID id) {
         repository.deleteById(id);
     }
+
+    @Override
+    public long count() {
+        return repository.count();
+    }
 }

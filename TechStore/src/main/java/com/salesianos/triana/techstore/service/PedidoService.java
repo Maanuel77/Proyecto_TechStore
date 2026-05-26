@@ -8,12 +8,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.salesianos.triana.techstore.dto.ClienteGastoDto;
+import com.salesianos.triana.techstore.dto.DiaVentasDto;
+import com.salesianos.triana.techstore.dto.MesVentasDto;
 import com.salesianos.triana.techstore.exceptions.SinStockException;
 import com.salesianos.triana.techstore.model.Pedido;
 import com.salesianos.triana.techstore.model.Producto;
 import com.salesianos.triana.techstore.repository.PedidoRepository;
 import com.salesianos.triana.techstore.repository.ProductoRepository;
-import com.salesianos.triana.techstore.security.User;
+import com.salesianos.triana.techstore.security.Usuario;
 import com.salesianos.triana.techstore.service.base.BaseServiceImpl;
 
 @Service
@@ -22,70 +25,79 @@ public class PedidoService extends BaseServiceImpl<Pedido, Long, PedidoRepositor
     @Autowired
     private ProductoRepository productoRepository;
 
+    @Transactional(readOnly = true)
     public List<Pedido> findByFechaBetween(LocalDate desde, LocalDate hasta) {
         return repository.findByFechaBetween(desde, hasta);
     }
 
-    // PREGUNTAR EN BBDD: aquí traemos TODOS los pedidos, y cada Pedido tiene
-    // lineas (@OneToMany EAGER) + cliente (@ManyToOne EAGER). ¿Esto provoca
-    // el problema N+1 al iterarlos en el listado del admin? ¿La solución sería
-    // poner LAZY en las relaciones y usar @EntityGraph o JOIN FETCH en la query?
+    // Carga TODOS los pedidos con sus líneas, producto y cliente en una sola query
+    // (JOIN FETCH) — evita el problema N+1 al pintar la tabla del admin.
+    @Transactional(readOnly = true)
     public List<Pedido> findAllOrdered() {
-        return repository.findAllByOrderByFechaDesc();
+        return repository.findAllWithLineasAndClienteOrderByFechaDesc();
     }
 
+    @Transactional(readOnly = true)
     public List<Pedido> findByFechaBetweenOrdered(LocalDate desde, LocalDate hasta) {
-        return repository.findByFechaBetweenOrderByFechaDesc(desde, hasta);
+        return repository.findByFechaBetweenWithLineasAndClienteOrderByFechaDesc(desde, hasta);
     }
 
-    // Historial del cliente logueado. Une User (security) con Cliente (dominio)
-    // por email, igual que hace ClienteService al crear pedidos.
-    public List<Pedido> findByUser(User user) {
-        return repository.findByClienteEmailOrderByFechaDesc(user.getEmail());
+    // Historial del cliente logueado.
+    @Transactional(readOnly = true)
+    public List<Pedido> findByUser(Usuario user) {
+        return repository.findByClienteEmailWithLineasOrderByFechaDesc(user.getEmail());
     }
 
-    public List<Object[]> findClientesConMayorGasto() {
+    @Transactional(readOnly = true)
+    public List<ClienteGastoDto> findClientesConMayorGasto() {
         return repository.findClientesConMayorGasto();
     }
 
     // Las tres siguientes protegen contra null cuando aún no hay pedidos en BD.
+    @Transactional(readOnly = true)
     public Double getTotalIngresos() {
         Double val = repository.getTotalIngresos();
         return val != null ? val : 0.0;
     }
 
+    @Transactional(readOnly = true)
     public Double getTicketMedio() {
         Double val = repository.getTicketMedio();
         return val != null ? val : 0.0;
     }
 
+    @Transactional(readOnly = true)
     public Long countClientesActivos() {
         Long val = repository.countClientesActivos();
         return val != null ? val : 0L;
     }
 
     // KPIs por rango de fechas (todos null-safe).
+    @Transactional(readOnly = true)
     public long countPedidosBetween(LocalDate desde, LocalDate hasta) {
         return repository.countByFechaBetween(desde, hasta);
     }
-    
-    //Cuando coalesce no protege y es necesario el null-check en Java
+
+    @Transactional(readOnly = true)
     public Double getTotalIngresosBetween(LocalDate desde, LocalDate hasta) {
         Double v = repository.getTotalIngresosBetween(desde, hasta);
         return v != null ? v : 0.0;
     }
 
+    @Transactional(readOnly = true)
     public Double getTicketMedioBetween(LocalDate desde, LocalDate hasta) {
         Double v = repository.getTicketMedioBetween(desde, hasta);
         return v != null ? v : 0.0;
     }
 
     // Evolución temporal: día a día si el rango es corto, mes a mes si es largo.
-    public List<Object[]> findPedidosPorDia(LocalDate desde, LocalDate hasta) {
+    @Transactional(readOnly = true)
+    public List<DiaVentasDto> findPedidosPorDia(LocalDate desde, LocalDate hasta) {
         return repository.findPedidosPorDia(desde, hasta);
     }
 
-    public List<Object[]> findPedidosPorMes(LocalDate desde, LocalDate hasta) {
+    @Transactional(readOnly = true)
+    public List<MesVentasDto> findPedidosPorMes(LocalDate desde, LocalDate hasta) {
         return repository.findPedidosPorMes(desde, hasta);
     }
 
@@ -100,7 +112,8 @@ public class PedidoService extends BaseServiceImpl<Pedido, Long, PedidoRepositor
 
         pedido.getLineas().forEach(linea -> {
             Producto p = productoRepository.findById(linea.getProducto().getId())
-                    .orElseThrow(() -> new NoSuchElementException());
+                    .orElseThrow(() -> new NoSuchElementException(
+                            "No se ha encontrado el producto con id " + linea.getProducto().getId()));
 
             if (linea.getCantidad() > p.getStock()) {
                 throw new SinStockException(

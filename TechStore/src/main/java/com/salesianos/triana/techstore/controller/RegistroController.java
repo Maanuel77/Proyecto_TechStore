@@ -8,13 +8,15 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.salesianos.triana.techstore.security.User;
+import com.salesianos.triana.techstore.security.Cliente;
 import com.salesianos.triana.techstore.service.UserService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 // Alta de nuevos clientes desde el formulario público de registro.
+// El formulario trabaja directamente con un Cliente (subclase de Usuario)
+// para reaprovechar las validaciones de Jakarta de la clase base.
 @Controller
 @RequestMapping("/auth/registro")
 @RequiredArgsConstructor
@@ -24,12 +26,12 @@ public class RegistroController {
 
     @GetMapping
     public String mostrarFormulario(Model model) {
-        model.addAttribute("usuario", new User());
+        model.addAttribute("usuario", new Cliente());
         return "auth/registro";
     }
 
     @PostMapping
-    public String procesarRegistro(@Valid @ModelAttribute("usuario") User usuario,
+    public String procesarRegistro(@Valid @ModelAttribute("usuario") Cliente usuario,
                                    BindingResult bindingResult,
                                    Model model) {
 
@@ -45,7 +47,9 @@ public class RegistroController {
             return "auth/registro";
         }
 
-        userService.registrar(usuario);
+        userService.registrar(usuario.getUsername(), usuario.getPassword(),
+                              usuario.getEmail(), usuario.getFullname(),
+                              usuario.getTelefono());
         return "redirect:/auth/login?registrado=true";
     }
 }
