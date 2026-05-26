@@ -8,12 +8,18 @@
 	<div th:replace="~{fragments/navbar :: navbar}"></div>
 
 	<main>
+		<!-- Cabecera -->
 		<div class="bg-white border-bottom py-4 mb-4">
 			<div class="container">
 				<div class="d-flex align-items-center justify-content-between">
 					<div>
 						<h1 class="fw-bold fs-3 mb-0">Mi carrito</h1>
-						<p class="text-muted small mb-0">Revisa tus productos antes de tramitar el pedido</p>
+						<p class="text-muted small mb-0" th:if="${!items.isEmpty()}"
+						   th:text="${items.size()} + ' ' + (${items.size() == 1} ? 'producto' : 'productos') + ' · revisa antes de tramitar'">
+						</p>
+						<p class="text-muted small mb-0" th:if="${items.isEmpty()}">
+							Aún no has añadido productos
+						</p>
 					</div>
 					<a th:href="@{/catalogo}" class="btn btn-outline-dark btn-sm rounded-pill">
 						<i class="bi bi-arrow-left me-1"></i>Seguir comprando
@@ -36,94 +42,284 @@
 				</a>
 			</div>
 
-			<!-- Carrito con productos: tabla a la izquierda, resumen a la derecha -->
+			<!-- Carrito con productos -->
 			<div th:unless="${items.isEmpty()}" class="row g-4 align-items-start">
 
+				<!-- COLUMNA IZQUIERDA: tarjetas de producto -->
 				<div class="col-lg-8">
-					<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-						<table class="table table-hover align-middle mb-0">
-							<thead class="table-light">
-								<tr>
-									<th class="ts-th px-4">Producto</th>
-									<th class="ts-th text-end">Precio ud.</th>
-									<th class="ts-th text-center">Cantidad</th>
-									<th class="ts-th text-end">Subtotal</th>
-									<th class="ts-th text-center">Garantía ext.</th>
-									<th class="ts-th"></th>
-								</tr>
-							</thead>
-							<tbody>
-								<tr th:each="entry : ${items}">
-									<td class="px-4 fw-semibold" th:text="${entry.value.nombre}"></td>
-									<td class="text-end text-muted"
-										th:text="${#numbers.formatDecimal(entry.value.precio,1,'POINT',2,'COMMA')} + ' €'">
-									</td>
-									<td class="text-center">
-										<span class="badge rounded-pill bg-dark px-3 py-2"
-											th:text="${entry.value.cantidad}"></span>
-									</td>
-									<td class="text-end fw-semibold"
-										th:text="${#numbers.formatDecimal(entry.value.subtotal,1,'POINT',2,'COMMA')} + ' €'">
-									</td>
-									<td class="text-center">
-										<a th:href="@{/carrito/garantia/{id}(id=${entry.key})}"
-											class="btn btn-sm rounded-pill"
-											th:classappend="${entry.value.garantiaExtendida} ? 'btn-success' : 'btn-outline-secondary'"
-											th:title="${entry.value.garantiaExtendida} ? 'Quitar garantía extendida' : 'Añadir garantía extendida (+10%)'">
-											<i class="bi bi-patch-check"></i>
-											<span th:if="${entry.value.garantiaExtendida}" class="ms-1 small">Activa</span>
-										</a>
-									</td>
-									<td class="text-center">
-										<a th:href="@{/carrito/eliminar/{id}(id=${entry.key})}"
-											class="btn btn-sm btn-outline-danger rounded-pill">
-											<i class="bi bi-trash"></i>
-										</a>
-									</td>
-								</tr>
-							</tbody>
-						</table>
+
+					<!-- Una tarjeta por item del carrito -->
+					<div class="card border-0 shadow-sm rounded-4 mb-3 overflow-hidden ts-cart-item"
+					     th:each="entry : ${items}"
+					     th:with="item=${entry.value}">
+						<div class="row g-0 align-items-center">
+
+							<!-- Imagen del producto -->
+							<div class="col-4 col-md-3 bg-light p-3 d-flex align-items-center justify-content-center"
+							     style="min-height: 140px;">
+								<img th:if="${item.imagenUrl != null}"
+								     th:src="${item.imagenUrl}"
+								     th:alt="${item.nombre}"
+								     class="img-fluid object-fit-contain"
+								     style="max-height: 110px;" loading="lazy" />
+								<i th:if="${item.imagenUrl == null}"
+								   class="bi bi-box-seam fs-1 text-muted opacity-50"></i>
+							</div>
+
+							<!-- Info + controles -->
+							<div class="col-8 col-md-9 p-3 p-md-4">
+								<div class="d-flex flex-column flex-md-row align-items-md-start justify-content-md-between gap-3">
+
+									<!-- Datos del producto -->
+									<div class="flex-grow-1">
+										<div class="small text-muted text-uppercase fw-semibold ts-label-sm mb-1"
+										     th:text="${item.marca}">Marca</div>
+										<h6 class="fw-bold mb-2" th:text="${item.nombre}">Producto</h6>
+
+										<div class="d-flex flex-wrap gap-1 mb-2">
+											<span class="badge rounded-pill bg-primary-subtle text-primary-emphasis"
+											      th:if="${item.refurbished}">Reacondicionado</span>
+											<span class="badge rounded-pill bg-light text-muted border">
+												<i class="bi bi-patch-check me-1"></i>
+												<span th:text="${item.garantiaMeses}"></span> meses
+											</span>
+										</div>
+
+										<div class="text-muted small">
+											<span th:text="${#numbers.formatDecimal(item.precio,1,'POINT',2,'COMMA')} + ' €'"></span>
+											<span class="mx-1">·</span>
+											<span class="text-success" th:if="${item.stockMaximo > 5}">En stock</span>
+											<span class="text-warning"
+											      th:if="${item.stockMaximo <= 5 and item.stockMaximo > 0}"
+											      th:text="'Solo ' + ${item.stockMaximo} + ' disponibles'"></span>
+										</div>
+									</div>
+
+									<!-- Cantidad + subtotal + acciones -->
+									<div class="text-md-end" style="min-width: 200px;">
+
+										<!-- Stepper editable: -, input, + (form GET) -->
+										<form th:action="@{/carrito/cantidad/{id}(id=${entry.key})}" method="get"
+										      class="d-inline-flex align-items-center mb-2 ts-stepper">
+											<a th:href="@{/carrito/decrementar/{id}(id=${entry.key})}"
+											   class="btn btn-sm btn-outline-secondary rounded-start-pill px-2"
+											   title="Quitar uno">
+												<i class="bi bi-dash"></i>
+											</a>
+											<input type="number" name="cantidad"
+											       class="form-control form-control-sm text-center border-secondary-subtle border-start-0 border-end-0 ts-stepper-input"
+											       th:value="${item.cantidad}"
+											       min="1" th:max="${item.stockMaximo}" required
+											       style="width: 60px;" />
+											<a th:href="@{/carrito/incrementar/{id}(id=${entry.key})}"
+											   class="btn btn-sm btn-outline-secondary rounded-end-pill px-2"
+											   th:classappend="${item.cantidad >= item.stockMaximo} ? 'disabled'"
+											   title="Añadir uno">
+												<i class="bi bi-plus"></i>
+											</a>
+										</form>
+
+										<div class="fw-bold fs-5 mb-2"
+										     th:text="${#numbers.formatDecimal(item.subtotal,1,'POINT',2,'COMMA')} + ' €'">0,00 €</div>
+
+										<div class="d-flex gap-2 justify-content-md-end">
+											<a th:href="@{/carrito/garantia/{id}(id=${entry.key})}"
+											   class="btn btn-sm rounded-pill"
+											   th:classappend="${item.garantiaExtendida} ? 'btn-success' : 'btn-outline-secondary'"
+											   th:title="${item.garantiaExtendida} ? 'Quitar garantía extendida (+10%)' : 'Añadir garantía extendida (+10%)'">
+												<i class="bi bi-patch-check"></i>
+											</a>
+											<a th:href="@{/carrito/eliminar/{id}(id=${entry.key})}"
+											   class="btn btn-sm btn-outline-danger rounded-pill"
+											   title="Eliminar del carrito">
+												<i class="bi bi-trash"></i>
+											</a>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
 					</div>
 
+					<!-- Acción global: vaciar -->
 					<div class="d-flex justify-content-end mt-3">
-						<a th:href="@{/carrito/vaciar}" class="btn btn-sm btn-outline-secondary rounded-pill">
+						<a th:href="@{/carrito/vaciar}" class="btn btn-sm btn-outline-secondary rounded-pill"
+						   onclick="return confirm('¿Vaciar el carrito completamente?');">
 							<i class="bi bi-x-circle me-1"></i>Vaciar carrito
 						</a>
 					</div>
 				</div>
 
-				<!-- Resumen lateral con total y botón de tramitar -->
+				<!-- COLUMNA DERECHA: resumen sticky -->
 				<div class="col-lg-4">
-					<div class="card border-0 shadow-sm rounded-4 p-4">
-						<h6 class="fw-semibold mb-3">Resumen del pedido</h6>
+					<div class="card border-0 shadow-sm rounded-4 p-4 ts-cart-summary"
+					     th:with="restaEnvio=${envioGratisDesde - total},
+					              envioGratis=${total >= envioGratisDesde}">
 
+						<h6 class="fw-bold mb-3">Resumen del pedido</h6>
+
+						<!-- Barra de envío gratis -->
+						<div class="mb-4">
+							<div class="d-flex justify-content-between small mb-2">
+								<span class="fw-semibold" th:if="${envioGratis}">
+									<i class="bi bi-truck text-success me-1"></i>¡Envío gratis incluido!
+								</span>
+								<span class="text-muted" th:unless="${envioGratis}">
+									<i class="bi bi-truck me-1"></i>Te faltan
+									<strong th:text="${#numbers.formatDecimal(restaEnvio,1,'POINT',2,'COMMA')} + ' €'"></strong>
+									para envío gratis
+								</span>
+							</div>
+							<div class="progress" style="height: 6px;">
+								<div class="progress-bar"
+								     th:classappend="${envioGratis} ? 'bg-success' : 'bg-dark'"
+								     role="progressbar"
+								     th:style="'width: ' + ${envioGratis ? 100 : T(java.lang.Math).round(total * 100 / envioGratisDesde)} + '%'">
+								</div>
+							</div>
+						</div>
+
+						<!-- Desglose -->
+						<div class="d-flex justify-content-between mb-2 text-muted small">
+							<span>Subtotal</span>
+							<span th:text="${#numbers.formatDecimal(total - #aggregates.sum(items.values().![costeGarantia]),1,'POINT',2,'COMMA')} + ' €'"></span>
+						</div>
 						<div th:each="entry : ${items}">
 							<div th:if="${entry.value.garantiaExtendida}"
-								class="d-flex justify-content-between small text-muted mb-1">
-								<span th:text="'+ Garantía ' + ${entry.value.nombre}"></span>
-								<span th:text="${#numbers.formatDecimal(entry.value.costeGarantia,1,'POINT',2,'COMMA')} + ' €'"></span>
+							     class="d-flex justify-content-between small text-muted mb-1">
+								<span>
+									<i class="bi bi-patch-check-fill text-success me-1"></i>
+									Garantía · <span th:text="${entry.value.nombre}"></span>
+								</span>
+								<span th:text="'+' + ${#numbers.formatDecimal(entry.value.costeGarantia,1,'POINT',2,'COMMA')} + ' €'"></span>
 							</div>
+						</div>
+						<div class="d-flex justify-content-between mb-3 small">
+							<span class="text-muted">Envío</span>
+							<span class="fw-semibold text-success" th:if="${envioGratis}">GRATIS</span>
+							<span class="text-muted" th:unless="${envioGratis}">A calcular</span>
+						</div>
+
+						<!-- Cupón (decorativo) -->
+						<div class="mb-3">
+							<label class="form-label small fw-semibold text-muted text-uppercase ts-label-sm mb-1">
+								Código de cupón
+							</label>
+							<div class="input-group">
+								<input type="text" class="form-control" placeholder="Introduce código" id="cupon" />
+								<button class="btn btn-outline-secondary" type="button" id="aplicarCupon">
+									Aplicar
+								</button>
+							</div>
+							<small class="text-muted" id="cuponFeedback"></small>
 						</div>
 
 						<hr class="my-3">
 
-						<div class="d-flex justify-content-between fw-bold fs-5 mb-4">
+						<div class="d-flex justify-content-between fw-bold fs-4 mb-4">
 							<span>Total</span>
 							<span th:text="${#numbers.formatDecimal(total,1,'POINT',2,'COMMA')} + ' €'"></span>
 						</div>
 
-						<a th:href="@{/carrito/tramitar}" class="btn btn-dark w-100 rounded-pill py-2">
+						<!-- CTA principal: abre el modal de confirmación -->
+						<button type="button" class="btn btn-dark w-100 rounded-pill py-2 fw-semibold"
+						        data-bs-toggle="modal" data-bs-target="#confirmarPedidoModal">
 							<i class="bi bi-bag-check me-1"></i>Tramitar pedido
-						</a>
+						</button>
+
+						<p class="small text-muted text-center mt-3 mb-0">
+							<i class="bi bi-shield-lock me-1"></i>Pago 100% seguro
+						</p>
 					</div>
 				</div>
 
 			</div>
+
+			<!-- Bloque "Te puede interesar" -->
+			<section class="mt-5" th:if="${!sugeridos.isEmpty()}">
+				<h4 class="fw-bold mb-3">
+					<i class="bi bi-stars text-warning me-1"></i>Te puede interesar
+				</h4>
+				<div class="row g-3">
+					<div class="col-6 col-md-3" th:each="p : ${sugeridos}">
+						<div class="card border-0 shadow-sm rounded-4 h-100 ts-hover">
+							<div class="ratio ratio-1x1 bg-light overflow-hidden rounded-top-4">
+								<img th:if="${p.imagenUrl != null}" class="object-fit-contain p-3"
+								     th:src="${p.imagenUrl}" th:alt="${p.nombre}" loading="lazy" />
+								<div class="d-flex align-items-center justify-content-center"
+								     th:if="${p.imagenUrl == null}">
+									<i class="bi bi-box-seam fs-2 text-muted opacity-50"></i>
+								</div>
+							</div>
+							<div class="card-body p-3">
+								<div class="small text-muted text-uppercase fw-semibold ts-label-sm mb-1"
+								     th:text="${p.marca}"></div>
+								<div class="fw-semibold small mb-2 ts-truncate-2" th:text="${p.nombre}"></div>
+								<div class="d-flex align-items-center justify-content-between">
+									<span class="fw-bold"
+									      th:text="${#numbers.formatDecimal(p.precio,1,'POINT',2,'COMMA')} + ' €'"></span>
+									<a th:href="@{/carrito/anadir/{id}(id=${p.id})}"
+									   class="btn btn-dark btn-sm rounded-pill"
+									   th:classappend="${p.stock == 0} ? 'disabled'"
+									   th:title="${p.stock == 0} ? 'Sin stock' : 'Añadir al carrito'">
+										<i class="bi bi-bag-plus"></i>
+									</a>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
 		</div>
 	</main>
 
+	<!-- Modal de confirmación al tramitar el pedido -->
+	<div class="modal fade" id="confirmarPedidoModal" tabindex="-1" aria-labelledby="confirmarPedidoModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content border-0 rounded-4 shadow-lg">
+
+				<div class="modal-header border-0 pb-0">
+					<h5 class="modal-title fw-bold" id="confirmarPedidoModalLabel">
+						<i class="bi bi-bag-check-fill text-success me-2"></i>Confirmar pedido
+					</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+				</div>
+
+				<div class="modal-body p-4">
+					<p class="mb-3">¿Quieres confirmar y tramitar tu pedido?</p>
+					<div class="bg-light rounded-3 p-3 mb-3">
+						<div class="d-flex justify-content-between small mb-2">
+							<span class="text-muted">Productos</span>
+							<span class="fw-semibold" th:text="${items.size()}">0</span>
+						</div>
+						<div class="d-flex justify-content-between fw-bold fs-5">
+							<span>Total a pagar</span>
+							<span th:text="${#numbers.formatDecimal(total,1,'POINT',2,'COMMA')} + ' €'">0,00 €</span>
+						</div>
+					</div>
+					<small class="text-muted">
+						<i class="bi bi-info-circle me-1"></i>
+						Una vez confirmado se descontará el stock y se generará tu pedido.
+					</small>
+				</div>
+
+				<div class="modal-footer border-0 pt-0">
+					<button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">
+						Cancelar
+					</button>
+					<a th:href="@{/carrito/tramitar}" class="btn btn-dark rounded-pill px-4">
+						<i class="bi bi-check-lg me-1"></i>Sí, confirmar pedido
+					</a>
+				</div>
+			</div>
+		</div>
+	</div>
+
 	<div th:replace="~{fragments/footer :: footer}"></div>
 
-</body>
+	<!-- JS del carrito: stepper editable + cupón decorativo -->
+	<script th:src="@{/js/carrito.js}" defer></script>
 
+</body>
 </html>

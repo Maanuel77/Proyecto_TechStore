@@ -18,17 +18,27 @@ public class CarritoItem implements Serializable {
 
     private Long productoId;
     private String nombre;
+    private String marca;
+    private String imagenUrl;
     private Double precio;
     private Integer cantidad;
     private boolean garantiaExtendida = false;
     private Integer garantiaMeses;
+    private boolean refurbished = false;
+    // Snapshot del stock cuando se añadió: el frontend lo usa como tope del
+    // stepper. El backend lo revalida contra el stock REAL al actualizar.
+    private Integer stockMaximo;
 
-    public CarritoItem(Long productoId, String nombre, Double precio, Integer cantidad, Integer garantiaMeses) {
-        this.productoId = productoId;
-        this.nombre = nombre;
-        this.precio = precio;
+    public CarritoItem(Producto p, Integer cantidad) {
+        this.productoId = p.getId();
+        this.nombre = p.getNombre();
+        this.marca = p.getMarca();
+        this.imagenUrl = p.getImagenUrl();
+        this.precio = p.getPrecio();
         this.cantidad = cantidad;
-        this.garantiaMeses = garantiaMeses;
+        this.garantiaMeses = p.getGarantiaMeses();
+        this.refurbished = Boolean.TRUE.equals(p.getRefurbished());
+        this.stockMaximo = p.getStock();
     }
 
     public Double getSubtotal() {

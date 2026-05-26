@@ -1,6 +1,7 @@
 package com.salesianos.triana.techstore.controller;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.salesianos.triana.techstore.dto.ProductoTopDto;
 import com.salesianos.triana.techstore.model.CarritoItem;
 import com.salesianos.triana.techstore.model.LineaPedido;
 import com.salesianos.triana.techstore.model.Pedido;
@@ -28,6 +30,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CarritoController {
 
+    // Umbral de envío gratuito (mostrado en la barra de progreso del sidebar).
+    private static final double ENVIO_GRATIS_DESDE = 1500.0;
+    // Nº de productos sugeridos a mostrar bajo el carrito.
+    private static final int N_SUGERIDOS = 4;
+
     private final CarritoService carritoService;
     private final ProductoService productoService;
     private final PedidoService pedidoService;
@@ -35,8 +42,18 @@ public class CarritoController {
 
     @GetMapping
     public String verCarrito(Model model) {
-        model.addAttribute("items", carritoService.getItems());
+        Map<Long, CarritoItem> items = carritoService.getItems();
+        model.addAttribute("items", items);
         model.addAttribute("total", carritoService.calcularTotal());
+        model.addAttribute("envioGratisDesde", ENVIO_GRATIS_DESDE);
+        // Top productos para el bloque "Te puede interesar", excluyendo los
+        // que ya están en el carrito. Pedimos algunos más por si filtramos.
+        List<Producto> sugeridos = productoService.findTopVendidos(N_SUGERIDOS + items.size()).stream()
+                .map(ProductoTopDto::producto)
+                .filter(p -> !items.containsKey(p.getId()))
+                .limit(N_SUGERIDOS)
+                .toList();
+        model.addAttribute("sugeridos", sugeridos);
         return "carrito/carrito";
     }
 
@@ -48,6 +65,32 @@ public class CarritoController {
         Producto p = productoService.buscarPorId(id);
         carritoService.addProducto(p, cantidad);
         return "redirect:/catalogo";
+    }
+
+    // Stepper +1 desde el carrito.
+    @GetMapping("/incrementar/{id}")
+    public String incrementar(@PathVariable Long id) {
+        Producto p = productoService.buscarPorId(id);
+        carritoService.addProducto(p, 1);
+        return "redirect:/carrito";
+    }
+
+    // Stepper -1 desde el carrito (si llega a 0 elimina el item).
+    @GetMapping("/decrementar/{id}")
+    public String decrementar(@PathVariable Long id) {
+        Producto p = productoService.buscarPorId(id);
+        CarritoItem item = carritoService.getItems().get(id);
+        int nueva = (item != null) ? item.getCantidad() - 1 : 0;
+        carritoService.actualizarCantidad(p, nueva);
+        return "redirect:/carrito";
+    }
+
+    // Input numérico: el usuario teclea la cantidad y envía el form.
+    @GetMapping("/cantidad/{id}")
+    public String setCantidad(@PathVariable Long id, @RequestParam int cantidad) {
+        Producto p = productoService.buscarPorId(id);
+        carritoService.actualizarCantidad(p, cantidad);
+        return "redirect:/carrito";
     }
 
     @GetMapping("/eliminar/{id}")

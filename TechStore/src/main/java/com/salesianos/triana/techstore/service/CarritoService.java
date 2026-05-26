@@ -24,26 +24,7 @@ public class CarritoService {
 
     // Añade 1 unidad. Si ya estaba en el carrito incrementa la cantidad.
     public void addProducto(Producto p) {
-        if (items.containsKey(p.getId())) {
-            CarritoItem item = items.get(p.getId());
-
-            if (item.getCantidad() + 1 > p.getStock()) {
-                throw new SinStockException(
-                    "No queda más stock disponible del producto '" + p.getNombre()
-                    + "'. Solo hay " + p.getStock() + " unidades.");
-            }
-
-            item.setCantidad(item.getCantidad() + 1);
-        } else {
-
-            if (p.getStock() < 1) {
-                throw new SinStockException(
-                    "El producto '" + p.getNombre() + "' está agotado.");
-            }
-
-            items.put(p.getId(),
-                new CarritoItem(p.getId(), p.getNombre(), p.getPrecio(), 1, p.getGarantiaMeses()));
-        }
+        addProducto(p, 1);
     }
 
     // Versión con cantidad explícita (la usa el modal del catálogo).
@@ -65,6 +46,8 @@ public class CarritoService {
             }
 
             item.setCantidad(nuevaCantidad);
+            // Refrescamos el stock máximo por si el catálogo cambió.
+            item.setStockMaximo(p.getStock());
         } else {
 
             if (p.getStock() < 1) {
@@ -77,13 +60,31 @@ public class CarritoService {
                     + "'. Solo hay " + p.getStock() + " disponibles.");
             }
 
-            items.put(p.getId(),
-                new CarritoItem(p.getId(), p.getNombre(), p.getPrecio(), cantidad, p.getGarantiaMeses()));
+            items.put(p.getId(), new CarritoItem(p, cantidad));
         }
     }
 
     public void removeProducto(Long productoId) {
         items.remove(productoId);
+    }
+
+    // Actualiza la cantidad de un item al valor indicado (validando contra
+    // el stock real del producto). Si la cantidad llega a 0, lo elimina.
+    public void actualizarCantidad(Producto p, int cantidad) {
+        CarritoItem item = items.get(p.getId());
+        if (item == null) return;
+
+        if (cantidad < 1) {
+            items.remove(p.getId());
+            return;
+        }
+        if (cantidad > p.getStock()) {
+            throw new SinStockException(
+                "Solo quedan " + p.getStock() + " unidades de '" + p.getNombre() + "'.");
+        }
+
+        item.setCantidad(cantidad);
+        item.setStockMaximo(p.getStock());
     }
 
     // Vista inmodificable para que las plantillas no manipulen el carrito.
