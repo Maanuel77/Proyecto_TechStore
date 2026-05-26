@@ -18,4 +18,6 @@ public interface BaseService<T, ID> {
     void delete(T t);
 
     void deleteById(ID id);
+
+    long count();
 }

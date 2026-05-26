@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.salesianos.triana.techstore.dto.ProductoTopDto;
 import com.salesianos.triana.techstore.service.PedidoService;
 import com.salesianos.triana.techstore.service.ProductoService;
 
@@ -42,7 +43,7 @@ public class EstadisticasController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
             Model model) {
 
-        List<Object[]> top = (desde != null && hasta != null)
+        List<ProductoTopDto> top = (desde != null && hasta != null)
                 ? productoService.findTopVendidosBetween(desde, hasta, TOP_LIMIT)
                 : productoService.findTopVendidos(TOP_LIMIT);
 
@@ -67,7 +68,9 @@ public class EstadisticasController {
         long dias = ChronoUnit.DAYS.between(rangoDesde, rangoHasta);
         boolean agruparPorMes = dias > DIAS_DIARIO_MAX;
 
-        List<Object[]> serie = agruparPorMes
+        // Las dos consultas devuelven records distintos; los pasamos como Object
+        // y en la vista accedemos a sus métodos (.fecha, .pedidos, .etiqueta()...).
+        List<?> serie = agruparPorMes
                 ? pedidoService.findPedidosPorMes(rangoDesde, rangoHasta)
                 : pedidoService.findPedidosPorDia(rangoDesde, rangoHasta);
 

@@ -103,8 +103,8 @@
 						</thead>
 						<tbody>
 							<tr th:each="fila, iter : ${top}"
-							    th:data-nombre="${fila[0].nombre}"
-							    th:data-unidades="${fila[1]}">
+							    th:data-nombre="${fila.producto.nombre}"
+							    th:data-unidades="${fila.cantidad}">
 								<td class="px-4">
 									<span class="badge rounded-pill"
 									      th:classappend="${iter.index == 0} ? 'bg-warning text-dark' :
@@ -116,23 +116,23 @@
 									<div class="d-flex align-items-center gap-3">
 										<div class="bg-light rounded-3 overflow-hidden flex-shrink-0"
 										     style="width:48px; height:48px;">
-											<img th:if="${fila[0].imagenUrl != null}"
-											     th:src="${fila[0].imagenUrl}"
-											     th:alt="${fila[0].nombre}"
+											<img th:if="${fila.producto.imagenUrl != null}"
+											     th:src="${fila.producto.imagenUrl}"
+											     th:alt="${fila.producto.nombre}"
 											     class="w-100 h-100 object-fit-contain p-1"
 											     loading="lazy" />
 											<div class="d-flex w-100 h-100 align-items-center justify-content-center"
-											     th:if="${fila[0].imagenUrl == null}">
+											     th:if="${fila.producto.imagenUrl == null}">
 												<i class="bi bi-box-seam text-muted"></i>
 											</div>
 										</div>
-										<div class="fw-semibold" th:text="${fila[0].nombre}"></div>
+										<div class="fw-semibold" th:text="${fila.producto.nombre}"></div>
 									</div>
 								</td>
-								<td class="text-muted small" th:text="${fila[0].marca}"></td>
-								<td class="text-end fw-bold" th:text="${fila[1]}"></td>
+								<td class="text-muted small" th:text="${fila.producto.marca}"></td>
+								<td class="text-end fw-bold" th:text="${fila.cantidad}"></td>
 								<td class="text-end pe-4 fw-semibold"
-								    th:text="${#numbers.formatDecimal(fila[2],1,'POINT',2,'COMMA')} + ' €'"></td>
+								    th:text="${#numbers.formatDecimal(fila.ingresos,1,'POINT',2,'COMMA')} + ' €'"></td>
 							</tr>
 						</tbody>
 					</table>

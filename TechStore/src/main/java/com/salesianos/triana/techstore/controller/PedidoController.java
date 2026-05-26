@@ -6,7 +6,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.salesianos.triana.techstore.security.User;
+import com.salesianos.triana.techstore.security.Usuario;
 import com.salesianos.triana.techstore.service.PedidoService;
 
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ public class PedidoController {
     private final PedidoService pedidoService;
 
     @GetMapping
-    public String historial(@AuthenticationPrincipal User usuario, Model model) {
+    public String historial(@AuthenticationPrincipal Usuario usuario, Model model) {
         model.addAttribute("pedidos", pedidoService.findByUser(usuario));
         return "pedidos/historial";
     }

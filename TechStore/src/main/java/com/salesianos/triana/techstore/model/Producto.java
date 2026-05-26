@@ -1,8 +1,14 @@
 package com.salesianos.triana.techstore.model;
 
+import java.util.Objects;
+
+import org.hibernate.proxy.HibernateProxy;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -10,19 +16,25 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 // Producto del catálogo. Las validaciones (@NotBlank, @Min, @DecimalMin)
 // se aplican al guardarlo desde el formulario del admin.
-@Data
+@Getter
+@Setter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Entity
 public class Producto {
 
-    @Id @GeneratedValue
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "producto_seq")
+    @SequenceGenerator(name = "producto_seq", sequenceName = "producto_seq", allocationSize = 1)
     private Long id;
 
     @NotBlank(message = "El nombre del producto no puede estar vacío.")
@@ -48,4 +60,28 @@ public class Producto {
     private Boolean refurbished;
 
     private String imagenUrl;
+
+    // equals/hashCode basados en id, compatibles con HibernateProxy.
+    // Evita los problemas que generaría @Data con lazy loading.
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null) return false;
+        Class<?> oEffectiveClass = o instanceof HibernateProxy hp
+                ? hp.getHibernateLazyInitializer().getPersistentClass()
+                : o.getClass();
+        Class<?> thisEffectiveClass = this instanceof HibernateProxy hp
+                ? hp.getHibernateLazyInitializer().getPersistentClass()
+                : this.getClass();
+        if (thisEffectiveClass != oEffectiveClass) return false;
+        Producto that = (Producto) o;
+        return getId() != null && Objects.equals(getId(), that.getId());
+    }
+
+    @Override
+    public final int hashCode() {
+        return this instanceof HibernateProxy hp
+                ? hp.getHibernateLazyInitializer().getPersistentClass().hashCode()
+                : getClass().hashCode();
+    }
 }

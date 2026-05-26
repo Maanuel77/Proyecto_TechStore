@@ -7,7 +7,11 @@ import java.util.NoSuchElementException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.salesianos.triana.techstore.dto.MarcaVentasDto;
+import com.salesianos.triana.techstore.dto.ProductoTopDto;
+import com.salesianos.triana.techstore.dto.ProductoVentasDto;
 import com.salesianos.triana.techstore.model.Producto;
 import com.salesianos.triana.techstore.repository.ProductoRepository;
 import com.salesianos.triana.techstore.service.base.BaseServiceImpl;
@@ -15,32 +19,28 @@ import com.salesianos.triana.techstore.service.base.BaseServiceImpl;
 @Service
 public class ProductoService extends BaseServiceImpl<Producto, Long, ProductoRepository> {
 
+    @Transactional(readOnly = true)
     public List<Producto> lowStock() {
         return repository.findByLowAvailability();
     }
 
-    public List<Object[]> findMasVendidos() {
+    @Transactional(readOnly = true)
+    public List<ProductoVentasDto> findMasVendidos() {
         return repository.findMasVendidos();
     }
 
-    public List<Object[]> findVentasPorMarca() {
+    @Transactional(readOnly = true)
+    public List<MarcaVentasDto> findVentasPorMarca() {
         return repository.findVentasPorMarca();
     }
 
-    // Top N productos más vendidos. Cada fila es [Producto, unidades, ingresos].
-    public List<Object[]> findTopVendidos(int limit) {
-        return repository.findTopVendidos(PageRequest.of(0, limit));
-    }
-
-    // Igual, pero filtrando por rango de fechas del pedido.
-    public List<Object[]> findTopVendidosBetween(LocalDate desde, LocalDate hasta, int limit) {
-        return repository.findTopVendidosBetween(desde, hasta, PageRequest.of(0, limit));
-    }
-
-    // Si no existe lanzamos NoSuchElementException (la captura el ControllerAdvice
-    // global y se transforma en un flash + redirect).
+    // Si no existe lanzamos NoSuchElementException con un mensaje claro
+    // (la captura el ControllerAdvice global y se convierte en flash + redirect).
+    @Transactional(readOnly = true)
     public Producto buscarPorId(Long id) {
-        return repository.findById(id).orElseThrow(() -> new NoSuchElementException());
+        return repository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException(
+                        "No se ha encontrado el producto con id " + id));
     }
 
     @Override
@@ -56,6 +56,7 @@ public class ProductoService extends BaseServiceImpl<Producto, Long, ProductoRep
     // Borrar producto. Si está referenciado en pedidos antiguos la BD lanza
     // DataIntegrityViolationException (FK), que convertimos en un mensaje
     // amigable. flush() fuerza el DELETE inmediato para capturarlo aquí.
+    @Transactional
     public void eliminar(Long id) {
         Producto producto = buscarPorId(id);
         try {
@@ -66,5 +67,15 @@ public class ProductoService extends BaseServiceImpl<Producto, Long, ProductoRep
                 "No se puede eliminar el producto '" + producto.getNombre()
                 + "' porque está incluido en pedidos históricos.");
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductoTopDto> findTopVendidos(int limit) {
+        return repository.findTopVendidos(PageRequest.of(0, limit));
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductoTopDto> findTopVendidosBetween(LocalDate desde, LocalDate hasta, int limit) {
+        return repository.findTopVendidosBetween(desde, hasta, PageRequest.of(0, limit));
     }
 }

@@ -12,13 +12,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.salesianos.triana.techstore.model.CarritoItem;
-import com.salesianos.triana.techstore.model.Cliente;
 import com.salesianos.triana.techstore.model.LineaPedido;
 import com.salesianos.triana.techstore.model.Pedido;
 import com.salesianos.triana.techstore.model.Producto;
-import com.salesianos.triana.techstore.security.User;
+import com.salesianos.triana.techstore.security.Cliente;
 import com.salesianos.triana.techstore.service.CarritoService;
-import com.salesianos.triana.techstore.service.ClienteService;
 import com.salesianos.triana.techstore.service.PedidoService;
 import com.salesianos.triana.techstore.service.ProductoService;
 
@@ -33,7 +31,6 @@ public class CarritoController {
     private final CarritoService carritoService;
     private final ProductoService productoService;
     private final PedidoService pedidoService;
-    private final ClienteService clienteService;
 
 
     @GetMapping
@@ -66,8 +63,10 @@ public class CarritoController {
     }
 
     // Convierte el carrito en sesión en un Pedido persistido en BD.
+    // El @AuthenticationPrincipal Cliente lo entrega Spring directamente
+    // gracias a la herencia: solo los CLIENTE pueden entrar aquí (SecurityConfig).
     @GetMapping("/tramitar")
-    public String tramitar(@AuthenticationPrincipal User usuario, Model model) {
+    public String tramitar(@AuthenticationPrincipal Cliente cliente, Model model) {
         if (carritoService.isEmpty()) {
             return "redirect:/carrito";
         }
@@ -76,9 +75,6 @@ public class CarritoController {
         // si va bien, mostramos esta copia en la página de confirmación.
         Map<Long, CarritoItem> itemsConfirmados = new LinkedHashMap<>(carritoService.getItems());
         double total = carritoService.calcularTotal();
-
-        // Cliente del dominio asociado al usuario (lo crea si es su 1ª compra).
-        Cliente cliente = clienteService.findOrCreateForUser(usuario);
 
         // Construimos el Pedido y sus líneas a partir del carrito.
         Pedido pedido = Pedido.builder()

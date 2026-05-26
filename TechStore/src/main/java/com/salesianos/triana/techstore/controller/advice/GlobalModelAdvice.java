@@ -7,7 +7,7 @@ import com.salesianos.triana.techstore.service.CarritoService;
 
 import lombok.RequiredArgsConstructor;
 
-// Inyecta `cantidad_carrito` en TODAS las vistas, para que el navbar pueda
+// Inyecta cantidad_carrito en todas las vistas, para que el navbar pueda
 // pintar el badge sin que cada controlador tenga que añadirlo a mano.
 @ControllerAdvice
 @RequiredArgsConstructor

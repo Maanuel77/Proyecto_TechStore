@@ -143,31 +143,30 @@
 							</tr>
 						</thead>
 
-						<!-- Vista diaria: serie[0]=LocalDate, [1]=count, [2]=sum -->
+						<!-- Vista diaria (DiaVentasDto: fecha, pedidos, ingresos). -->
 						<tbody th:if="${!agruparPorMes}">
 							<tr th:each="fila : ${serie}"
-							    th:data-etiqueta="${#temporals.format(fila[0], 'dd MMM')}"
-							    th:data-pedidos="${fila[1]}"
-							    th:data-ingresos="${fila[2]}">
+							    th:data-etiqueta="${#temporals.format(fila.fecha, 'dd MMM')}"
+							    th:data-pedidos="${fila.pedidos}"
+							    th:data-ingresos="${fila.ingresos}">
 								<td class="px-4 fw-semibold"
-								    th:text="${#temporals.format(fila[0], 'dd/MM/yyyy')}"></td>
-								<td class="text-end fw-bold" th:text="${fila[1]}"></td>
+								    th:text="${#temporals.format(fila.fecha, 'dd/MM/yyyy')}"></td>
+								<td class="text-end fw-bold" th:text="${fila.pedidos}"></td>
 								<td class="text-end pe-4 fw-semibold"
-								    th:text="${#numbers.formatDecimal(fila[2],1,'POINT',2,'COMMA')} + ' €'"></td>
+								    th:text="${#numbers.formatDecimal(fila.ingresos,1,'POINT',2,'COMMA')} + ' €'"></td>
 							</tr>
 						</tbody>
 
-						<!-- Vista mensual: serie[0]=año, [1]=mes, [2]=count, [3]=sum -->
+						<!-- Vista mensual (MesVentasDto: anio, mes, pedidos, ingresos). -->
 						<tbody th:if="${agruparPorMes}">
 							<tr th:each="fila : ${serie}"
-							    th:with="etiqueta=${fila[1] + '/' + fila[0]}"
-							    th:data-etiqueta="${etiqueta}"
-							    th:data-pedidos="${fila[2]}"
-							    th:data-ingresos="${fila[3]}">
-								<td class="px-4 fw-semibold" th:text="${etiqueta}"></td>
-								<td class="text-end fw-bold" th:text="${fila[2]}"></td>
+							    th:data-etiqueta="${fila.etiqueta()}"
+							    th:data-pedidos="${fila.pedidos}"
+							    th:data-ingresos="${fila.ingresos}">
+								<td class="px-4 fw-semibold" th:text="${fila.etiqueta()}"></td>
+								<td class="text-end fw-bold" th:text="${fila.pedidos}"></td>
 								<td class="text-end pe-4 fw-semibold"
-								    th:text="${#numbers.formatDecimal(fila[3],1,'POINT',2,'COMMA')} + ' €'"></td>
+								    th:text="${#numbers.formatDecimal(fila.ingresos,1,'POINT',2,'COMMA')} + ' €'"></td>
 							</tr>
 						</tbody>
 					</table>

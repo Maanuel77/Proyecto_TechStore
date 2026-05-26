@@ -136,7 +136,7 @@
 							<td class="text-muted small"
 							    th:text="${#temporals.format(ped.fecha, 'dd/MM/yyyy')}"></td>
 							<td>
-								<div class="fw-semibold" th:text="${ped.cliente != null} ? ${ped.cliente.nombre} : '—'"></div>
+								<div class="fw-semibold" th:text="${ped.cliente != null} ? ${ped.cliente.fullname} : '—'"></div>
 								<small class="text-muted"
 								       th:if="${ped.cliente != null}" th:text="${ped.cliente.email}"></small>
 							</td>
@@ -153,7 +153,7 @@
 								        data-bs-target="#pedidoModal"
 								        th:data-codigo="${ped.codigo}"
 								        th:data-fecha="${#temporals.format(ped.fecha, 'dd/MM/yyyy')}"
-								        th:data-cliente="${ped.cliente != null} ? ${ped.cliente.nombre} : '—'"
+								        th:data-cliente="${ped.cliente != null} ? ${ped.cliente.fullname} : '—'"
 								        th:data-email="${ped.cliente != null} ? ${ped.cliente.email} : ''"
 								        th:data-total="${#numbers.formatDecimal(ped.total,1,'POINT',2,'COMMA')}"
 								        th:data-lineas="${ped.id}">
