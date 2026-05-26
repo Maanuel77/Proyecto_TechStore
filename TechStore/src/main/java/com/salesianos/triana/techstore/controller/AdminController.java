@@ -125,9 +125,10 @@ public class AdminController {
         return "admin/clientes/list";
     }
 
-    // Cambiar rol (ADMIN <-> CLIENTE). Las restricciones (superadmin, propio
-    // usuario) se validan en el service; aquí capturamos el error y lo pasamos
-    // como flash a la vista del listado.
+    // Cambiar rol (ADMIN <-> CLIENTE). Las restricciones de negocio se validan
+    // en el service y vuelven aquí como IllegalStateException → flash visible.
+    // Cualquier otro error inesperado lo capturamos también para evitar el
+    // whitelabel y dar feedback al admin (en lugar de un 500 mudo).
     @GetMapping("/clientes/toggle-role/{id}")
     public String toggleRole(@PathVariable Long id,
                              Principal principal,
@@ -136,6 +137,9 @@ public class AdminController {
             userService.toggleRole(id, principal.getName());
         } catch (IllegalStateException e) {
             redirectAttributes.addFlashAttribute("errorRol", e.getMessage());
+        } catch (RuntimeException e) {
+            redirectAttributes.addFlashAttribute("errorRol",
+                    "No se ha podido cambiar el rol: " + e.getMessage());
         }
         return "redirect:/admin/clientes";
     }

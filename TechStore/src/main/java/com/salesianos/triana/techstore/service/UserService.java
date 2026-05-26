@@ -6,7 +6,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.salesianos.triana.techstore.security.Admin;
 import com.salesianos.triana.techstore.security.Cliente;
 import com.salesianos.triana.techstore.security.Usuario;
 import com.salesianos.triana.techstore.security.UsuarioRepository;
@@ -64,9 +63,15 @@ public class UserService extends BaseServiceImpl<Usuario, Long, UsuarioRepositor
         return repository.save(cliente);
     }
 
-    // Alterna ADMIN <-> CLIENTE intercambiando la subclase concreta.
-    // Como SINGLE_TABLE no permite mutar el discriminador "in place",
-    // borramos la entidad y la guardamos con la otra subclase.
+    // Alterna ADMIN <-> CLIENTE.
+    //
+    // OJO con SINGLE_TABLE: JPA no permite cambiar la subclase de una entidad
+    // ya persistida (el discriminador es inmutable desde Java). Antes hacíamos
+    // delete + save de la otra subclase, pero eso falla con FK violation si
+    // el cliente tiene pedidos asociados (la tabla `pedido` referencia su id).
+    //
+    // Solución: UPDATE nativo de la columna user_type. Modifica solo el tipo
+    // y conserva intactos los pedidos del cliente.
     @Transactional
     public void toggleRole(Long id, String usernameSolicitante) {
         Usuario user = repository.findById(id)
@@ -80,18 +85,7 @@ public class UserService extends BaseServiceImpl<Usuario, Long, UsuarioRepositor
             throw new IllegalStateException("No puedes cambiar tu propio rol");
         }
 
-        Usuario reemplazo = (user.getRole() == UserRole.ADMIN)
-                ? Cliente.builder()
-                        .username(user.getUsername()).password(user.getPassword())
-                        .email(user.getEmail()).fullname(user.getFullname())
-                        .telefono(user.getTelefono()).build()
-                : Admin.builder()
-                        .username(user.getUsername()).password(user.getPassword())
-                        .email(user.getEmail()).fullname(user.getFullname())
-                        .telefono(user.getTelefono()).superadmin(false).build();
-
-        repository.delete(user);
-        repository.flush();
-        repository.save(reemplazo);
+        String nuevoTipo = (user.getRole() == UserRole.ADMIN) ? "CLIENTE" : "ADMIN";
+        repository.cambiarTipoUsuario(id, nuevoTipo);
     }
 }
