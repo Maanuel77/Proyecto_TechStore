@@ -17,6 +17,11 @@
 		   th:classappend="${seccion == 'pedidos'} ? 'btn-dark' : 'btn-outline-secondary'">
 			<i class="bi bi-graph-up me-1"></i>Pedidos por fecha
 		</a>
+		<a th:href="@{/admin/estadisticas/clientes}"
+		   class="btn rounded-pill px-4 py-2 fw-semibold"
+		   th:classappend="${seccion == 'clientes'} ? 'btn-dark' : 'btn-outline-secondary'">
+			<i class="bi bi-trophy-fill me-1"></i>Ranking de clientes
+		</a>
 	</div>
 
 </body>

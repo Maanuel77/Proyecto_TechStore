@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: head('Ranking de clientes — TechStore Admin', null)}"></head>
+
+<body>
+
+	<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+	<main>
+		<!-- Cabecera -->
+		<div class="bg-white border-bottom py-4 mb-4">
+			<div class="container d-flex align-items-center justify-content-between">
+				<div>
+					<h1 class="fw-bold fs-3 mb-0">Estadísticas</h1>
+					<p class="text-muted small mb-0">Clientes con mayor y menor gasto</p>
+				</div>
+				<a th:href="@{/admin/dashboard}" class="btn btn-outline-secondary btn-sm rounded-pill">
+					<i class="bi bi-arrow-left me-1"></i>Volver al dashboard
+				</a>
+			</div>
+		</div>
+
+		<div th:replace="~{fragments/alerts :: alerts}"></div>
+
+		<div class="container pb-5">
+
+			<!-- Subnav -->
+			<div th:replace="~{fragments/estadisticas-nav :: nav}"></div>
+
+			<!-- Filtro por rango de fechas -->
+			<div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
+				<form method="get" th:action="@{/admin/estadisticas/clientes}" class="row g-2 align-items-end">
+					<div class="col-sm-4">
+						<label class="form-label small fw-semibold text-muted text-uppercase ts-label-sm mb-1">
+							Desde
+						</label>
+						<input type="date" name="desde" class="form-control" th:value="${desde}" />
+					</div>
+					<div class="col-sm-4">
+						<label class="form-label small fw-semibold text-muted text-uppercase ts-label-sm mb-1">
+							Hasta
+						</label>
+						<input type="date" name="hasta" class="form-control" th:value="${hasta}" />
+					</div>
+					<div class="col-sm-4 d-flex gap-2">
+						<button type="submit" class="btn btn-dark rounded-pill flex-fill">
+							<i class="bi bi-funnel me-1"></i>Filtrar
+						</button>
+						<a th:href="@{/admin/estadisticas/clientes}"
+						   class="btn btn-outline-secondary rounded-pill"
+						   th:if="${desde != null or hasta != null}">
+							<i class="bi bi-x-lg"></i>
+						</a>
+					</div>
+				</form>
+			</div>
+
+			<!-- KPIs -->
+			<div class="row g-3 mb-4">
+				<div class="col-sm-6 col-xl-4">
+					<div class="card border-0 shadow-sm rounded-4 p-4 h-100
+					            d-flex flex-row align-items-center gap-3">
+						<div class="ts-icon-blue rounded-3 p-3 d-flex align-items-center
+						            justify-content-center flex-shrink-0 fs-4">
+							<i class="bi bi-people-fill"></i>
+						</div>
+						<div>
+							<div class="fw-bold fs-2 lh-1 mb-1" th:text="${activos}">0</div>
+							<div class="text-muted small text-uppercase fw-semibold ts-th">Clientes con pedidos</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-6 col-xl-4">
+					<div class="card border-0 shadow-sm rounded-4 p-4 h-100
+					            d-flex flex-row align-items-center gap-3">
+						<div class="ts-icon-green rounded-3 p-3 d-flex align-items-center
+						            justify-content-center flex-shrink-0 fs-4">
+							<i class="bi bi-cash-coin"></i>
+						</div>
+						<div>
+							<div class="fw-bold fs-2 lh-1 mb-1"
+							     th:text="${#numbers.formatDecimal(gastoMedio,1,'POINT',2,'COMMA')} + ' €'">0,00 €</div>
+							<div class="text-muted small text-uppercase fw-semibold ts-th">Gasto medio por cliente</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-6 col-xl-4">
+					<div class="card border-0 shadow-sm rounded-4 p-4 h-100
+					            d-flex flex-row align-items-center gap-3">
+						<div class="ts-icon-orange rounded-3 p-3 d-flex align-items-center
+						            justify-content-center flex-shrink-0 fs-4">
+							<i class="bi bi-trophy-fill"></i>
+						</div>
+						<div th:if="${lider != null}">
+							<div class="fw-bold fs-5 lh-1 mb-1" th:text="${lider.cliente.fullname}">—</div>
+							<div class="text-muted small text-uppercase fw-semibold ts-th">
+								Top gastador ·
+								<span th:text="${#numbers.formatDecimal(lider.gastoTotal,1,'POINT',2,'COMMA')} + ' €'">0,00 €</span>
+							</div>
+						</div>
+						<div th:if="${lider == null}">
+							<div class="fw-bold fs-5 lh-1 mb-1 text-muted">—</div>
+							<div class="text-muted small text-uppercase fw-semibold ts-th">Sin datos</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Empty state global (no hay pedidos en absoluto) -->
+			<div class="card border-0 shadow-sm rounded-4 p-5 text-center text-muted"
+			     th:if="${top.isEmpty()}">
+				<i class="bi bi-people fs-1 mb-3 d-block"></i>
+				<p class="mb-0" th:if="${desde == null and hasta == null}">
+					Todavía no hay clientes con pedidos.
+				</p>
+				<p class="mb-0" th:if="${desde != null or hasta != null}">
+					Ningún cliente ha realizado pedidos en ese rango de fechas.
+				</p>
+			</div>
+
+			<!-- Dos columnas: Top (izq) y Bottom (der) -->
+			<div class="row g-4" th:if="${!top.isEmpty()}">
+
+				<!-- Top 5 gastadores -->
+				<div class="col-lg-6">
+					<div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+						<div class="d-flex align-items-center justify-content-between px-4 py-3 border-bottom
+						            bg-warning-subtle">
+							<h5 class="mb-0 fw-semibold">
+								<i class="bi bi-trophy-fill text-warning me-2"></i>Top 5 gastadores
+							</h5>
+							<span class="badge bg-dark rounded-pill"
+							      th:text="${top.size()} + ' clientes'"></span>
+						</div>
+						<table class="table table-hover align-middle mb-0">
+							<thead class="table-light">
+								<tr>
+									<th class="ts-th px-4">#</th>
+									<th class="ts-th">Cliente</th>
+									<th class="ts-th text-center">Pedidos</th>
+									<th class="ts-th text-end">Ticket medio</th>
+									<th class="ts-th text-end pe-4">Gasto total</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:each="fila, iter : ${top}">
+									<td class="px-4">
+										<span class="badge rounded-pill"
+										      th:classappend="${iter.index == 0} ? 'bg-warning text-dark' :
+										                      (${iter.index == 1} ? 'bg-secondary' :
+										                      (${iter.index == 2} ? 'bg-bronze' : 'bg-light text-muted'))"
+										      th:text="'#' + ${iter.index + 1}"></span>
+									</td>
+									<td>
+										<div class="fw-semibold" th:text="${fila.cliente.fullname}"></div>
+										<small class="text-muted" th:text="${fila.cliente.email}"></small>
+									</td>
+									<td class="text-center" th:text="${fila.nPedidos}"></td>
+									<td class="text-end text-muted small"
+									    th:text="${#numbers.formatDecimal(fila.ticketMedio,1,'POINT',2,'COMMA')} + ' €'"></td>
+									<td class="text-end pe-4 fw-bold"
+									    th:text="${#numbers.formatDecimal(fila.gastoTotal,1,'POINT',2,'COMMA')} + ' €'"></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+
+				<!-- Bottom 5 (menos gastadores) -->
+				<div class="col-lg-6">
+					<div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+						<div class="d-flex align-items-center justify-content-between px-4 py-3 border-bottom
+						            bg-secondary-subtle">
+							<h5 class="mb-0 fw-semibold">
+								<i class="bi bi-arrow-down-circle text-secondary me-2"></i>Bottom 5 (menor gasto)
+							</h5>
+							<span class="badge bg-dark rounded-pill"
+							      th:text="${bottom.size()} + ' clientes'"></span>
+						</div>
+						<table class="table table-hover align-middle mb-0">
+							<thead class="table-light">
+								<tr>
+									<th class="ts-th px-4">#</th>
+									<th class="ts-th">Cliente</th>
+									<th class="ts-th text-center">Pedidos</th>
+									<th class="ts-th text-end">Ticket medio</th>
+									<th class="ts-th text-end pe-4">Gasto total</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:each="fila, iter : ${bottom}">
+									<td class="px-4">
+										<span class="badge rounded-pill bg-light text-muted"
+										      th:text="'#' + ${iter.index + 1}"></span>
+									</td>
+									<td>
+										<div class="fw-semibold" th:text="${fila.cliente.fullname}"></div>
+										<small class="text-muted" th:text="${fila.cliente.email}"></small>
+									</td>
+									<td class="text-center" th:text="${fila.nPedidos}"></td>
+									<td class="text-end text-muted small"
+									    th:text="${#numbers.formatDecimal(fila.ticketMedio,1,'POINT',2,'COMMA')} + ' €'"></td>
+									<td class="text-end pe-4 fw-semibold text-muted"
+									    th:text="${#numbers.formatDecimal(fila.gastoTotal,1,'POINT',2,'COMMA')} + ' €'"></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+
+			</div>
+
+		</div>
+	</main>
+
+	<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

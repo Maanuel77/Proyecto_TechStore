@@ -5,10 +5,12 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.salesianos.triana.techstore.dto.ClienteGastoDto;
+import com.salesianos.triana.techstore.dto.ClienteRankingDto;
 import com.salesianos.triana.techstore.dto.DiaVentasDto;
 import com.salesianos.triana.techstore.dto.MesVentasDto;
 import com.salesianos.triana.techstore.exceptions.SinStockException;
@@ -99,6 +101,45 @@ public class PedidoService extends BaseServiceImpl<Pedido, Long, PedidoRepositor
     @Transactional(readOnly = true)
     public List<MesVentasDto> findPedidosPorMes(LocalDate desde, LocalDate hasta) {
         return repository.findPedidosPorMes(desde, hasta);
+    }
+
+    // Ranking de clientes por gasto (top o bottom, con o sin rango).
+    @Transactional(readOnly = true)
+    public List<ClienteRankingDto> findTopClientesByGasto(int limit) {
+        return repository.findTopClientesByGasto(PageRequest.of(0, limit));
+    }
+
+    @Transactional(readOnly = true)
+    public List<ClienteRankingDto> findBottomClientesByGasto(int limit) {
+        return repository.findBottomClientesByGasto(PageRequest.of(0, limit));
+    }
+
+    @Transactional(readOnly = true)
+    public List<ClienteRankingDto> findTopClientesByGastoBetween(LocalDate desde, LocalDate hasta, int limit) {
+        return repository.findTopClientesByGastoBetween(desde, hasta, PageRequest.of(0, limit));
+    }
+
+    @Transactional(readOnly = true)
+    public List<ClienteRankingDto> findBottomClientesByGastoBetween(LocalDate desde, LocalDate hasta, int limit) {
+        return repository.findBottomClientesByGastoBetween(desde, hasta, PageRequest.of(0, limit));
+    }
+
+    @Transactional(readOnly = true)
+    public Double getGastoMedioPorCliente() {
+        Double v = repository.getGastoMedioPorCliente();
+        return v != null ? v : 0.0;
+    }
+
+    @Transactional(readOnly = true)
+    public Double getGastoMedioPorClienteBetween(LocalDate desde, LocalDate hasta) {
+        Double v = repository.getGastoMedioPorClienteBetween(desde, hasta);
+        return v != null ? v : 0.0;
+    }
+
+    @Transactional(readOnly = true)
+    public Long countClientesActivosBetween(LocalDate desde, LocalDate hasta) {
+        Long v = repository.countClientesActivosBetween(desde, hasta);
+        return v != null ? v : 0L;
     }
 
     // Persiste el pedido y descuenta stock. @Transactional para que cualquier
