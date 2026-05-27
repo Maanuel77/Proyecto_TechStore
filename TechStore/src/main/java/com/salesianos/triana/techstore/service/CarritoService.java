@@ -19,8 +19,14 @@ import com.salesianos.triana.techstore.model.Producto;
 @Scope(value = WebApplicationContext.SCOPE_SESSION, proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class CarritoService {
 
+    // Easter egg: el cupón "PonedmeBuenaNota" aplica un 80% de descuento.
+    private static final String CUPON_SECRETO = "PonedmeBuenaNota";
+    private static final double DESCUENTO_CUPON = 0.80;
+
     // LinkedHashMap para conservar el orden en que se añadieron los productos.
     private final Map<Long, CarritoItem> items = new LinkedHashMap<>();
+    // Cupón aplicado en esta sesión (null si no hay).
+    private String cuponAplicado;
 
     // Añade 1 unidad. Si ya estaba en el carrito incrementa la cantidad.
     public void addProducto(Producto p) {
@@ -92,11 +98,21 @@ public class CarritoService {
         return Collections.unmodifiableMap(items);
     }
 
-    // Total = suma de subtotales + costes de garantía extendida.
-    public double calcularTotal() {
+    // Subtotal: suma de subtotales + costes de garantía, SIN aplicar cupón.
+    public double calcularSubtotal() {
         return items.values().stream()
                 .mapToDouble(item -> item.getSubtotal() + item.getCosteGarantia())
                 .sum();
+    }
+
+    // Total final = subtotal - descuento del cupón.
+    public double calcularTotal() {
+        return calcularSubtotal() - calcularDescuento();
+    }
+
+    // Importe del descuento del cupón aplicado (0 si no hay cupón).
+    public double calcularDescuento() {
+        return tieneCupon() ? calcularSubtotal() * DESCUENTO_CUPON : 0.0;
     }
 
     // Total de unidades para el badge del navbar.
@@ -113,11 +129,41 @@ public class CarritoService {
         }
     }
 
+    // Limpia carrito y cupón (al tramitar o vaciar).
     public void vaciarCarrito() {
         items.clear();
+        cuponAplicado = null;
     }
 
     public boolean isEmpty() {
         return items.isEmpty();
+    }
+
+    // === Cupón =========================================================
+
+    // Devuelve true si el código es válido (ignora mayúsculas/minúsculas).
+    public boolean aplicarCupon(String codigo) {
+        if (codigo != null && CUPON_SECRETO.equalsIgnoreCase(codigo.trim())) {
+            cuponAplicado = CUPON_SECRETO;
+            return true;
+        }
+        return false;
+    }
+
+    public void eliminarCupon() {
+        cuponAplicado = null;
+    }
+
+    public boolean tieneCupon() {
+        return cuponAplicado != null;
+    }
+
+    public String getCuponAplicado() {
+        return cuponAplicado;
+    }
+
+    // Porcentaje (0–1) del descuento activo. Para mostrar "-80%" en la UI.
+    public double getPorcentajeDescuento() {
+        return tieneCupon() ? DESCUENTO_CUPON : 0.0;
     }
 }

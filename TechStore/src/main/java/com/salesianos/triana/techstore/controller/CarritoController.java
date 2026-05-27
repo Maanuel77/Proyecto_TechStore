@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.salesianos.triana.techstore.dto.ProductoTopDto;
 import com.salesianos.triana.techstore.model.CarritoItem;
@@ -44,8 +45,12 @@ public class CarritoController {
     public String verCarrito(Model model) {
         Map<Long, CarritoItem> items = carritoService.getItems();
         model.addAttribute("items", items);
+        model.addAttribute("subtotal", carritoService.calcularSubtotal());
+        model.addAttribute("descuento", carritoService.calcularDescuento());
         model.addAttribute("total", carritoService.calcularTotal());
         model.addAttribute("envioGratisDesde", ENVIO_GRATIS_DESDE);
+        model.addAttribute("cuponAplicado", carritoService.getCuponAplicado());
+        model.addAttribute("porcentajeDescuento", carritoService.getPorcentajeDescuento());
         // Top productos para el bloque "Te puede interesar", excluyendo los
         // que ya están en el carrito. Pedimos algunos más por si filtramos.
         List<Producto> sugeridos = productoService.findTopVendidos(N_SUGERIDOS + items.size()).stream()
@@ -57,14 +62,16 @@ public class CarritoController {
         return "carrito/carrito";
     }
 
-    // Usado por el botón "+" del catálogo (cantidad=1 por defecto) y por el
-    // modal de detalle (que envía la cantidad como query param).
+    // Endpoint genérico de añadir. El parámetro opcional `volver` decide
+    // a dónde se redirige: "carrito" (cuando se añade desde el carrito) o
+    // "catalogo" (por defecto, cuando se añade desde el catálogo).
     @GetMapping("/anadir/{id}")
     public String anadirProducto(@PathVariable Long id,
-                                 @RequestParam(defaultValue = "1") Integer cantidad) {
+                                 @RequestParam(defaultValue = "1") Integer cantidad,
+                                 @RequestParam(defaultValue = "catalogo") String volver) {
         Producto p = productoService.buscarPorId(id);
         carritoService.addProducto(p, cantidad);
-        return "redirect:/catalogo";
+        return "carrito".equals(volver) ? "redirect:/carrito" : "redirect:/catalogo";
     }
 
     // Stepper +1 desde el carrito.
@@ -105,6 +112,29 @@ public class CarritoController {
         return "redirect:/carrito";
     }
 
+    // === Cupón ============================================================
+
+    @GetMapping("/cupon/aplicar")
+    public String aplicarCupon(@RequestParam String codigo, RedirectAttributes ra) {
+        if (carritoService.aplicarCupon(codigo)) {
+            ra.addFlashAttribute("exitoMensaje",
+                    "¡Cupón aplicado! Descuento del 80 % activado.");
+        } else {
+            ra.addFlashAttribute("errorCarrito",
+                    "El código \"" + codigo + "\" no es válido o ha caducado.");
+        }
+        return "redirect:/carrito";
+    }
+
+    @GetMapping("/cupon/eliminar")
+    public String eliminarCupon(RedirectAttributes ra) {
+        carritoService.eliminarCupon();
+        ra.addFlashAttribute("exitoMensaje", "Cupón retirado del pedido.");
+        return "redirect:/carrito";
+    }
+
+    // === Tramitación ======================================================
+
     // Convierte el carrito en sesión en un Pedido persistido en BD.
     // El @AuthenticationPrincipal Cliente lo entrega Spring directamente
     // gracias a la herencia: solo los CLIENTE pueden entrar aquí (SecurityConfig).
@@ -117,7 +147,8 @@ public class CarritoController {
         // Copia previa: si el guardado falla, el carrito sigue intacto;
         // si va bien, mostramos esta copia en la página de confirmación.
         Map<Long, CarritoItem> itemsConfirmados = new LinkedHashMap<>(carritoService.getItems());
-        double total = carritoService.calcularTotal();
+        boolean conCupon = carritoService.tieneCupon();
+        double totalConDescuento = carritoService.calcularTotal();
 
         // Construimos el Pedido y sus líneas a partir del carrito.
         Pedido pedido = Pedido.builder()
@@ -136,11 +167,18 @@ public class CarritoController {
 
         pedidoService.guardarPedido(pedido);
 
-        // Solo si todo ha ido bien vaciamos el carrito.
+        // Si había cupón aplicado, sobrescribimos el total del pedido con el
+        // ya descontado (guardarPedido lo recalcula desde las líneas).
+        if (conCupon) {
+            pedido.setTotal(totalConDescuento);
+            pedidoService.edit(pedido);
+        }
+
+        // Solo si todo ha ido bien vaciamos el carrito (esto también limpia el cupón).
         carritoService.vaciarCarrito();
 
         model.addAttribute("items", itemsConfirmados);
-        model.addAttribute("total", total);
+        model.addAttribute("total", totalConDescuento);
         return "carrito/confirmacion";
     }
 
