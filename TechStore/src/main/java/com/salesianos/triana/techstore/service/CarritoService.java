@@ -19,7 +19,7 @@ import com.salesianos.triana.techstore.model.Producto;
 @Scope(value = WebApplicationContext.SCOPE_SESSION, proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class CarritoService {
 
-    // Easter egg: el cupón "PonedmeBuenaNota" aplica un 80% de descuento.
+    // Easter egg: El cupón aplica un 80% de descuento ;)
     private static final String CUPON_SECRETO = "PonedmeBuenaNota";
     private static final double DESCUENTO_CUPON = 0.80;
 
@@ -139,7 +139,7 @@ public class CarritoService {
         return items.isEmpty();
     }
 
-    // === Cupón =========================================================
+    // EASTER EGG: Cupón
 
     // Devuelve true si el código es válido (ignora mayúsculas/minúsculas).
     public boolean aplicarCupon(String codigo) {
