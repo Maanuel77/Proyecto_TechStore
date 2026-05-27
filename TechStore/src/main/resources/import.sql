@@ -3,7 +3,7 @@
 -- Contrasenyas: prefijo {noop} de DelegatingPasswordEncoder (texto plano).
 
 -- ======================================================================
--- USUARIOS (tabla `usuarios`, SINGLE_TABLE con discriminador user_type)
+-- USUARIOS (tabla `usuarios`)
 -- IDs autogenerados por IDENTITY, en orden de insercion:
 --   1=admin  2=cliente  3=sara  4=lucia  5=javier  6=marta  7=carlos
 --   8=ana    9=david   10=laura  11=pablo  12=elena 13=alvaro 14=nuria
