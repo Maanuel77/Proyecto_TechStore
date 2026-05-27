@@ -182,7 +182,7 @@
 						<!-- Desglose -->
 						<div class="d-flex justify-content-between mb-2 text-muted small">
 							<span>Subtotal</span>
-							<span th:text="${#numbers.formatDecimal(total - #aggregates.sum(items.values().![costeGarantia]),1,'POINT',2,'COMMA')} + ' €'"></span>
+							<span th:text="${#numbers.formatDecimal(subtotal,1,'POINT',2,'COMMA')} + ' €'"></span>
 						</div>
 						<div th:each="entry : ${items}">
 							<div th:if="${entry.value.garantiaExtendida}"
@@ -194,24 +194,47 @@
 								<span th:text="'+' + ${#numbers.formatDecimal(entry.value.costeGarantia,1,'POINT',2,'COMMA')} + ' €'"></span>
 							</div>
 						</div>
+						<div class="d-flex justify-content-between mb-2 small" th:if="${cuponAplicado != null}">
+							<span class="text-success fw-semibold">
+								<i class="bi bi-tag-fill me-1"></i>
+								Cupón <span th:text="${cuponAplicado}"></span>
+								(<span th:text="'-' + ${#numbers.formatDecimal(porcentajeDescuento * 100,1,0)} + '%'"></span>)
+							</span>
+							<span class="text-success fw-semibold"
+							      th:text="'-' + ${#numbers.formatDecimal(descuento,1,'POINT',2,'COMMA')} + ' €'"></span>
+						</div>
 						<div class="d-flex justify-content-between mb-3 small">
 							<span class="text-muted">Envío</span>
 							<span class="fw-semibold text-success" th:if="${envioGratis}">GRATIS</span>
 							<span class="text-muted" th:unless="${envioGratis}">A calcular</span>
 						</div>
 
-						<!-- Cupón (decorativo) -->
-						<div class="mb-3">
+						<!-- Cupón: form de aplicar (si no hay) o badge con quitar (si hay) -->
+						<div class="mb-3" th:if="${cuponAplicado == null}">
 							<label class="form-label small fw-semibold text-muted text-uppercase ts-label-sm mb-1">
 								Código de cupón
 							</label>
-							<div class="input-group">
-								<input type="text" class="form-control" placeholder="Introduce código" id="cupon" />
-								<button class="btn btn-outline-secondary" type="button" id="aplicarCupon">
+							<form th:action="@{/carrito/cupon/aplicar}" method="get" class="input-group">
+								<input type="text" name="codigo" class="form-control"
+								       placeholder="Introduce código" required />
+								<button class="btn btn-outline-secondary" type="submit">
 									Aplicar
 								</button>
+							</form>
+						</div>
+						<div class="mb-3" th:if="${cuponAplicado != null}">
+							<div class="d-flex justify-content-between align-items-center
+							            bg-success-subtle text-success-emphasis rounded-3 px-3 py-2">
+								<span class="fw-semibold small">
+									<i class="bi bi-check-circle-fill me-1"></i>
+									<span th:text="${cuponAplicado}"></span>
+								</span>
+								<a th:href="@{/carrito/cupon/eliminar}"
+								   class="text-success-emphasis text-decoration-none"
+								   title="Quitar cupón">
+									<i class="bi bi-x-lg"></i>
+								</a>
 							</div>
-							<small class="text-muted" id="cuponFeedback"></small>
 						</div>
 
 						<hr class="my-3">
@@ -235,14 +258,24 @@
 
 			</div>
 
-			<!-- Bloque "Te puede interesar" -->
+			<!-- Bloque "Te puede interesar" — tarjetas clicables que abren el modal -->
 			<section class="mt-5" th:if="${!sugeridos.isEmpty()}">
 				<h4 class="fw-bold mb-3">
 					<i class="bi bi-stars text-warning me-1"></i>Te puede interesar
 				</h4>
-				<div class="row g-3">
+				<div class="row g-3" id="sugeridosGrid">
 					<div class="col-6 col-md-3" th:each="p : ${sugeridos}">
-						<div class="card border-0 shadow-sm rounded-4 h-100 ts-hover">
+						<div class="card border-0 shadow-sm rounded-4 h-100 ts-hover ts-card-clickable"
+						     data-bs-toggle="modal" data-bs-target="#productoModal"
+						     th:data-id="${p.id}"
+						     th:data-nombre="${p.nombre}"
+						     th:data-marca="${p.marca}"
+						     th:data-precio="${p.precio}"
+						     th:data-stock="${p.stock}"
+						     th:data-garantia="${p.garantiaMeses}"
+						     th:data-refurbished="${p.refurbished}"
+						     th:data-imagen="${p.imagenUrl}"
+						     style="cursor: pointer;">
 							<div class="ratio ratio-1x1 bg-light overflow-hidden rounded-top-4">
 								<img th:if="${p.imagenUrl != null}" class="object-fit-contain p-3"
 								     th:src="${p.imagenUrl}" th:alt="${p.nombre}" loading="lazy" />
@@ -258,10 +291,12 @@
 								<div class="d-flex align-items-center justify-content-between">
 									<span class="fw-bold"
 									      th:text="${#numbers.formatDecimal(p.precio,1,'POINT',2,'COMMA')} + ' €'"></span>
-									<a th:href="@{/carrito/anadir/{id}(id=${p.id})}"
+									<!-- + rápido sin pasar por el modal. stopPropagation evita abrir el modal. -->
+									<a th:href="@{/carrito/anadir/{id}(id=${p.id},volver='carrito')}"
 									   class="btn btn-dark btn-sm rounded-pill"
 									   th:classappend="${p.stock == 0} ? 'disabled'"
-									   th:title="${p.stock == 0} ? 'Sin stock' : 'Añadir al carrito'">
+									   th:title="${p.stock == 0} ? 'Sin stock' : 'Añadir al carrito'"
+									   onclick="event.stopPropagation();">
 										<i class="bi bi-bag-plus"></i>
 									</a>
 								</div>
@@ -293,6 +328,13 @@
 							<span class="text-muted">Productos</span>
 							<span class="fw-semibold" th:text="${items.size()}">0</span>
 						</div>
+						<div class="d-flex justify-content-between small mb-2" th:if="${cuponAplicado != null}">
+							<span class="text-success">
+								<i class="bi bi-tag-fill me-1"></i>Cupón aplicado
+							</span>
+							<span class="text-success fw-semibold"
+							      th:text="'-' + ${#numbers.formatDecimal(descuento,1,'POINT',2,'COMMA')} + ' €'"></span>
+						</div>
 						<div class="d-flex justify-content-between fw-bold fs-5">
 							<span>Total a pagar</span>
 							<span th:text="${#numbers.formatDecimal(total,1,'POINT',2,'COMMA')} + ' €'">0,00 €</span>
@@ -316,9 +358,100 @@
 		</div>
 	</div>
 
+	<!-- Modal de detalle de producto (sugeridos). Mismo patrón que el del catálogo. -->
+	<div class="modal fade" id="productoModal" tabindex="-1" aria-labelledby="productoModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg modal-dialog-centered">
+			<div class="modal-content border-0 rounded-4 shadow-lg">
+
+				<div class="modal-header border-0 pb-0">
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+				</div>
+
+				<div class="modal-body p-4 p-md-5 pt-0">
+					<div class="row g-4 align-items-center">
+
+						<!-- Imagen -->
+						<div class="col-md-6">
+							<div class="ratio ratio-1x1 bg-light rounded-4 overflow-hidden">
+								<img id="modalImg" class="object-fit-contain p-4" src="" alt="" />
+							</div>
+						</div>
+
+						<!-- Información -->
+						<div class="col-md-6 d-flex flex-column">
+							<div class="small text-muted text-uppercase fw-semibold mb-1 ts-label-sm"
+							     id="modalMarca">Marca</div>
+							<h3 class="fw-bold mb-3" id="modalNombre">Nombre del producto</h3>
+
+							<div class="d-flex flex-wrap gap-1 mb-3">
+								<span id="modalBadgeRefurbished"
+								      class="badge rounded-pill bg-primary-subtle text-primary-emphasis d-none">
+									Reacondicionado
+								</span>
+								<span id="modalBadgeEnStock"
+								      class="badge rounded-pill bg-success-subtle text-success-emphasis d-none">
+									En stock
+								</span>
+								<span id="modalBadgePocas"
+								      class="badge rounded-pill bg-warning-subtle text-warning-emphasis d-none">
+									Pocas unidades
+								</span>
+								<span id="modalBadgeAgotado"
+								      class="badge rounded-pill bg-danger-subtle text-danger-emphasis d-none">
+									Agotado
+								</span>
+							</div>
+
+							<div class="d-flex align-items-center gap-1 mb-2">
+								<i class="bi bi-patch-check small text-muted"></i>
+								<span class="text-muted small">
+									Garantía <span id="modalGarantia">0</span> meses
+								</span>
+							</div>
+
+							<div class="d-flex align-items-center gap-1 mb-4">
+								<i class="bi bi-box-seam small text-muted"></i>
+								<span class="text-muted small">
+									<span id="modalStock">0</span> uds. disponibles
+								</span>
+							</div>
+
+							<div class="fw-bold fs-2 mb-4" id="modalPrecio">0,00 €</div>
+
+							<!-- Form GET con volver=carrito para que no salgamos del carrito. -->
+							<form id="modalForm" method="get" action="">
+								<input type="hidden" name="volver" value="carrito" />
+								<label class="form-label small fw-semibold text-muted text-uppercase ts-label-sm">
+									Cantidad
+								</label>
+								<div class="input-group mb-3" style="max-width: 180px;">
+									<button class="btn btn-outline-secondary" type="button" id="btnMenos">
+										<i class="bi bi-dash"></i>
+									</button>
+									<input type="number" name="cantidad" id="modalCantidad"
+									       class="form-control text-center"
+									       value="1" min="1" max="99" required />
+									<button class="btn btn-outline-secondary" type="button" id="btnMas">
+										<i class="bi bi-plus"></i>
+									</button>
+								</div>
+
+								<button type="submit" id="modalBtnAnadir"
+								        class="btn btn-dark rounded-pill w-100 py-2">
+									<i class="bi bi-bag-plus me-1"></i>Añadir al carrito
+								</button>
+							</form>
+
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
 	<div th:replace="~{fragments/footer :: footer}"></div>
 
-	<!-- JS del carrito: stepper editable + cupón decorativo -->
+	<!-- JS del carrito: stepper editable + modal de producto sugerido -->
 	<script th:src="@{/js/carrito.js}" defer></script>
 
 </body>

@@ -13,7 +13,8 @@
 		let visible = 0;
 		cards.forEach(card => {
 			const match = !q || card.dataset.search.includes(q);
-			card.style.display = match ? '' : 'none';
+			//card.style.display = match ? '' : 'none';
+			card.classList.toggle('d-none', !match)
 			if (match) visible++;
 		});
 		counter.textContent = visible + ' resultados';
