@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: head('Cupones — TechStore Admin', null)}"></head>
+
+<body>
+
+	<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+	<main>
+		<!-- Cabecera -->
+		<div class="bg-white border-bottom py-4 mb-4">
+			<div class="container d-flex align-items-center justify-content-between">
+				<div>
+					<h1 class="fw-bold fs-3 mb-0">Cupones</h1>
+					<p class="text-muted small mb-0">Gestiona los cupones públicos y el programa de fidelidad</p>
+				</div>
+				<a th:href="@{/admin/dashboard}" class="btn btn-outline-secondary btn-sm rounded-pill">
+					<i class="bi bi-arrow-left me-1"></i>Volver al dashboard
+				</a>
+			</div>
+		</div>
+
+		<div th:replace="~{fragments/alerts :: alerts}"></div>
+
+		<div class="container pb-5">
+
+			<div class="row g-4">
+
+				<!-- ============================================================ -->
+				<!-- IZQUIERDA: Configuración del programa de fidelidad           -->
+				<!-- ============================================================ -->
+				<div class="col-lg-5">
+					<div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+						<h5 class="fw-bold mb-1">
+							<i class="bi bi-stars text-warning me-1"></i>Programa de fidelidad
+						</h5>
+						<p class="small text-muted mb-4">
+							Los clientes con gasto histórico ≥ umbral reciben automáticamente
+							un cupón único con descuento, válido en sus próximas compras.
+						</p>
+
+						<form th:action="@{/admin/cupones/config}" method="post">
+							<div class="mb-3">
+								<label class="form-label small fw-semibold text-muted text-uppercase ts-label-sm">
+									Umbral de gasto (€)
+								</label>
+								<input type="number" name="umbral" min="0" step="100" required
+								       th:value="${config.umbralFidelidad}"
+								       class="form-control" />
+								<small class="text-muted">
+									Cuando un cliente supere esta cifra tras un pedido, el sistema le asignará
+									un cupón único automáticamente.
+								</small>
+							</div>
+							<div class="mb-3">
+								<label class="form-label small fw-semibold text-muted text-uppercase ts-label-sm">
+									Descuento (%)
+								</label>
+								<input type="number" name="descuento" min="1" max="100" step="1" required
+								       th:value="${T(java.lang.Math).round(config.descuentoFidelidad * 100)}"
+								       class="form-control" />
+								<small class="text-muted">
+									Se aplica al subtotal del pedido cuando el cliente canjea el cupón.
+								</small>
+							</div>
+							<button type="submit" class="btn btn-dark rounded-pill w-100 py-2">
+								<i class="bi bi-floppy me-1"></i>Guardar configuración
+							</button>
+						</form>
+					</div>
+				</div>
+
+				<!-- ============================================================ -->
+				<!-- DERECHA: Cupones públicos                                    -->
+				<!-- ============================================================ -->
+				<div class="col-lg-7">
+					<div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+						<h5 class="fw-bold mb-1">
+							<i class="bi bi-tag-fill text-primary me-1"></i>Cupones públicos
+						</h5>
+						<p class="small text-muted mb-4">
+							Códigos que cualquier cliente puede aplicar si los conoce.
+							Cada cupón tiene su propio porcentaje de descuento.
+						</p>
+
+						<!-- Form para crear cupón nuevo -->
+						<form th:action="@{/admin/cupones/nuevo}" method="post"
+						      class="row g-2 align-items-end mb-3">
+							<div class="col-sm-6">
+								<label class="form-label small fw-semibold text-muted text-uppercase ts-label-sm">
+									Código
+								</label>
+								<input type="text" name="codigo" required
+								       maxlength="30"
+								       placeholder="VERANO25"
+								       class="form-control text-uppercase" />
+							</div>
+							<div class="col-sm-3">
+								<label class="form-label small fw-semibold text-muted text-uppercase ts-label-sm">
+									Descuento %
+								</label>
+								<input type="number" name="descuento" min="1" max="100" step="1" required
+								       placeholder="25"
+								       class="form-control" />
+							</div>
+							<div class="col-sm-3">
+								<button type="submit" class="btn btn-dark rounded-pill w-100">
+									<i class="bi bi-plus-lg me-1"></i>Crear
+								</button>
+							</div>
+						</form>
+
+						<!-- Empty state -->
+						<div class="text-center text-muted py-4" th:if="${publicos.isEmpty()}">
+							<i class="bi bi-tag fs-3 d-block mb-2 opacity-50"></i>
+							<p class="small mb-0">Aún no hay cupones públicos. Crea el primero arriba.</p>
+						</div>
+
+						<!-- Tabla de cupones existentes -->
+						<table class="table table-hover align-middle mb-0" th:unless="${publicos.isEmpty()}">
+							<thead class="table-light">
+								<tr>
+									<th class="ts-th">Código</th>
+									<th class="ts-th text-end">Descuento</th>
+									<th class="ts-th text-center">Estado</th>
+									<th class="ts-th text-end">Acciones</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:each="c : ${publicos}">
+									<td class="fw-semibold ts-mono" th:text="${c.codigo}"></td>
+									<td class="text-end fw-bold"
+									    th:text="${T(java.lang.Math).round(c.descuento * 100)} + '%'"></td>
+									<td class="text-center">
+										<span th:if="${c.activo}"
+										      class="badge rounded-pill bg-success-subtle text-success-emphasis">
+											<i class="bi bi-check-circle me-1"></i>Activo
+										</span>
+										<span th:if="${!c.activo}"
+										      class="badge rounded-pill bg-secondary-subtle text-muted">
+											<i class="bi bi-pause-circle me-1"></i>Inactivo
+										</span>
+									</td>
+									<td class="text-end">
+										<a th:href="@{/admin/cupones/toggle/{id}(id=${c.id})}"
+										   class="btn btn-sm btn-outline-secondary rounded-pill"
+										   th:title="${c.activo} ? 'Desactivar' : 'Activar'">
+											<i th:class="${c.activo} ? 'bi bi-pause-fill' : 'bi bi-play-fill'"></i>
+										</a>
+										<a th:href="@{/admin/cupones/eliminar/{id}(id=${c.id})}"
+										   class="btn btn-sm btn-outline-danger rounded-pill"
+										   onclick="return confirm('¿Eliminar este cupón? La acción es permanente.');"
+										   title="Eliminar">
+											<i class="bi bi-trash"></i>
+										</a>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+
+		</div>
+	</main>
+
+	<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

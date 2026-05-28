@@ -8,89 +8,158 @@
     <div th:replace="~{fragments/navbar :: navbar}"></div>
 
     <main>
+        <!-- Cabecera con título dinámico (Nuevo / Editar) y un pequeño badge
+             cuando es edición para que el admin sepa en qué producto está. -->
         <div class="bg-white border-bottom py-4 mb-4">
-            <div class="container d-flex align-items-center justify-content-between">
+            <div class="container d-flex align-items-center justify-content-between flex-wrap gap-2">
                 <div>
-                    <h1 class="fw-bold fs-3 mb-0"
-                        th:text="${producto.id != null} ? 'Editar producto' : 'Nuevo producto'">Nuevo producto</h1>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <h1 class="fw-bold fs-3 mb-0"
+                            th:text="${producto.id != null} ? 'Editar producto' : 'Nuevo producto'">Nuevo producto</h1>
+                        <span class="badge rounded-pill bg-light text-muted border"
+                              th:if="${producto.id != null}"
+                              th:text="'#' + ${producto.id}">#0</span>
+                    </div>
                     <p class="text-muted small mb-0">Panel de administración · TechStore</p>
                 </div>
-                <a th:href="@{/admin/dashboard}" class="btn btn-outline-secondary btn-sm rounded-pill">
+                <a th:href="@{/admin/productos}" class="btn btn-outline-secondary btn-sm rounded-pill">
                     <i class="bi bi-arrow-left me-1"></i>Volver
                 </a>
             </div>
         </div>
 
         <div class="container pb-5">
-            <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 mx-auto" style="max-width: 640px;">
+            <!-- Mismo form para crear y editar: el action cambia según haya id o no. -->
+            <form th:action="${producto.id != null} ? @{/admin/producto/editar/{id}(id=${producto.id})} : @{/admin/producto/nuevo}"
+                  th:object="${producto}" method="post">
 
-                <!-- Mismo form para crear y editar: el action cambia según haya id o no. -->
-                <form th:action="${producto.id != null} ? @{/admin/producto/editar/{id}(id=${producto.id})} : @{/admin/producto/nuevo}"
-                      th:object="${producto}" method="post">
+                <div class="row g-4">
 
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Nombre</label>
-                        <input type="text" th:field="*{nombre}"
-                               th:errorclass="is-invalid" class="form-control" />
-                        <div class="invalid-feedback" th:errors="*{nombre}"></div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Marca</label>
-                        <input type="text" th:field="*{marca}"
-                               th:errorclass="is-invalid" class="form-control" />
-                        <div class="invalid-feedback" th:errors="*{marca}"></div>
-                    </div>
-
-                    <div class="row g-3 mb-3">
-                        <div class="col-sm-6">
-                            <label class="form-label fw-semibold">Precio (€)</label>
-                            <input type="number" th:field="*{precio}"
-                                   th:errorclass="is-invalid" class="form-control" step="0.01" />
-                            <div class="invalid-feedback" th:errors="*{precio}"></div>
-                        </div>
-                        <div class="col-sm-6">
-                            <label class="form-label fw-semibold">Stock (uds.)</label>
-                            <input type="number" th:field="*{stock}"
-                                   th:errorclass="is-invalid" class="form-control" />
-                            <div class="invalid-feedback" th:errors="*{stock}"></div>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Garantía (meses)</label>
-                        <input type="number" th:field="*{garantiaMeses}"
-                               th:errorclass="is-invalid" class="form-control" />
-                        <div class="invalid-feedback" th:errors="*{garantiaMeses}"></div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">URL de imagen</label>
-                        <input type="url" class="form-control" th:field="*{imagenUrl}"
-                               placeholder="https://..." />
-                    </div>
-
-                    <div class="mb-4">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox"
-                                   th:field="*{refurbished}" id="refurbished" />
-                            <label class="form-check-label" for="refurbished">
-                                Producto reacondicionado
-                            </label>
+                    <!-- Columna izquierda: preview en vivo -->
+                    <div class="col-lg-5">
+                        <div class="card border-0 shadow-sm rounded-4 overflow-hidden ts-product-preview" style="position: sticky; top: 80px;">
+                            <div class="ratio ratio-1x1 bg-light">
+                                <!-- Imagen real (si hay URL). Usamos d-none en lugar de style="display:none"
+                                     porque dentro de .ratio los hijos son position:absolute y se solapan,
+                                     y los display de Bootstrap llevan !important. -->
+                                <img id="previewImg"
+                                     class="object-fit-contain p-4"
+                                     th:classappend="${producto.imagenUrl == null or producto.imagenUrl.isEmpty()} ? 'd-none' : ''"
+                                     th:src="${producto.imagenUrl}"
+                                     alt="Vista previa del producto" />
+                                <!-- Placeholder si aún no hay URL o si la imagen falla al cargar.
+                                     Las clases d-flex / d-none se intercambian; nunca conviven. -->
+                                <div id="previewPlaceholder"
+                                     class="flex-column align-items-center justify-content-center text-muted"
+                                     th:classappend="${producto.imagenUrl == null or producto.imagenUrl.isEmpty()} ? 'd-flex' : 'd-none'">
+                                    <i class="bi bi-image fs-1 opacity-25 mb-2"></i>
+                                    <p class="small mb-0">Sin imagen</p>
+                                    <p class="small text-secondary mb-0">Pega una URL para previsualizar</p>
+                                </div>
+                            </div>
+                            <!-- Resumen rápido de marca + nombre + precio bajo la imagen -->
+                            <div class="p-3 border-top">
+                                <div class="small text-muted text-uppercase fw-semibold ts-label-sm mb-1"
+                                     id="previewMarca"
+                                     th:text="${producto.marca} ?: 'Marca'">Marca</div>
+                                <div class="fw-semibold mb-2"
+                                     id="previewNombre"
+                                     th:text="${producto.nombre} ?: 'Nombre del producto'">Nombre del producto</div>
+                                <div class="fw-bold fs-5"
+                                     id="previewPrecio"
+                                     th:text="${producto.precio != null} ? ${#numbers.formatDecimal(producto.precio,1,'POINT',2,'COMMA')} + ' €' : '0,00 €'">0,00 €</div>
+                            </div>
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-dark rounded-pill w-100 py-2">
-                        <i th:class="${producto.id != null} ? 'bi bi-floppy me-1' : 'bi bi-plus-lg me-1'"></i>
-                        <span th:text="${producto.id != null} ? 'Guardar cambios' : 'Guardar producto'">Guardar producto</span>
-                    </button>
+                    <!-- Columna derecha: formulario -->
+                    <div class="col-lg-7">
+                        <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5">
 
-                </form>
-            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Nombre</label>
+                                <input type="text" id="campoNombre" th:field="*{nombre}"
+                                       th:errorclass="is-invalid" class="form-control form-control-lg" />
+                                <div class="invalid-feedback" th:errors="*{nombre}"></div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Marca</label>
+                                <input type="text" id="campoMarca" th:field="*{marca}"
+                                       th:errorclass="is-invalid" class="form-control" />
+                                <div class="invalid-feedback" th:errors="*{marca}"></div>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-sm-6">
+                                    <label class="form-label fw-semibold">Precio (€)</label>
+                                    <div class="input-group">
+                                        <input type="number" id="campoPrecio" th:field="*{precio}"
+                                               th:errorclass="is-invalid" class="form-control"
+                                               step="0.01" min="0" />
+                                        <span class="input-group-text bg-light text-muted">€</span>
+                                        <div class="invalid-feedback" th:errors="*{precio}"></div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="form-label fw-semibold">Stock (uds.)</label>
+                                    <input type="number" th:field="*{stock}"
+                                           th:errorclass="is-invalid" class="form-control"
+                                           min="0" />
+                                    <div class="invalid-feedback" th:errors="*{stock}"></div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Garantía (meses)</label>
+                                <input type="number" th:field="*{garantiaMeses}"
+                                       th:errorclass="is-invalid" class="form-control"
+                                       min="0" />
+                                <div class="invalid-feedback" th:errors="*{garantiaMeses}"></div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">URL de imagen</label>
+                                <input type="url" id="campoImagen" class="form-control" th:field="*{imagenUrl}"
+                                       placeholder="https://..." />
+                                <div class="form-text small">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    La vista previa se actualiza automáticamente.
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch"
+                                           th:field="*{refurbished}" id="refurbished" />
+                                    <label class="form-check-label fw-semibold" for="refurbished">
+                                        Producto reacondicionado
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Acciones: guardar + cancelar/volver -->
+                            <div class="d-flex gap-2 flex-column flex-sm-row">
+                                <a th:href="@{/admin/productos}"
+                                   class="btn btn-outline-secondary rounded-pill px-4 py-2 order-sm-1">
+                                    Cancelar
+                                </a>
+                                <button type="submit" class="btn btn-dark rounded-pill px-4 py-2 flex-fill order-sm-2">
+                                    <i th:class="${producto.id != null} ? 'bi bi-floppy me-1' : 'bi bi-plus-lg me-1'"></i>
+                                    <span th:text="${producto.id != null} ? 'Guardar cambios' : 'Guardar producto'">Guardar producto</span>
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </form>
         </div>
     </main>
 
     <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script th:src="@{/js/admin/producto-form.js}" defer></script>
 
 </body>
 </html>

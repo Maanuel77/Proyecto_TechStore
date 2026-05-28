@@ -32,7 +32,8 @@ INSERT INTO usuarios (user_type, username, password, email, fullname, telefono, 
   ('CLIENTE', 'irene.vargas',     '{noop}irene',   'irene.vargas@example.com',      'Irene Vargas',       '633000004', FALSE),
   ('CLIENTE', 'sergio.navas',     '{noop}sergio',  'sergio.navas@example.com',      'Sergio Navas',       '633000005', FALSE),
   ('CLIENTE', 'julia.alonso',     '{noop}julia',   'julia.alonso@example.com',      'Julia Alonso',       '633000006', FALSE),
-  ('CLIENTE', 'hector.mendez',    '{noop}hector',  'hector.mendez@example.com',     'Hector Mendez',      '633000007', FALSE);
+  ('CLIENTE', 'sebastian.mendez', '{noop}sebastian','sebastian.mendez@example.com', 'Sebastian Mendez',   '633000007', FALSE),
+  ('CLIENTE', 'ariadna.perez',    '{noop}ariadna', 'ariadna.perez@example.com',     'Ariadna Pérez',      '633000007', FALSE);
 
 -- ======================================================================
 -- PRODUCTOS (30 articulos de 10 marcas distintas)
@@ -287,3 +288,21 @@ INSERT INTO linea_pedido (id, cantidad, precio_unitario, subtotal, garantia_exte
   (76, 1,  549.0,  549.0, FALSE,   0.0, 11, 58);  -- David: AirPods Max
 
 ALTER SEQUENCE linea_pedido_seq RESTART WITH 77;
+
+-- ======================================================================
+-- CUPONES — configuración global + cupones públicos de ejemplo
+-- ======================================================================
+
+-- Configuración del programa de fidelidad (única fila, id=1).
+--   umbralFidelidad   = 5000   → gasto histórico para recibir cupón.
+--   descuentoFidelidad = 0.25  → 25% de descuento.
+INSERT INTO configuracion_app (id, umbral_fidelidad, descuento_fidelidad) VALUES
+  (1, 5000.0, 0.25);
+
+-- Cupones públicos de ejemplo (el admin puede añadir más desde /admin/cupones).
+INSERT INTO cupon (id, codigo, descuento, tipo, activo, id_cliente) VALUES
+  (1, 'BIENVENIDA10',   0.10, 'PUBLICO', TRUE, NULL),
+  (2, 'BLACKFRIDAY30',  0.30, 'PUBLICO', TRUE, NULL),
+  (3, 'NAVIDAD20',      0.20, 'PUBLICO', TRUE, NULL);
+
+ALTER SEQUENCE cupon_seq RESTART WITH 4;

@@ -3,6 +3,7 @@ package com.salesianos.triana.techstore.controller;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -13,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.salesianos.triana.techstore.cupon.Cupon;
+import com.salesianos.triana.techstore.cupon.CuponService;
 import com.salesianos.triana.techstore.dto.ProductoTopDto;
 import com.salesianos.triana.techstore.model.CarritoItem;
 import com.salesianos.triana.techstore.model.LineaPedido;
@@ -39,10 +42,11 @@ public class CarritoController {
     private final CarritoService carritoService;
     private final ProductoService productoService;
     private final PedidoService pedidoService;
+    private final CuponService cuponService;
 
 
     @GetMapping
-    public String verCarrito(Model model) {
+    public String verCarrito(@AuthenticationPrincipal Cliente cliente, Model model) {
         Map<Long, CarritoItem> items = carritoService.getItems();
         model.addAttribute("items", items);
         model.addAttribute("subtotal", carritoService.calcularSubtotal());
@@ -51,8 +55,12 @@ public class CarritoController {
         model.addAttribute("envioGratisDesde", ENVIO_GRATIS_DESDE);
         model.addAttribute("cuponAplicado", carritoService.getCuponAplicado());
         model.addAttribute("porcentajeDescuento", carritoService.getPorcentajeDescuento());
+        // Si el cliente tiene cupón de fidelidad asignado, lo mostramos como
+        // sugerencia en el sidebar (encima del input).
+        Optional<Cupon> fidelidad = cuponService.getCuponFidelidad(cliente);
+        model.addAttribute("cuponFidelidad", fidelidad.orElse(null));
         // Top productos para el bloque "Te puede interesar", excluyendo los
-        // que ya están en el carrito. Pedimos algunos más por si filtramos.
+        // que ya están en el carrito.
         List<Producto> sugeridos = productoService.findTopVendidos(N_SUGERIDOS + items.size()).stream()
                 .map(ProductoTopDto::producto)
                 .filter(p -> !items.containsKey(p.getId()))
@@ -112,13 +120,19 @@ public class CarritoController {
         return "redirect:/carrito";
     }
 
-    // === Cupón ============================================================
+    // Cupón
 
     @GetMapping("/cupon/aplicar")
-    public String aplicarCupon(@RequestParam String codigo, RedirectAttributes ra) {
-        if (carritoService.aplicarCupon(codigo)) {
+    public String aplicarCupon(@AuthenticationPrincipal Cliente cliente,
+                               @RequestParam String codigo,
+                               RedirectAttributes ra) {
+        Optional<Cupon> cupon = cuponService.validar(codigo, cliente);
+        if (cupon.isPresent()) {
+            Cupon c = cupon.get();
+            carritoService.aplicarCupon(c.getCodigo(), c.getDescuento());
+            int pct = (int) Math.round(c.getDescuento() * 100);
             ra.addFlashAttribute("exitoMensaje",
-                    "¡Cupón aplicado! Descuento del 80 % activado.");
+                    "¡Cupón aplicado! Descuento del " + pct + "% activado.");
         } else {
             ra.addFlashAttribute("errorCarrito",
                     "El código \"" + codigo + "\" no es válido o ha caducado.");
@@ -133,7 +147,7 @@ public class CarritoController {
         return "redirect:/carrito";
     }
 
-    // === Tramitación ======================================================
+    // Tramitación
 
     // Convierte el carrito en sesión en un Pedido persistido en BD.
     // El @AuthenticationPrincipal Cliente lo entrega Spring directamente
@@ -147,12 +161,15 @@ public class CarritoController {
         // Copia previa: si el guardado falla, el carrito sigue intacto;
         // si va bien, mostramos esta copia en la página de confirmación.
         Map<Long, CarritoItem> itemsConfirmados = new LinkedHashMap<>(carritoService.getItems());
-        boolean conCupon = carritoService.tieneCupon();
-        double totalConDescuento = carritoService.calcularTotal();
+        String cuponCodigo = carritoService.getCuponAplicado();      // null si no hay cupón
+        double cuponPct    = carritoService.getPorcentajeDescuento(); // 0 si no hay cupón
 
-        // Construimos el Pedido y sus líneas a partir del carrito.
+        // Construimos el Pedido con el snapshot del cupón aplicado (si lo hay).
+        // El descuento se calcula dentro de guardarPedido a partir de cuponDescuento.
         Pedido pedido = Pedido.builder()
                 .cliente(cliente)
+                .cuponCodigo(cuponCodigo)
+                .cuponDescuento(cuponCodigo != null ? cuponPct : null)
                 .build();
 
         for (CarritoItem item : itemsConfirmados.values()) {
@@ -165,20 +182,24 @@ public class CarritoController {
             pedido.addLineaPedido(linea);
         }
 
+        // Persistir: reduce stock, calcula subtotal por líneas y total con descuento.
         pedidoService.guardarPedido(pedido);
 
-        // Si había cupón aplicado, sobrescribimos el total del pedido con el
-        // ya descontado (guardarPedido lo recalcula desde las líneas).
-        if (conCupon) {
-            pedido.setTotal(totalConDescuento);
-            pedidoService.edit(pedido);
+        // Consumir el cupón usado. Si era FIDELIDAD se desactiva (single-use);
+        // si era PUBLICO se queda como estaba (sigue valiendo para otros clientes).
+        if (cuponCodigo != null) {
+            cuponService.consumir(cuponCodigo);
         }
 
-        // Solo si todo ha ido bien vaciamos el carrito (esto también limpia el cupón).
+        // Tras la compra, ver si el cliente acaba de cruzar el siguiente
+        // umbral acumulativo de fidelidad y asignarle un cupón nuevo.
+        cuponService.asignarFidelidadSiProcede(cliente);
+
+        // Vaciamos el carrito (limpia también el cupón aplicado en sesión).
         carritoService.vaciarCarrito();
 
         model.addAttribute("items", itemsConfirmados);
-        model.addAttribute("total", totalConDescuento);
+        model.addAttribute("total", pedido.getTotal());
         return "carrito/confirmacion";
     }
 

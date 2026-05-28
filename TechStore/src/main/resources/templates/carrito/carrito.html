@@ -209,6 +209,34 @@
 							<span class="text-muted" th:unless="${envioGratis}">A calcular</span>
 						</div>
 
+						<!-- Sugerencia de cupón de fidelidad si el cliente tiene uno asignado -->
+						<div class="mb-3"
+						     th:if="${cuponFidelidad != null and cuponAplicado == null}">
+							<div class="card border-0 rounded-3 bg-warning-subtle p-3">
+								<div class="d-flex align-items-start gap-2 mb-2">
+									<i class="bi bi-stars text-warning fs-5"></i>
+									<div class="flex-grow-1">
+										<div class="fw-bold small">¡Tienes un cupón de fidelidad!</div>
+										<div class="small text-muted">
+											Por ser cliente top, disfruta de un
+											<strong th:text="${T(java.lang.Math).round(cuponFidelidad.descuento * 100)} + '%'"></strong>
+											de descuento.
+										</div>
+									</div>
+								</div>
+								<div class="d-flex gap-2 align-items-center">
+									<code class="ts-mono fw-bold bg-white rounded-pill px-3 py-2 flex-grow-1 text-center"
+									      th:text="${cuponFidelidad.codigo}">FID-XXXXXX</code>
+									<form th:action="@{/carrito/cupon/aplicar}" method="get">
+										<input type="hidden" name="codigo" th:value="${cuponFidelidad.codigo}" />
+										<button type="submit" class="btn btn-warning rounded-pill px-3 fw-semibold">
+											Aplicar
+										</button>
+									</form>
+								</div>
+							</div>
+						</div>
+
 						<!-- Cupón: form de aplicar (si no hay) o badge con quitar (si hay) -->
 						<div class="mb-3" th:if="${cuponAplicado == null}">
 							<label class="form-label small fw-semibold text-muted text-uppercase ts-label-sm mb-1">

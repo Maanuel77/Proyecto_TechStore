@@ -49,6 +49,12 @@ public class Pedido {
     private LocalDate fecha;
     private Double total;
 
+    // Snapshot del cupón aplicado en el momento de la compra. NO es una FK al
+    // cupón porque el admin puede borrarlo o cambiar el % y queremos conservar
+    // la información histórica intacta (igual que se congela el precio en LineaPedido).
+    private String cuponCodigo;
+    private Double cuponDescuento;  // fracción 0–1 (p.ej. 0.25 = 25%)
+
     // LAZY: en las vistas que necesitan al cliente, usamos JOIN FETCH en la query.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_cliente",

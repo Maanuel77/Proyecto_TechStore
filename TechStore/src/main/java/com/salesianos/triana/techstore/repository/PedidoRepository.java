@@ -69,6 +69,11 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
     @Query("select count(distinct p.cliente) from Pedido p where p.cliente is not null")
     Long countClientesActivos();
 
+    // Gasto histórico total de un cliente. Lo usa CuponService para decidir
+    // si ya cumple el umbral de fidelidad.
+    @Query("select coalesce(sum(p.total), 0) from Pedido p where p.cliente.id = :clienteId")
+    Double sumGastoByClienteId(Long clienteId);
+
     // KPIs del rango de fechas (todos protegidos con coalesce contra null).
     @Query("select coalesce(sum(p.total), 0) from Pedido p where p.fecha between :desde and :hasta")
     Double getTotalIngresosBetween(LocalDate desde, LocalDate hasta);

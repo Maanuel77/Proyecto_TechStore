@@ -69,6 +69,9 @@
 								        th:data-codigo="${ped.codigo}"
 								        th:data-fecha="${#temporals.format(ped.fecha, 'dd/MM/yyyy')}"
 								        th:data-total="${#numbers.formatDecimal(ped.total,1,'POINT',2,'COMMA')}"
+								        th:data-total-raw="${ped.total}"
+								        th:data-cupon-codigo="${ped.cuponCodigo}"
+								        th:data-cupon-descuento="${ped.cuponDescuento}"
 								        th:data-lineas="${ped.id}">
 									<i class="bi bi-eye me-1"></i>Ver detalle
 								</button>
@@ -136,11 +139,31 @@
 						</tbody>
 					</table>
 
-					<div class="d-flex justify-content-between align-items-center pt-3 border-top">
-						<span class="fw-semibold">Total</span>
-						<span class="fw-bold fs-4">
-							<span id="modalTotal">0,00</span> €
-						</span>
+					<div class="pt-3 border-top">
+						<!-- Subtotal y descuento solo se ven si el pedido tuvo cupón.
+						     Arrancan con d-none (display:none !important) y NO con d-flex,
+						     porque Bootstrap define d-flex después en su CSS y ganaría.
+						     El JS añade d-flex y quita d-none cuando hay cupón. -->
+						<div class="d-none justify-content-between mb-2 small text-muted" id="modalSubtotalRow">
+							<span>Subtotal</span>
+							<span><span id="modalSubtotal">0,00</span> €</span>
+						</div>
+						<div class="d-none justify-content-between mb-2 small" id="modalDescuentoRow">
+							<span class="text-success fw-semibold">
+								<i class="bi bi-tag-fill me-1"></i>
+								Cupón <span id="modalCuponCodigo"></span>
+								(-<span id="modalCuponPct">0</span>%)
+							</span>
+							<span class="text-success fw-semibold">
+								-<span id="modalDescuentoImporte">0,00</span> €
+							</span>
+						</div>
+						<div class="d-flex justify-content-between align-items-center">
+							<span class="fw-semibold">Total</span>
+							<span class="fw-bold fs-4">
+								<span id="modalTotal">0,00</span> €
+							</span>
+						</div>
 					</div>
 				</div>
 
