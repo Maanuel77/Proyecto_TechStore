@@ -36,8 +36,10 @@ public class CuponService {
         if (umbral < 0) {
             throw new IllegalArgumentException("El umbral no puede ser negativo.");
         }
-        if (descuento < 0 || descuento > 1) {
-            throw new IllegalArgumentException("El descuento debe estar entre 0 y 1.");
+        // Mismo criterio que crearCuponPublico: descuento estrictamente > 0.
+        // Un cupón con 0% no tiene sentido y solo confundiría al cliente.
+        if (descuento <= 0 || descuento > 1) {
+            throw new IllegalArgumentException("El descuento debe estar entre 0 y 1 (excl. 0).");
         }
         ConfiguracionApp c = getConfiguracion();
         c.setUmbralFidelidad(umbral);
@@ -92,36 +94,44 @@ public class CuponService {
         cuponRepository.delete(c);
     }
 
-    // Lógica de fidelidad 
-    
-    // Cupón de fidelidad asignado al cliente (si ya tiene uno).
+    // Lógica de fidelidad
+
+    // Cupón de fidelidad disponible AHORA mismo para el cliente (activo).
+    // Como los FIDELIDAD son single-use, solo puede haber 1 activo a la vez.
     @Transactional(readOnly = true)
     public Optional<Cupon> getCuponFidelidad(Cliente cliente) {
         if (cliente == null) return Optional.empty();
-        return cuponRepository.findByClienteIdAndTipo(cliente.getId(), TipoCupon.FIDELIDAD);
+        return cuponRepository.findByClienteIdAndTipoAndActivoTrue(cliente.getId(), TipoCupon.FIDELIDAD);
     }
 
-    // Si el cliente cumple el umbral y no tiene cupón de fidelidad, se lo
-    // crea con código aleatorio y descuento de la configuración actual.
-    // Devuelve el cupón resultante (el nuevo o el ya existente) o vacío si
-    // todavía no cumple el umbral.
+    // Genera un cupón de fidelidad nuevo SI el cliente cumple las condiciones:
+    //   - No tiene ningún FIDELIDAD activo ahora mismo.
+    //   - Su gasto histórico cubre el umbral ACUMULATIVO: el N-ésimo cupón
+    //     requiere haber gastado N · umbral. Así, un cliente con cupones
+    //     ya consumidos solo recibe otro cuando vuelve a "ganárselo".
+    // Devuelve el cupón resultante (el nuevo o el activo existente) o vacío.
     @Transactional
     public Optional<Cupon> asignarFidelidadSiProcede(Cliente cliente) {
         if (cliente == null) return Optional.empty();
 
-        // ¿Ya tiene cupón de fidelidad? Devolver el existente.
-        Optional<Cupon> existente = getCuponFidelidad(cliente);
-        if (existente.isPresent()) return existente;
+        // 1) Si ya tiene uno ACTIVO, no le damos otro hasta que lo consuma.
+        Optional<Cupon> activo = getCuponFidelidad(cliente);
+        if (activo.isPresent()) return activo;
 
-        // ¿Cumple el umbral?
+        // 2) Umbral acumulativo: cuántos FIDELIDAD ha tenido en total (activos o ya
+        //    consumidos). Para el siguiente cupón necesita gastar (n+1) · umbral.
+        long cuponesHastaAhora = cuponRepository.countByClienteIdAndTipo(
+                cliente.getId(), TipoCupon.FIDELIDAD);
         ConfiguracionApp cfg = getConfiguracion();
+        double umbralRequerido = (cuponesHastaAhora + 1) * cfg.getUmbralFidelidad();
+
         Double gasto = pedidoRepository.sumGastoByClienteId(cliente.getId());
         double gastoActual = gasto != null ? gasto : 0.0;
-        if (gastoActual < cfg.getUmbralFidelidad()) {
+        if (gastoActual < umbralRequerido) {
             return Optional.empty();
         }
 
-        // Generar cupón nuevo con código aleatorio único.
+        // 3) Generar cupón nuevo con código aleatorio único.
         String codigo;
         do {
             codigo = "FID-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
@@ -135,6 +145,20 @@ public class CuponService {
                 .activo(true)
                 .build();
         return Optional.of(cuponRepository.save(nuevo));
+    }
+
+    // Marca como consumido el cupón aplicado en un pedido. Lo llama el
+    // CarritoController tras tramitar. Los FIDELIDAD se desactivan (single-use);
+    // los PUBLICO no se tocan (siguen valiendo para futuras compras de otros).
+    @Transactional
+    public void consumir(String codigo) {
+        if (codigo == null || codigo.isBlank()) return;
+        cuponRepository.findByCodigoIgnoreCase(codigo.trim())
+                .filter(c -> c.getTipo() == TipoCupon.FIDELIDAD)
+                .ifPresent(c -> {
+                    c.setActivo(false);
+                    cuponRepository.save(c);
+                });
     }
 
     // Validación al aplicar en el carrito
