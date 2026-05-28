@@ -10,29 +10,29 @@
 --   15=rafael 16=clara 17=miguel 18=irene 19=sergio 20=julia 21=hector
 -- ======================================================================
 INSERT INTO usuarios (user_type, username, password, email, fullname, telefono, superadmin) VALUES
-  ('ADMIN',   'admin',            '{noop}admin123',   'admin@techstore.com',           'Administrador TechStore', '600000001', TRUE);
+  ('ADMIN',   'admin',            '{noop}admin',   'admin@admin.com',               'Administrador TechStore', '600000001', TRUE);
 
 INSERT INTO usuarios (user_type, username, password, email, fullname, telefono, superadmin) VALUES
-  ('CLIENTE', 'cliente',          '{noop}cliente123', 'cliente@techstore.com',         'Cliente de Prueba',  '600000002', FALSE),
-  ('CLIENTE', 'sara.ruiz',        '{noop}sara123',    'sara.ruiz@techstore.com',       'Sara Ruiz',          '611000001', FALSE),
-  ('CLIENTE', 'lucia.garcia',     '{noop}lucia123',   'lucia.garcia@example.com',      'Lucia Garcia',       '611000002', FALSE),
-  ('CLIENTE', 'javier.romero',    '{noop}javier123',  'javier.romero@example.com',     'Javier Romero',      '611000003', FALSE),
-  ('CLIENTE', 'marta.sanchez',    '{noop}marta123',   'marta.sanchez@example.com',     'Marta Sanchez',      '611000004', FALSE),
-  ('CLIENTE', 'carlos.fernandez', '{noop}carlos123',  'carlos.fernandez@example.com',  'Carlos Fernandez',   '611000005', FALSE),
-  ('CLIENTE', 'ana.lopez',        '{noop}ana123',     'ana.lopez@example.com',         'Ana Lopez',          '611000006', FALSE),
-  ('CLIENTE', 'david.martin',     '{noop}david123',   'david.martin@example.com',      'David Martin',       '622000001', FALSE),
-  ('CLIENTE', 'laura.gomez',      '{noop}laura123',   'laura.gomez@example.com',       'Laura Gomez',        '622000002', FALSE),
-  ('CLIENTE', 'pablo.ruiz',       '{noop}pablo123',   'pablo.ruiz@example.com',        'Pablo Ruiz',         '622000003', FALSE),
-  ('CLIENTE', 'elena.diaz',       '{noop}elena123',   'elena.diaz@example.com',        'Elena Diaz',         '622000004', FALSE),
-  ('CLIENTE', 'alvaro.serrano',   '{noop}alvaro123',  'alvaro.serrano@example.com',    'Alvaro Serrano',     '622000005', FALSE),
-  ('CLIENTE', 'nuria.castro',     '{noop}nuria123',   'nuria.castro@example.com',      'Nuria Castro',       '622000006', FALSE),
-  ('CLIENTE', 'rafael.ortiz',     '{noop}rafael123',  'rafael.ortiz@example.com',      'Rafael Ortiz',       '633000001', FALSE),
-  ('CLIENTE', 'clara.molina',     '{noop}clara123',   'clara.molina@example.com',      'Clara Molina',       '633000002', FALSE),
-  ('CLIENTE', 'miguel.torres',    '{noop}miguel123',  'miguel.torres@example.com',     'Miguel Torres',      '633000003', FALSE),
-  ('CLIENTE', 'irene.vargas',     '{noop}irene123',   'irene.vargas@example.com',      'Irene Vargas',       '633000004', FALSE),
-  ('CLIENTE', 'sergio.navas',     '{noop}sergio123',  'sergio.navas@example.com',      'Sergio Navas',       '633000005', FALSE),
-  ('CLIENTE', 'julia.alonso',     '{noop}julia123',   'julia.alonso@example.com',      'Julia Alonso',       '633000006', FALSE),
-  ('CLIENTE', 'hector.mendez',    '{noop}hector123',  'hector.mendez@example.com',     'Hector Mendez',      '633000007', FALSE);
+  ('CLIENTE', 'user',             '{noop}user',    'user@user.com',                 'Cliente de Prueba',  '600000002', FALSE),
+  ('CLIENTE', 'sara.ruiz',        '{noop}sara',    'sara.ruiz@techstore.com',       'Sara Ruiz',          '611000001', FALSE),
+  ('CLIENTE', 'lucia.garcia',     '{noop}lucia',   'lucia.garcia@example.com',      'Lucia Garcia',       '611000002', FALSE),
+  ('CLIENTE', 'javier.romero',    '{noop}javier',  'javier.romero@example.com',     'Javier Romero',      '611000003', FALSE),
+  ('CLIENTE', 'marta.sanchez',    '{noop}marta',   'marta.sanchez@example.com',     'Marta Sanchez',      '611000004', FALSE),
+  ('CLIENTE', 'carlos.fernandez', '{noop}carlos',  'carlos.fernandez@example.com',  'Carlos Fernandez',   '611000005', FALSE),
+  ('CLIENTE', 'ana.lopez',        '{noop}ana',     'ana.lopez@example.com',         'Ana Lopez',          '611000006', FALSE),
+  ('CLIENTE', 'david.martin',     '{noop}david',   'david.martin@example.com',      'David Martin',       '622000001', FALSE),
+  ('CLIENTE', 'laura.gomez',      '{noop}laura',   'laura.gomez@example.com',       'Laura Gomez',        '622000002', FALSE),
+  ('CLIENTE', 'pablo.ruiz',       '{noop}pablo',   'pablo.ruiz@example.com',        'Pablo Ruiz',         '622000003', FALSE),
+  ('CLIENTE', 'elena.diaz',       '{noop}elena',   'elena.diaz@example.com',        'Elena Diaz',         '622000004', FALSE),
+  ('CLIENTE', 'alvaro.serrano',   '{noop}alvaro',  'alvaro.serrano@example.com',    'Alvaro Serrano',     '622000005', FALSE),
+  ('CLIENTE', 'nuria.castro',     '{noop}nuria',   'nuria.castro@example.com',      'Nuria Castro',       '622000006', FALSE),
+  ('CLIENTE', 'rafael.ortiz',     '{noop}rafael',  'rafael.ortiz@example.com',      'Rafael Ortiz',       '633000001', FALSE),
+  ('CLIENTE', 'clara.molina',     '{noop}clara',   'clara.molina@example.com',      'Clara Molina',       '633000002', FALSE),
+  ('CLIENTE', 'miguel.torres',    '{noop}miguel',  'miguel.torres@example.com',     'Miguel Torres',      '633000003', FALSE),
+  ('CLIENTE', 'irene.vargas',     '{noop}irene',   'irene.vargas@example.com',      'Irene Vargas',       '633000004', FALSE),
+  ('CLIENTE', 'sergio.navas',     '{noop}sergio',  'sergio.navas@example.com',      'Sergio Navas',       '633000005', FALSE),
+  ('CLIENTE', 'julia.alonso',     '{noop}julia',   'julia.alonso@example.com',      'Julia Alonso',       '633000006', FALSE),
+  ('CLIENTE', 'hector.mendez',    '{noop}hector',  'hector.mendez@example.com',     'Hector Mendez',      '633000007', FALSE);
 
 -- ======================================================================
 -- PRODUCTOS (30 articulos de 10 marcas distintas)
