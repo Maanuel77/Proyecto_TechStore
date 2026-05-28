@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.salesianos.triana.techstore.dto.ProductoStockDto;
 import com.salesianos.triana.techstore.model.Pedido;
 import com.salesianos.triana.techstore.model.Producto;
 import com.salesianos.triana.techstore.service.PedidoService;
@@ -37,12 +38,24 @@ public class AdminController {
     private final UserService userService;
 
     @GetMapping("/dashboard")
-    public String dashboard(Model model) {
+    public String dashboard(@RequestParam(defaultValue = "5") int umbralStock,
+                            Model model) {
         // count() emite SELECT COUNT(*), no trae las filas a memoria.
         model.addAttribute("productos", productoService.count());
         model.addAttribute("pedidos",   pedidoService.count());
         model.addAttribute("clientes",  userService.count());
-        model.addAttribute("bajoStock", productoService.lowStock());
+
+        // Alertas de stock con contexto de ventas (últimos 30 días).
+        List<ProductoStockDto> stockBajo = productoService.stockBajoConVentas(umbralStock);
+        model.addAttribute("stockBajo", stockBajo);
+        model.addAttribute("umbralStock", umbralStock);
+        // Conteos por gravedad para los KPI cards de la sección.
+        long nAgotados = stockBajo.stream().filter(s -> "AGOTADO".equals(s.getGravedad())).count();
+        long nCriticos = stockBajo.stream().filter(s -> "CRITICO".equals(s.getGravedad())).count();
+        long nBajos    = stockBajo.stream().filter(s -> "BAJO".equals(s.getGravedad())).count();
+        model.addAttribute("nAgotados", nAgotados);
+        model.addAttribute("nCriticos", nCriticos);
+        model.addAttribute("nBajos",    nBajos);
         return "admin/dashboard";
     }
 

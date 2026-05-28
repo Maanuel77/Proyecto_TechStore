@@ -55,6 +55,8 @@
 .ts-icon-green  { background: #dcfce7; color: #15803d; }
 .ts-icon-orange { background: #fef3c7; color: #92400e; }
 .ts-icon-purple { background: #f3e8ff; color: #7c3aed; }
+.ts-icon-red    { background: #fee2e2; color: #b91c1c; }
+.ts-icon-yellow { background: #fef9c3; color: #a16207; }
 
 /* ── Cabecera de tabla admin (text-transform + letter-spacing) ─────── */
 .ts-th { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
@@ -85,7 +87,7 @@ main { min-height: 72vh; }
 .ts-cart-item { transition: box-shadow .2s ease; }
 .ts-cart-item:hover { box-shadow: 0 8px 24px rgba(0, 0, 0, .08) !important; }
 
-/* ── Carrito: resumen pegado al hacer scroll (solo en desktop) ────── */
+/* ── Carrito: resumen pegado al hacer scroll ────── */
 @media (min-width: 992px) {
   .ts-cart-summary { position: sticky; top: 90px; }
 }
