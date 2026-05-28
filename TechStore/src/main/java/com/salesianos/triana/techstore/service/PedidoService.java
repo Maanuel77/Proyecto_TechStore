@@ -171,9 +171,18 @@ public class PedidoService extends BaseServiceImpl<Pedido, Long, PedidoRepositor
             linea.setSubtotal(p.getPrecio() * linea.getCantidad());
         });
 
-        double total = pedido.getLineas().stream()
+        // Subtotal: precio original × cantidad + garantías. Las líneas se quedan
+        // con el precio sin descuento (es el "precio de catálogo en ese momento").
+        double subtotal = pedido.getLineas().stream()
                 .mapToDouble(l -> l.getSubtotal() + (l.getCosteGarantia() != null ? l.getCosteGarantia() : 0.0))
                 .sum();
+
+        // Si el pedido lleva cupón (lo setea CarritoController antes de guardar),
+        // el total final = subtotal · (1 − %descuento). Si no, total = subtotal.
+        Double descuento = pedido.getCuponDescuento();
+        double total = (descuento != null && descuento > 0)
+                ? subtotal * (1.0 - descuento)
+                : subtotal;
         pedido.setTotal(total);
         return repository.save(pedido);
     }
