@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.salesianos.triana.techstore.dto.MarcaVentasDto;
+import com.salesianos.triana.techstore.dto.ProductoStockDto;
 import com.salesianos.triana.techstore.dto.ProductoTopDto;
 import com.salesianos.triana.techstore.dto.ProductoVentasDto;
 import com.salesianos.triana.techstore.model.Producto;
@@ -22,6 +23,14 @@ public class ProductoService extends BaseServiceImpl<Producto, Long, ProductoRep
     @Transactional(readOnly = true)
     public List<Producto> lowStock() {
         return repository.findByLowAvailability();
+    }
+
+    // Stock bajo enriquecido para el dashboard: lista de productos con
+    // stock <= umbral, cada uno con sus unidades vendidas en los últimos
+    // 30 días. Permite distinguir "crítico" de "tranquilo".
+    @Transactional(readOnly = true)
+    public List<ProductoStockDto> stockBajoConVentas(int umbral) {
+        return repository.findStockBajoConVentas(umbral, LocalDate.now().minusDays(30));
     }
 
     @Transactional(readOnly = true)
