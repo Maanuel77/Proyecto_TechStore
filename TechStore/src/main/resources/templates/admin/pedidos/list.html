@@ -156,7 +156,7 @@
 								        th:data-cliente="${ped.cliente != null} ? ${ped.cliente.fullname} : '—'"
 								        th:data-email="${ped.cliente != null} ? ${ped.cliente.email} : ''"
 								        th:data-total="${#numbers.formatDecimal(ped.total,1,'POINT',2,'COMMA')}"
-								        th:data-total-raw="${ped.total}"
+								        th:data-subtotal-raw="${ped.subtotalSinDescuento}"
 								        th:data-cupon-codigo="${ped.cuponCodigo}"
 								        th:data-cupon-descuento="${ped.cuponDescuento}"
 								        th:data-lineas="${ped.id}">

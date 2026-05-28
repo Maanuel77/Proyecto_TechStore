@@ -20,20 +20,21 @@
 
 		// Filas de subtotal y descuento: solo si el pedido tenía cupón aplicado.
 		// Validamos: cuponCodigo no vacío y no literal "null"; descuento numérico > 0.
-		const code      = d.cuponCodigo;
-		const pct       = parseFloat(d.cuponDescuento);
-		const totalRaw  = parseFloat(d.totalRaw);
-		const hayCupon  = code && code !== 'null' && code.trim() !== ''
-		                  && !isNaN(pct) && pct > 0
-		                  && !isNaN(totalRaw);
+		// El subtotal lo calcula el backend (Pedido.getSubtotalSinDescuento) y lo
+		// pasa ya hecho en data-subtotal-raw: el JS solo lo lee.
+		const code        = d.cuponCodigo;
+		const pct         = parseFloat(d.cuponDescuento);
+		const subtotalRaw = parseFloat(d.subtotalRaw);
+		const hayCupon    = code && code !== 'null' && code.trim() !== ''
+		                    && !isNaN(pct) && pct > 0
+		                    && !isNaN(subtotalRaw);
 
 		if (hayCupon) {
-			const subtotal  = totalRaw / (1 - pct);
-			const descuento = subtotal - totalRaw;
-			document.getElementById('modalSubtotal').textContent       = formatEuro(subtotal);
-			document.getElementById('modalDescuentoImporte').textContent = formatEuro(descuento);
-			document.getElementById('modalCuponCodigo').textContent    = code;
-			document.getElementById('modalCuponPct').textContent       = Math.round(pct * 100);
+			const descuentoImporte = subtotalRaw * pct;
+			document.getElementById('modalSubtotal').textContent         = formatEuro(subtotalRaw);
+			document.getElementById('modalDescuentoImporte').textContent = formatEuro(descuentoImporte);
+			document.getElementById('modalCuponCodigo').textContent      = code;
+			document.getElementById('modalCuponPct').textContent         = Math.round(pct * 100);
 			// Mostrar: quita d-none Y añade d-flex (Bootstrap define d-flex después
 			// que d-none en su CSS; si dejásemos las dos, d-flex ganaría).
 			subRow.classList.remove('d-none');

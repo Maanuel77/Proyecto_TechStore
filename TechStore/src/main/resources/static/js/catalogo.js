@@ -50,21 +50,25 @@
 		document.getElementById('modalPrecio').textContent   =
 			Number(d.precio).toFixed(2).replace('.', ',') + ' €';
 
-		const stock = parseInt(d.stock, 10);
+		// El nivel (AGOTADO/BAJO/DISPONIBLE) lo decide el backend (NivelStock.evaluar).
+		// El JS solo lee el data-nivel ya calculado para decidir qué badge mostrar.
+		const stock    = parseInt(d.stock, 10);
+		const nivel    = d.nivel;
+		const agotado  = nivel === 'AGOTADO';
 		toggle('modalBadgeRefurbished', d.refurbished === 'true');
-		toggle('modalBadgeEnStock',     stock > 5);
-		toggle('modalBadgePocas',       stock <= 5 && stock > 0);
-		toggle('modalBadgeAgotado',     stock === 0);
+		toggle('modalBadgeEnStock',     nivel === 'DISPONIBLE');
+		toggle('modalBadgePocas',       nivel === 'BAJO');
+		toggle('modalBadgeAgotado',     agotado);
 
 		form.action          = '/carrito/anadir/' + d.id;
-		cantidadInput.value  = stock > 0 ? 1 : 0;
-		cantidadInput.min    = stock > 0 ? 1 : 0;
+		cantidadInput.value  = agotado ? 0 : 1;
+		cantidadInput.min    = agotado ? 0 : 1;
 		cantidadInput.max    = stock;
-		cantidadInput.disabled = stock === 0;
-		btnMenos.disabled    = stock === 0;
-		btnMas.disabled      = stock === 0;
-		btnAnadir.disabled   = stock === 0;
-		btnAnadir.innerHTML  = stock === 0
+		cantidadInput.disabled = agotado;
+		btnMenos.disabled    = agotado;
+		btnMas.disabled      = agotado;
+		btnAnadir.disabled   = agotado;
+		btnAnadir.innerHTML  = agotado
 			? '<i class="bi bi-x-circle me-1"></i>Sin stock'
 			: '<i class="bi bi-bag-plus me-1"></i>Añadir al carrito';
 	});

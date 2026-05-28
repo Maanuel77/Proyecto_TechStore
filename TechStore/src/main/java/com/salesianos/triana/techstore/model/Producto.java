@@ -9,6 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -60,6 +61,14 @@ public class Producto {
     private Boolean refurbished;
 
     private String imagenUrl;
+
+    // Nivel de disponibilidad calculado a partir del stock. Lo consumen tanto
+    // los templates (`th:if="${p.nivelStock.name() == 'AGOTADO'}"`) como el JS
+    // (a través de data-nivel). Así la regla vive en un único sitio.
+    @Transient
+    public NivelStock getNivelStock() {
+        return NivelStock.evaluar(stock != null ? stock : 0);
+    }
 
     // equals/hashCode basados en id, compatibles con HibernateProxy.
     // Evita los problemas que generaría @Data con lazy loading.

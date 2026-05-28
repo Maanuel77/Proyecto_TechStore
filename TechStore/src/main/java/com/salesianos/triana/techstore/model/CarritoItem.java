@@ -49,4 +49,10 @@ public class CarritoItem implements Serializable {
     public Double getCosteGarantia() {
         return garantiaExtendida ? precio * cantidad * COSTE_GARANTIA_PORCENTAJE : 0.0;
     }
+
+    // Nivel calculado a partir del stockMaximo (snapshot del momento en que se
+    // añadió al carrito). Misma regla que en Producto, vía NivelStock.evaluar.
+    public NivelStock getNivelStock() {
+        return NivelStock.evaluar(stockMaximo != null ? stockMaximo : 0);
+    }
 }

@@ -21,6 +21,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -68,6 +69,19 @@ public class Pedido {
     @ToString.Exclude
     @Builder.Default
     private List<LineaPedido> lineas = new ArrayList<>();
+
+    // Subtotal "de catálogo": precio sin descuentos de las líneas + sus garantías.
+    // Es la fuente de verdad para mostrar el subtotal en el detalle del pedido
+    // (antes el JS lo reconstruía como total / (1-descuento), con riesgo de
+    // imprecisión flotante y duplicando lógica que ya vive aquí).
+    @Transient
+    public double getSubtotalSinDescuento() {
+        if (lineas == null) return 0.0;
+        return lineas.stream()
+                .mapToDouble(l -> (l.getSubtotal() != null ? l.getSubtotal() : 0.0)
+                              + (l.getCosteGarantia() != null ? l.getCosteGarantia() : 0.0))
+                .sum();
+    }
 
     // Helpers para mantener coherente la relación bidireccional.
     public void addLineaPedido(LineaPedido linea) {

@@ -88,9 +88,9 @@
 										<div class="text-muted small">
 											<span th:text="${#numbers.formatDecimal(item.precio,1,'POINT',2,'COMMA')} + ' €'"></span>
 											<span class="mx-1">·</span>
-											<span class="text-success" th:if="${item.stockMaximo > 5}">En stock</span>
+											<span class="text-success" th:if="${item.nivelStock.name() == 'DISPONIBLE'}">En stock</span>
 											<span class="text-warning"
-											      th:if="${item.stockMaximo <= 5 and item.stockMaximo > 0}"
+											      th:if="${item.nivelStock.name() == 'BAJO'}"
 											      th:text="'Solo ' + ${item.stockMaximo} + ' disponibles'"></span>
 										</div>
 									</div>
@@ -300,6 +300,7 @@
 						     th:data-marca="${p.marca}"
 						     th:data-precio="${p.precio}"
 						     th:data-stock="${p.stock}"
+						     th:data-nivel="${p.nivelStock.name()}"
 						     th:data-garantia="${p.garantiaMeses}"
 						     th:data-refurbished="${p.refurbished}"
 						     th:data-imagen="${p.imagenUrl}"
@@ -322,8 +323,8 @@
 									<!-- + rápido sin pasar por el modal. stopPropagation evita abrir el modal. -->
 									<a th:href="@{/carrito/anadir/{id}(id=${p.id},volver='carrito')}"
 									   class="btn btn-dark btn-sm rounded-pill"
-									   th:classappend="${p.stock == 0} ? 'disabled'"
-									   th:title="${p.stock == 0} ? 'Sin stock' : 'Añadir al carrito'"
+									   th:classappend="${p.nivelStock.name() == 'AGOTADO'} ? 'disabled'"
+									   th:title="${p.nivelStock.name() == 'AGOTADO'} ? 'Sin stock' : 'Añadir al carrito'"
 									   onclick="event.stopPropagation();">
 										<i class="bi bi-bag-plus"></i>
 									</a>

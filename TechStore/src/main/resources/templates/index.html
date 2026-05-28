@@ -57,11 +57,11 @@
 								<span class="badge rounded-pill bg-primary-subtle text-primary-emphasis"
 									th:if="${p.refurbished}">Reacondicionado</span>
 								<span class="badge rounded-pill bg-success-subtle text-success-emphasis"
-									th:if="${p.stock > 5}">En stock</span>
+									th:if="${p.nivelStock.name() == 'DISPONIBLE'}">En stock</span>
 								<span class="badge rounded-pill bg-warning-subtle text-warning-emphasis"
-									th:if="${p.stock <= 5 and p.stock > 0}">Pocas unidades</span>
+									th:if="${p.nivelStock.name() == 'BAJO'}">Pocas unidades</span>
 								<span class="badge rounded-pill bg-danger-subtle text-danger-emphasis"
-									th:if="${p.stock == 0}">Agotado</span>
+									th:if="${p.nivelStock.name() == 'AGOTADO'}">Agotado</span>
 							</div>
 							<div class="fw-bold fs-5 mb-3"
 								th:text="${#numbers.formatDecimal(p.precio,1,'POINT',2,'COMMA')} + ' €'"></div>
