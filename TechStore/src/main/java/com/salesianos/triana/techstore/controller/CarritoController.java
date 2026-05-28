@@ -3,6 +3,7 @@ package com.salesianos.triana.techstore.controller;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -13,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.salesianos.triana.techstore.cupon.Cupon;
+import com.salesianos.triana.techstore.cupon.CuponService;
 import com.salesianos.triana.techstore.dto.ProductoTopDto;
 import com.salesianos.triana.techstore.model.CarritoItem;
 import com.salesianos.triana.techstore.model.LineaPedido;
@@ -39,10 +42,11 @@ public class CarritoController {
     private final CarritoService carritoService;
     private final ProductoService productoService;
     private final PedidoService pedidoService;
+    private final CuponService cuponService;
 
 
     @GetMapping
-    public String verCarrito(Model model) {
+    public String verCarrito(@AuthenticationPrincipal Cliente cliente, Model model) {
         Map<Long, CarritoItem> items = carritoService.getItems();
         model.addAttribute("items", items);
         model.addAttribute("subtotal", carritoService.calcularSubtotal());
@@ -51,8 +55,12 @@ public class CarritoController {
         model.addAttribute("envioGratisDesde", ENVIO_GRATIS_DESDE);
         model.addAttribute("cuponAplicado", carritoService.getCuponAplicado());
         model.addAttribute("porcentajeDescuento", carritoService.getPorcentajeDescuento());
+        // Si el cliente tiene cupón de fidelidad asignado, lo mostramos como
+        // sugerencia en el sidebar (encima del input).
+        Optional<Cupon> fidelidad = cuponService.getCuponFidelidad(cliente);
+        model.addAttribute("cuponFidelidad", fidelidad.orElse(null));
         // Top productos para el bloque "Te puede interesar", excluyendo los
-        // que ya están en el carrito. Pedimos algunos más por si filtramos.
+        // que ya están en el carrito.
         List<Producto> sugeridos = productoService.findTopVendidos(N_SUGERIDOS + items.size()).stream()
                 .map(ProductoTopDto::producto)
                 .filter(p -> !items.containsKey(p.getId()))
@@ -115,10 +123,16 @@ public class CarritoController {
     // === Cupón ============================================================
 
     @GetMapping("/cupon/aplicar")
-    public String aplicarCupon(@RequestParam String codigo, RedirectAttributes ra) {
-        if (carritoService.aplicarCupon(codigo)) {
+    public String aplicarCupon(@AuthenticationPrincipal Cliente cliente,
+                               @RequestParam String codigo,
+                               RedirectAttributes ra) {
+        Optional<Cupon> cupon = cuponService.validar(codigo, cliente);
+        if (cupon.isPresent()) {
+            Cupon c = cupon.get();
+            carritoService.aplicarCupon(c.getCodigo(), c.getDescuento());
+            int pct = (int) Math.round(c.getDescuento() * 100);
             ra.addFlashAttribute("exitoMensaje",
-                    "¡Cupón aplicado! Descuento del 80 % activado.");
+                    "¡Cupón aplicado! Descuento del " + pct + "% activado.");
         } else {
             ra.addFlashAttribute("errorCarrito",
                     "El código \"" + codigo + "\" no es válido o ha caducado.");
@@ -174,7 +188,11 @@ public class CarritoController {
             pedidoService.edit(pedido);
         }
 
-        // Solo si todo ha ido bien vaciamos el carrito (esto también limpia el cupón).
+        // Evaluar si el cliente acaba de superar el umbral de fidelidad y
+        // asignarle un cupón aleatorio (si no tenía ya uno).
+        cuponService.asignarFidelidadSiProcede(cliente);
+
+        // Solo si todo ha ido bien vaciamos el carrito (esto también limpia el cupón aplicado).
         carritoService.vaciarCarrito();
 
         model.addAttribute("items", itemsConfirmados);

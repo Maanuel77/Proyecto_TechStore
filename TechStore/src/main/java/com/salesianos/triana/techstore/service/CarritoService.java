@@ -19,14 +19,14 @@ import com.salesianos.triana.techstore.model.Producto;
 @Scope(value = WebApplicationContext.SCOPE_SESSION, proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class CarritoService {
 
-    // Easter egg: El cupón aplica un 80% de descuento ;)
-    private static final String CUPON_SECRETO = "PonedmeBuenaNota";
-    private static final double DESCUENTO_CUPON = 0.80;
-
     // LinkedHashMap para conservar el orden en que se añadieron los productos.
     private final Map<Long, CarritoItem> items = new LinkedHashMap<>();
-    // Cupón aplicado en esta sesión (null si no hay).
+    // Código del cupón aplicado en esta sesión (null si no hay). Es solo
+    // informativo: la lógica de validación vive en CuponService.
     private String cuponAplicado;
+    // Porcentaje de descuento del cupón aplicado (0–1). Lo guarda aparte
+    // porque cada cupón tiene su propio descuento.
+    private double porcentajeDescuento;
 
     // Añade 1 unidad. Si ya estaba en el carrito incrementa la cantidad.
     public void addProducto(Producto p) {
@@ -112,7 +112,7 @@ public class CarritoService {
 
     // Importe del descuento del cupón aplicado (0 si no hay cupón).
     public double calcularDescuento() {
-        return tieneCupon() ? calcularSubtotal() * DESCUENTO_CUPON : 0.0;
+        return tieneCupon() ? calcularSubtotal() * porcentajeDescuento : 0.0;
     }
 
     // Total de unidades para el badge del navbar.
@@ -133,25 +133,26 @@ public class CarritoService {
     public void vaciarCarrito() {
         items.clear();
         cuponAplicado = null;
+        porcentajeDescuento = 0.0;
     }
 
     public boolean isEmpty() {
         return items.isEmpty();
     }
 
-    // EASTER EGG: Cupón
+    // === Cupón ============================================================
+    // La validación del código vive en CuponService (no aquí). Este servicio
+    // solo recibe ya validado el código y el porcentaje aplicable, y los
+    // guarda en sesión para el cálculo del total.
 
-    // Devuelve true si el código es válido (ignora mayúsculas/minúsculas).
-    public boolean aplicarCupon(String codigo) {
-        if (codigo != null && CUPON_SECRETO.equalsIgnoreCase(codigo.trim())) {
-            cuponAplicado = CUPON_SECRETO;
-            return true;
-        }
-        return false;
+    public void aplicarCupon(String codigo, double porcentajeDescuento) {
+        this.cuponAplicado = codigo;
+        this.porcentajeDescuento = porcentajeDescuento;
     }
 
     public void eliminarCupon() {
-        cuponAplicado = null;
+        this.cuponAplicado = null;
+        this.porcentajeDescuento = 0.0;
     }
 
     public boolean tieneCupon() {
@@ -162,8 +163,7 @@ public class CarritoService {
         return cuponAplicado;
     }
 
-    // Porcentaje (0–1) del descuento activo. Para mostrar "-80%" en la UI.
     public double getPorcentajeDescuento() {
-        return tieneCupon() ? DESCUENTO_CUPON : 0.0;
+        return porcentajeDescuento;
     }
 }
