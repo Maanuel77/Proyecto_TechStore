@@ -6,6 +6,9 @@
 	const modal = document.getElementById('pedidoModal');
 	if (!modal) return;
 
+	const subRow  = document.getElementById('modalSubtotalRow');
+	const dctoRow = document.getElementById('modalDescuentoRow');
+
 	modal.addEventListener('show.bs.modal', event => {
 		const btn = event.relatedTarget;
 		if (!btn) return;
@@ -18,24 +21,38 @@
 		document.getElementById('modalTotal').textContent   = d.total;
 
 		// Filas de subtotal y descuento: solo si el pedido tenía cupón aplicado.
-		// Las líneas guardan precio original (sin descuento) y el total del
-		// pedido es el ya descontado; reconstruimos el subtotal a partir del %.
-		const subRow = document.getElementById('modalSubtotalRow');
-		const dctoRow = document.getElementById('modalDescuentoRow');
-		const pct = parseFloat(d.cuponDescuento);
-		const totalRaw = parseFloat(d.totalRaw);
-		if (d.cuponCodigo && pct > 0 && !isNaN(totalRaw)) {
-			const subtotal = totalRaw / (1 - pct);
+		// Validamos: cuponCodigo no vacío y no literal "null"; descuento numérico > 0.
+		const code      = d.cuponCodigo;
+		const pct       = parseFloat(d.cuponDescuento);
+		const totalRaw  = parseFloat(d.totalRaw);
+		const hayCupon  = code && code !== 'null' && code.trim() !== ''
+		                  && !isNaN(pct) && pct > 0
+		                  && !isNaN(totalRaw);
+
+		if (hayCupon) {
+			const subtotal  = totalRaw / (1 - pct);
 			const descuento = subtotal - totalRaw;
-			document.getElementById('modalSubtotal').textContent = formatEuro(subtotal);
+			document.getElementById('modalSubtotal').textContent       = formatEuro(subtotal);
 			document.getElementById('modalDescuentoImporte').textContent = formatEuro(descuento);
-			document.getElementById('modalCuponCodigo').textContent = d.cuponCodigo;
-			document.getElementById('modalCuponPct').textContent = Math.round(pct * 100);
-			subRow.hidden = false;
-			dctoRow.hidden = false;
+			document.getElementById('modalCuponCodigo').textContent    = code;
+			document.getElementById('modalCuponPct').textContent       = Math.round(pct * 100);
+			// Mostrar: quita d-none Y añade d-flex (Bootstrap define d-flex después
+			// que d-none en su CSS; si dejásemos las dos, d-flex ganaría).
+			subRow.classList.remove('d-none');
+			subRow.classList.add('d-flex');
+			dctoRow.classList.remove('d-none');
+			dctoRow.classList.add('d-flex');
 		} else {
-			subRow.hidden = true;
-			dctoRow.hidden = true;
+			// Limpiamos para que no quede info del pedido anterior visible.
+			document.getElementById('modalSubtotal').textContent          = '0,00';
+			document.getElementById('modalDescuentoImporte').textContent  = '0,00';
+			document.getElementById('modalCuponCodigo').textContent       = '';
+			document.getElementById('modalCuponPct').textContent          = '0';
+			// Ocultar: quita d-flex Y añade d-none.
+			subRow.classList.remove('d-flex');
+			subRow.classList.add('d-none');
+			dctoRow.classList.remove('d-flex');
+			dctoRow.classList.add('d-none');
 		}
 
 		document.querySelectorAll('.lineas-pedido')

@@ -140,12 +140,15 @@
 					</table>
 
 					<div class="pt-3 border-top">
-						<!-- Subtotal y descuento solo se ven si el pedido tuvo cupón. -->
-						<div class="d-flex justify-content-between mb-2 small text-muted" id="modalSubtotalRow" hidden>
+						<!-- Subtotal y descuento solo se ven si el pedido tuvo cupón.
+						     Arrancan con d-none (display:none !important) y NO con d-flex,
+						     porque Bootstrap define d-flex después en su CSS y ganaría.
+						     El JS añade d-flex y quita d-none cuando hay cupón. -->
+						<div class="d-none justify-content-between mb-2 small text-muted" id="modalSubtotalRow">
 							<span>Subtotal</span>
 							<span><span id="modalSubtotal">0,00</span> €</span>
 						</div>
-						<div class="d-flex justify-content-between mb-2 small" id="modalDescuentoRow" hidden>
+						<div class="d-none justify-content-between mb-2 small" id="modalDescuentoRow">
 							<span class="text-success fw-semibold">
 								<i class="bi bi-tag-fill me-1"></i>
 								Cupón <span id="modalCuponCodigo"></span>
