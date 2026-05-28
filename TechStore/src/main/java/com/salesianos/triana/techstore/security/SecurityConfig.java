@@ -25,7 +25,10 @@ public class SecurityConfig {
             // ni al historial de cliente (son funcionalidad exclusiva CLIENTE).
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/css/**", "/js/**", "/img/**").permitAll()
-                .requestMatchers("/", "/catalogo", "/auth/login", "/auth/registro").permitAll()
+                // /auth/login y /auth/verificar* son públicos: el primero es la pantalla
+                // de credenciales; el segundo es el paso 2FA antes de autenticar.
+                .requestMatchers("/", "/catalogo", "/auth/login",
+                                 "/auth/registro", "/auth/verificar/**").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/carrito/**", "/pedidos/**").hasRole("CLIENTE")
@@ -36,14 +39,11 @@ public class SecurityConfig {
                 requestCache.setMatchingRequestParameterName(null);
                 cache.requestCache(requestCache);
             })
-            .formLogin(form -> form
-                .loginPage("/auth/login")
-                .loginProcessingUrl("/auth/login")
-                .defaultSuccessUrl("/", true)
-                .failureUrl("/auth/login?error=true")
-                .permitAll()
-            )
+            // El login NO usa el formLogin estándar de Spring Security:
+            // lo gestionamos en AuthController para meter el paso 2FA por email
+            // a los CLIENTE antes de marcarles como autenticados.
             .logout(logout -> logout
+                .logoutUrl("/logout")
                 .logoutSuccessUrl("/")
                 .permitAll()
             )

@@ -86,25 +86,89 @@
                     </div>
                 </div>
 
-                <!-- Tarjeta para cambiar contraseña -->
+                <!-- Tarjeta para cambiar contraseña (2 pasos con verificación por email) -->
                 <div class="col-lg-6">
                     <div class="card border-0 shadow-sm rounded-4 p-4">
                         <h5 class="fw-semibold mb-4">
                             <i class="bi bi-lock me-2"></i>Cambiar contraseña
                         </h5>
 
-                        <form th:action="@{/perfil/cambiar-password}" method="post">
+                        <!-- Mensajes flash del flujo -->
+                        <div class="alert alert-info border-0 rounded-3 small py-2"
+                             th:if="${infoPassword}">
+                            <i class="bi bi-info-circle me-1"></i>
+                            <span th:text="${infoPassword}"></span>
+                        </div>
+                        <div class="alert alert-danger border-0 rounded-3 small py-2"
+                             th:if="${errorPassword}">
+                            <i class="bi bi-exclamation-circle me-1"></i>
+                            <span th:text="${errorPassword}"></span>
+                        </div>
+
+                        <!-- PASO 1: contraseña actual + nueva, manda código por email -->
+                        <form th:if="${!cambioPasswordPendiente}"
+                              th:action="@{/perfil/cambiar-password/solicitar}" method="post">
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-muted text-uppercase">
+                                    Contraseña actual
+                                </label>
+                                <input type="password" class="form-control"
+                                       name="passwordActual" required />
+                            </div>
                             <div class="mb-3">
                                 <label class="form-label small fw-semibold text-muted text-uppercase">
                                     Nueva contraseña
                                 </label>
                                 <input type="password" class="form-control"
-                                       name="nuevaPassword" required minlength="6" />
+                                       name="nuevaPassword" required minlength="4" />
                             </div>
                             <button type="submit" class="btn btn-dark rounded-pill w-100 py-2">
-                                <i class="bi bi-shield-lock me-1"></i>Guardar contraseña
+                                <i class="bi bi-envelope me-1"></i>Solicitar código
                             </button>
+                            <p class="text-muted small mt-3 mb-0 text-center">
+                                Por seguridad te mandaremos un código a tu correo
+                                para confirmar el cambio.
+                            </p>
                         </form>
+
+                        <!-- PASO 2: introducir código recibido -->
+                        <div th:if="${cambioPasswordPendiente}">
+                            <p class="text-muted small mb-3">
+                                Hemos enviado un código de 6 dígitos a tu correo.
+                                Introdúcelo aquí para confirmar el cambio:
+                            </p>
+                            <form th:action="@{/perfil/cambiar-password/confirmar}" method="post">
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold text-muted text-uppercase">
+                                        Código de verificación
+                                    </label>
+                                    <input class="form-control form-control-lg text-center ts-codigo-input"
+                                           name="codigo" type="text"
+                                           inputmode="numeric" pattern="[0-9]{6}" maxlength="6"
+                                           autocomplete="one-time-code"
+                                           required autofocus />
+                                </div>
+                                <button type="submit" class="btn btn-dark rounded-pill w-100 py-2">
+                                    <i class="bi bi-shield-check me-1"></i>Confirmar cambio
+                                </button>
+                            </form>
+
+                            <div class="d-flex justify-content-between mt-3">
+                                <form th:action="@{/perfil/cambiar-password/reenviar}" method="post" class="m-0">
+                                    <button type="submit" id="btnReenviarPwd"
+                                            class="btn btn-link text-muted small text-decoration-none p-0"
+                                            th:data-cooldown="${segundosReenvio}">
+                                        <span id="reenviarLabelPwd">Reenviar código</span>
+                                    </button>
+                                </form>
+                                <form th:action="@{/perfil/cambiar-password/cancelar}" method="post" class="m-0">
+                                    <button type="submit"
+                                            class="btn btn-link text-danger small text-decoration-none p-0">
+                                        Cancelar
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -113,6 +177,9 @@
     </main>
 
     <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <!-- Countdown del botón "Reenviar código" en el paso 2 de cambio de contraseña -->
+    <script th:src="@{/js/perfil/verificar-password.js}" defer></script>
 
 </body>
 </html>

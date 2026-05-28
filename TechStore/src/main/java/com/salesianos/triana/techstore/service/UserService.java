@@ -43,6 +43,14 @@ public class UserService extends BaseServiceImpl<Usuario, Long, UsuarioRepositor
         repository.save(user);
     }
 
+    // Comprueba que la contraseña en claro coincide con la guardada (BCrypt).
+    @Transactional(readOnly = true)
+    public boolean contraseñaActualCoincide(Long id, String passwordEnClaro) {
+        return repository.findById(id)
+                .map(u -> passwordEncoder.matches(passwordEnClaro, u.getPassword()))
+                .orElse(false);
+    }
+
     @Transactional(readOnly = true)
     public boolean existeUsername(String username) {
         return repository.existsByUsername(username);

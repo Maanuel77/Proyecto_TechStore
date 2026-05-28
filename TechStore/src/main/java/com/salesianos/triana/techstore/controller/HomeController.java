@@ -6,7 +6,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 import com.salesianos.triana.techstore.dto.ProductoTopDto;
 import com.salesianos.triana.techstore.service.ProductoService;
+import com.salesianos.triana.techstore.service.VerificacionService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 // Páginas públicas: home, catálogo y login.
@@ -15,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 public class HomeController {
 
 	private final ProductoService productoService;
+	private final VerificacionService verificacionService;
 
 	@GetMapping("/")
 	public String index (Model model) {
@@ -34,7 +37,10 @@ public class HomeController {
 	}
 
 	@GetMapping("/auth/login")
-	public String login() {
+	public String login(HttpServletRequest request) {
+		// Si el usuario vuelve a la pantalla de login estando en mitad de un
+		// 2FA, descartamos el código pendiente para no dejar estado huérfano.
+		verificacionService.limpiarLogin(request.getSession());
 		return "auth/login";
 	}
 }
