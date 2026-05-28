@@ -3,7 +3,10 @@ package com.salesianos.triana.techstore.controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+
+import com.salesianos.triana.techstore.dto.ProductoTopDto;
 import com.salesianos.triana.techstore.service.ProductoService;
+
 import lombok.RequiredArgsConstructor;
 
 // Páginas públicas: home, catálogo y login.
@@ -15,8 +18,12 @@ public class HomeController {
 
 	@GetMapping("/")
 	public String index (Model model) {
-		// En la home solo enseñamos los 6 primeros productos como "destacados".
-		model.addAttribute("destacados", productoService.findAll().stream().limit(6).toList());
+		// "Nuestros favoritos": los 6 productos más vendidos.
+		// findTopVendidos devuelve DTOs; nos quedamos solo con el Producto.
+		var destacados = productoService.findTopVendidos(6).stream()
+				.map(ProductoTopDto::producto)
+				.toList();
+		model.addAttribute("destacados", destacados);
 		return "index";
 	}
 
