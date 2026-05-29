@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: head('Verificación — TechStore', null)}"></head>
+
+<body class="min-vh-100 d-flex align-items-center justify-content-center bg-light py-4">
+
+	<div class="ts-login-card card border-0 shadow-lg rounded-4 p-4 p-sm-5 mx-auto">
+
+		<a class="text-dark fw-bold fs-4 text-decoration-none d-block text-center mb-1" th:href="@{/}">TechStore</a>
+		<p class="text-muted text-center small mb-4">Verifica que eres tú</p>
+
+		<!-- Mensajes flash que vienen del controller -->
+		<div class="alert alert-success border-0 rounded-3 small py-2" th:if="${infoVerif}">
+			<i class="bi bi-info-circle me-1"></i>
+			<span th:text="${infoVerif}"></span>
+		</div>
+		<div class="alert alert-danger border-0 rounded-3 small py-2" th:if="${errorVerif}">
+			<i class="bi bi-exclamation-circle me-1"></i>
+			<span th:text="${errorVerif}"></span>
+		</div>
+
+		<p class="text-muted small text-center mb-4">
+			Te hemos enviado un código de 6 dígitos por correo electrónico.
+			Introdúcelo a continuación para completar el inicio de sesión.
+		</p>
+
+		<!-- Form principal: introducir el código -->
+		<form method="post" th:action="@{/auth/verificar}" novalidate>
+			<div class="mb-4">
+				<label class="form-label small fw-semibold text-muted text-uppercase ts-label-sm">
+					Código de verificación
+				</label>
+				<input class="form-control form-control-lg text-center ts-codigo-input"
+				       name="codigo" type="text"
+				       inputmode="numeric" pattern="[0-9]{6}" maxlength="6"
+				       autocomplete="one-time-code"
+				       required autofocus />
+			</div>
+			<button type="submit" class="btn btn-dark rounded-pill w-100 py-2">
+				Verificar y entrar
+			</button>
+		</form>
+
+		<!-- Form secundario: reenviar código (cooldown 30s) -->
+		<form method="post" th:action="@{/auth/verificar/reenviar}" class="text-center mt-3">
+			<button type="submit" id="btnReenviar"
+			        class="btn btn-link text-muted small text-decoration-none p-0"
+			        th:data-cooldown="${segundosReenvio}">
+				<span id="reenviarLabel">¿No te ha llegado? Reenviar código</span>
+			</button>
+		</form>
+
+		<p class="text-center text-muted small mt-3 mb-0">
+			<a th:href="@{/auth/login}" class="text-dark fw-semibold text-decoration-none">
+				← Volver al inicio de sesión
+			</a>
+		</p>
+
+	</div>
+
+	<script th:src="@{/js/auth/verificar.js}" defer></script>
+
+</body>
+
+</html>

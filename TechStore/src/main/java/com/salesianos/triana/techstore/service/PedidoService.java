@@ -33,7 +33,7 @@ public class PedidoService extends BaseServiceImpl<Pedido, Long, PedidoRepositor
     }
 
     // Carga TODOS los pedidos con sus líneas, producto y cliente en una sola query
-    // (JOIN FETCH) — evita el problema N+1 al pintar la tabla del admin.
+    // (JOIN FETCH) - evita el problema N+1 al pintar la tabla del admin.
     @Transactional(readOnly = true)
     public List<Pedido> findAllOrdered() {
         return repository.findAllWithLineasAndClienteOrderByFechaDesc();

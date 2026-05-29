@@ -43,7 +43,12 @@ import lombok.ToString;
 @Entity
 @Table(name = "usuarios")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "user_type", discriminatorType = DiscriminatorType.STRING)
+// columnDefinition fuerza VARCHAR en lugar del tipo ENUM nativo de H2 que
+// Hibernate genera por defecto. Sin esto, el UPDATE nativo de cambiarTipoUsuario
+// (UsuarioRepository) falla con "check constraint invalid" al intentar
+// asignar un String a una columna ENUM.
+@DiscriminatorColumn(name = "user_type", discriminatorType = DiscriminatorType.STRING,
+                     columnDefinition = "varchar(20)")
 public abstract class Usuario implements UserDetails {
 
     @Id
