@@ -54,8 +54,12 @@ public class SecurityConfig {
             .csrf(csrf -> csrf
                 .ignoringRequestMatchers("/h2-console/**")
             )
+            // sameOrigin (no disable) → protege contra clickjacking pero
+            // permite que la consola H2, que vive en el mismo origen, use
+            // su propio frame interno. Disable() abriria la app a iframes
+            // de cualquier sitio externo.
             .headers(headers -> headers
-                .frameOptions(frame -> frame.disable())
+                .frameOptions(frame -> frame.sameOrigin())
             );
 
         return http.build();

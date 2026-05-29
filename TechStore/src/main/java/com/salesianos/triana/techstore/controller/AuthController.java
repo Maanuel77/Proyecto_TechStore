@@ -17,6 +17,7 @@ import com.salesianos.triana.techstore.security.Cliente;
 import com.salesianos.triana.techstore.security.Usuario;
 import com.salesianos.triana.techstore.security.UsuarioRepository;
 import com.salesianos.triana.techstore.service.EmailService;
+import com.salesianos.triana.techstore.service.LoginAttemptService;
 import com.salesianos.triana.techstore.service.VerificacionService;
 import com.salesianos.triana.techstore.service.VerificacionService.Resultado;
 
@@ -38,12 +39,15 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final VerificacionService verificacionService;
     private final EmailService emailService;
+    private final LoginAttemptService loginAttemptService;
 
     //   POST /auth/login -> procesa credenciales
     // Si las credenciales son válidas:
-    //   - ADMIN: autenticamos directamente y vamos al home.
-    //   - CLIENTE: guardamos un código en sesión, mandamos email
+    //  - ADMIN: autenticamos directamente y vamos al home.
+    //  - CLIENTE: guardamos un código en sesión, mandamos email
     //               y redirigimos a /auth/verificar (NO autenticado).
+    //
+    // SEGURIDAD: con rate limiting básico para evitar fuerza bruta.
     @PostMapping("/login")
     public String procesarLogin(@RequestParam String username,
                                 @RequestParam String password,
@@ -53,10 +57,22 @@ public class AuthController {
         // Si veníamos arrastrando un 2FA pendiente, lo limpiamos.
         verificacionService.limpiarLogin(request.getSession());
 
+        // Bloqueo por intentos: 5 fallos en 15 min → bloqueo de 15 min.
+        if (loginAttemptService.estaBloqueado(username)) {
+            long segs = loginAttemptService.segundosRestantesBloqueo(username);
+            ra.addFlashAttribute("errorLogin",
+                    "Cuenta bloqueada por intentos fallidos. Reintenta en "
+                    + (segs / 60 + 1) + " min.");
+            return "redirect:/auth/login";
+        }
+
         Usuario usuario = usuarioRepository.findByUsername(username).orElse(null);
         if (usuario == null || !passwordEncoder.matches(password, usuario.getPassword())) {
+            loginAttemptService.registrarFallo(username);
             return "redirect:/auth/login?error=true";
         }
+        // Credenciales OK: reseteamos el contador para esta cuenta.
+        loginAttemptService.resetear(username);
 
         // ADMIN: entra directo (sin 2FA), igual que el comportamiento previo.
         if (!(usuario instanceof Cliente)) {
@@ -101,6 +117,7 @@ public class AuthController {
 
         Resultado resultado = verificacionService.validar(
                 session, codigo,
+
                 VerificacionService.S_LOGIN_CODIGO,
                 VerificacionService.S_LOGIN_EXPIRA,
                 VerificacionService.S_LOGIN_INTENTOS,
@@ -170,9 +187,23 @@ public class AuthController {
     //   Helper: autenticación programática
     // Cuando NO usamos formLogin() de Spring Security tenemos que dejar
     // al usuario autenticado a mano: crear el Authentication, meterlo en
-    // el SecurityContext y guardarlo en sesión para que persista entre
-    // peticiones (lo que normalmente hace SecurityContextPersistenceFilter).
+    // el SecurityContext y guardarlo en sesión.
+    //
+    // SEGURIDAD (session fixation): antes de meter el SecurityContext
+    // regeneramos el ID de la sesión con changeSessionId(). Es lo que hace
+    // el .formLogin() estándar y previene que un atacante "preparare" una
+    // sesión anónima y se la pase a la víctima para heredar sus permisos
+    // después del login.
     private void autenticar(Usuario usuario, HttpServletRequest request) {
+        // Asegura que hay una sesión sobre la que podemos regenerar el ID.
+        request.getSession(true);
+        try {
+            request.changeSessionId();
+        } catch (IllegalStateException ignored) {
+            // No había sesión todavía; getSession(true) la habrá creado
+            // con un ID fresco, así que ya estamos protegidos.
+        }
+
         UsernamePasswordAuthenticationToken auth =
                 new UsernamePasswordAuthenticationToken(
                         usuario, null, usuario.getAuthorities());

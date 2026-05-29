@@ -65,7 +65,11 @@ public class PerfilController {
     }
 
     //PASO 1: solicitar el código de cambio de contraseña.
-    
+    //
+    // SEGURIDAD: la nueva contraseña NO viaja en claro a la sesión. La
+    // hasheamos aquí con BCrypt y solo guardamos el hash hasta que el
+    // cliente confirme con el código del email. Así, si la sesión se
+    // filtrara, la contraseña real seguiría protegida.
     @PostMapping("/cambiar-password/solicitar")
     public String solicitarCambioPassword(@AuthenticationPrincipal Usuario usuario,
                                           @RequestParam String passwordActual,
@@ -84,9 +88,12 @@ public class PerfilController {
             return "redirect:/perfil";
         }
 
+        // HASHEAMOS antes de meter en sesión.
+        String hash = userService.hashear(nuevaPassword);
+
         HttpSession session = request.getSession(true);
         String codigo = verificacionService.generarCodigo();
-        verificacionService.iniciarCambioPassword(session, usuario.getId(), nuevaPassword, codigo);
+        verificacionService.iniciarCambioPassword(session, usuario.getId(), hash, codigo);
         emailService.enviarCodigoCambioPassword(usuario.getEmail(), usuario.getFullname(), codigo);
 
         ra.addFlashAttribute("infoPassword",
@@ -116,12 +123,13 @@ public class PerfilController {
 
         switch (resultado) {
             case OK -> {
-                String nueva = verificacionService.getPasswordNuevaPendiente(session);
-                if (nueva == null) {
+                // Lo guardado en sesión ya es un HASH BCrypt, no la pwd en claro.
+                String hashNueva = verificacionService.getPasswordNuevaPendiente(session);
+                if (hashNueva == null) {
                     verificacionService.limpiarCambioPassword(session);
                     return "redirect:/perfil";
                 }
-                userService.cambiarPassword(usuario.getId(), nueva);
+                userService.cambiarPasswordHash(usuario.getId(), hashNueva);
                 verificacionService.limpiarCambioPassword(session);
                 ra.addFlashAttribute("passwordCambiado", true);
                 return "redirect:/perfil";

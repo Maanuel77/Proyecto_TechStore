@@ -4,6 +4,23 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+### Secretos: NUNCA subirlos al repo ###
+.env
+.env.*
+*.env
+# Perfiles con valores por defecto sensibles (no commitear, usar variables de entorno)
+application-local.properties
+application-secret.properties
+application-secrets.properties
+src/main/resources/application-local.properties
+src/main/resources/application-secret.properties
+
+### Base de datos H2 local (datos reales no deben ir al repo) ###
+db/
+*.mv.db
+*.trace.db
+*.lock.db
+
 ### STS ###
 .apt_generated
 .classpath

@@ -1,5 +1,7 @@
 package com.salesianos.triana.techstore.service;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 
@@ -13,6 +15,9 @@ import jakarta.servlet.http.HttpSession;
 //
 // Hay dos contextos diferentes (login y cambio de contraseña). Cada uno usa
 // sus propias claves de sesión para que no se pisen entre sí.
+//
+// SEGURIDAD: para el flujo de cambio de contraseña, en sesión NO se guarda la
+// contraseña en claro sino el hash BCrypt ya calculado (ver PerfilController).
 @Service
 public class VerificacionService {
 
@@ -24,12 +29,13 @@ public class VerificacionService {
     public static final String S_LOGIN_USER_ID       = "verif.login.userId";
     public static final String S_LOGIN_CODIGO        = "verif.login.codigo";
     public static final String S_LOGIN_EXPIRA        = "verif.login.expira";
-    public static final String S_LOGIN_INTENTOS      = "verif.login.intentos";
+    public static final String S_LOGIN_INTENTOS     = "verif.login.intentos";
     public static final String S_LOGIN_ULTIMO_ENVIO  = "verif.login.ultimoEnvio";
 
     // Claves para guardar el código del CAMBIO DE CONTRASEÑA en sesión.
+    // S_PWD_NUEVA_HASH contiene el hash BCrypt de la nueva contraseña.
     public static final String S_PWD_USER_ID         = "verif.pwd.userId";
-    public static final String S_PWD_NUEVA           = "verif.pwd.nuevaPassword";
+    public static final String S_PWD_NUEVA_HASH      = "verif.pwd.nuevaPasswordHash";
     public static final String S_PWD_CODIGO          = "verif.pwd.codigo";
     public static final String S_PWD_EXPIRA          = "verif.pwd.expira";
     public static final String S_PWD_INTENTOS        = "verif.pwd.intentos";
@@ -71,11 +77,14 @@ public class VerificacionService {
         return v instanceof Long l ? l : null;
     }
 
-    //Cambio de password
+    // Cambio de password
+    //
+    // Guarda el HASH BCrypt de la nueva contraseña, no la contraseña en claro.
 
-    public void iniciarCambioPassword(HttpSession session, Long usuarioId, String nuevaPassword, String codigo) {
+    public void iniciarCambioPassword(HttpSession session, Long usuarioId,
+                                      String nuevaPasswordHash, String codigo) {
         session.setAttribute(S_PWD_USER_ID, usuarioId);
-        session.setAttribute(S_PWD_NUEVA, nuevaPassword);
+        session.setAttribute(S_PWD_NUEVA_HASH, nuevaPasswordHash);
         session.setAttribute(S_PWD_CODIGO, codigo);
         session.setAttribute(S_PWD_EXPIRA, LocalDateTime.now().plusMinutes(DURACION_MINUTOS));
         session.setAttribute(S_PWD_INTENTOS, MAX_INTENTOS);
@@ -84,7 +93,7 @@ public class VerificacionService {
 
     public void limpiarCambioPassword(HttpSession session) {
         session.removeAttribute(S_PWD_USER_ID);
-        session.removeAttribute(S_PWD_NUEVA);
+        session.removeAttribute(S_PWD_NUEVA_HASH);
         session.removeAttribute(S_PWD_CODIGO);
         session.removeAttribute(S_PWD_EXPIRA);
         session.removeAttribute(S_PWD_INTENTOS);
@@ -95,8 +104,9 @@ public class VerificacionService {
         return session.getAttribute(S_PWD_USER_ID) != null;
     }
 
+    // Devuelve el HASH BCrypt de la nueva contraseña guardada en sesión.
     public String getPasswordNuevaPendiente(HttpSession session) {
-        Object v = session.getAttribute(S_PWD_NUEVA);
+        Object v = session.getAttribute(S_PWD_NUEVA_HASH);
         return v instanceof String s ? s : null;
     }
 
@@ -106,7 +116,9 @@ public class VerificacionService {
 
     // Valida un código contra los que estén guardados con esos atributos en sesión.
     // Decrementa los intentos cuando es incorrecto. Si llega a 0, limpia todo.
-    @SuppressWarnings("unchecked")
+    //
+    // SEGURIDAD: la comparación es timing-safe (MessageDigest.isEqual) para
+    // que el tiempo de respuesta no filtre información sobre el código.
     public Resultado validar(HttpSession session, String codigoIntroducido,
                              String keyCodigo, String keyExpira, String keyIntentos,
                              Runnable onAgotado) {
@@ -122,7 +134,8 @@ public class VerificacionService {
             onAgotado.run();
             return Resultado.EXPIRADO;
         }
-        if (codigoEsperado.equals(codigoIntroducido != null ? codigoIntroducido.trim() : "")) {
+        String introducidoLimpio = codigoIntroducido != null ? codigoIntroducido.trim() : "";
+        if (timingSafeEquals(codigoEsperado, introducidoLimpio)) {
             return Resultado.OK;
         }
         // Incorrecto: descontamos un intento.
@@ -133,6 +146,14 @@ public class VerificacionService {
         }
         session.setAttribute(keyIntentos, restantes);
         return Resultado.INCORRECTO;
+    }
+
+    // Comparación de strings en tiempo constante: evita timing attacks.
+    private static boolean timingSafeEquals(String a, String b) {
+        if (a == null || b == null) return false;
+        byte[] ba = a.getBytes(StandardCharsets.UTF_8);
+        byte[] bb = b.getBytes(StandardCharsets.UTF_8);
+        return MessageDigest.isEqual(ba, bb);
     }
 
     // Devuelve los segundos que faltan para poder reenviar el código (0 si ya).
