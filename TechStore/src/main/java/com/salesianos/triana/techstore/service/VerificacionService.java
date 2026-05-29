@@ -37,15 +37,14 @@ public class VerificacionService {
 
     private final SecureRandom random = new SecureRandom();
 
-    // === Generación =====================================================
+    // Generación
 
-    // 6 dígitos numéricos (000000-999999). SecureRandom para que no sea
-    // predecible aunque la entropía de 1 millón no es lo más fuerte del mundo.
+    // 6 dígitos numéricos (000000-999999)
     public String generarCodigo() {
         return String.format("%06d", random.nextInt(1_000_000));
     }
 
-    // === Estado en sesión: LOGIN ========================================
+    // Estado en sesión: LOGIN
 
     public void iniciarLogin(HttpSession session, Long usuarioId, String codigo) {
         session.setAttribute(S_LOGIN_USER_ID, usuarioId);
@@ -72,7 +71,7 @@ public class VerificacionService {
         return v instanceof Long l ? l : null;
     }
 
-    // === Estado en sesión: CAMBIO DE PASSWORD ===========================
+    //Cambio de password
 
     public void iniciarCambioPassword(HttpSession session, Long usuarioId, String nuevaPassword, String codigo) {
         session.setAttribute(S_PWD_USER_ID, usuarioId);
@@ -101,7 +100,7 @@ public class VerificacionService {
         return v instanceof String s ? s : null;
     }
 
-    // === Validación común ===============================================
+    // Validación común
 
     public enum Resultado { OK, EXPIRADO, INCORRECTO, AGOTADO_INTENTOS, SIN_PENDIENTE }
 

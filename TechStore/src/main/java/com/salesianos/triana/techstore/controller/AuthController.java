@@ -39,12 +39,10 @@ public class AuthController {
     private final VerificacionService verificacionService;
     private final EmailService emailService;
 
-    // =========================================================
-    //   POST /auth/login → procesa credenciales
-    // =========================================================
+    //   POST /auth/login -> procesa credenciales
     // Si las credenciales son válidas:
-    //   - ADMIN → autenticamos directamente y vamos al home.
-    //   - CLIENTE → guardamos un código en sesión, mandamos email
+    //   - ADMIN: autenticamos directamente y vamos al home.
+    //   - CLIENTE: guardamos un código en sesión, mandamos email
     //               y redirigimos a /auth/verificar (NO autenticado).
     @PostMapping("/login")
     public String procesarLogin(@RequestParam String username,
@@ -77,9 +75,7 @@ public class AuthController {
         return "redirect:/auth/verificar";
     }
 
-    // =========================================================
-    //   GET /auth/verificar → pantalla del 2FA
-    // =========================================================
+    //   GET /auth/verificar -> pantalla del 2FA
     @GetMapping("/verificar")
     public String mostrarVerificar(HttpServletRequest request, Model model) {
         HttpSession session = request.getSession();
@@ -91,9 +87,7 @@ public class AuthController {
         return "auth/verificar";
     }
 
-    // =========================================================
-    //   POST /auth/verificar → valida el código
-    // =========================================================
+    //   POST /auth/verificar -> valida el código
     @PostMapping("/verificar")
     public String procesarVerificar(@RequestParam String codigo,
                                     HttpServletRequest request,
@@ -144,9 +138,7 @@ public class AuthController {
         return "redirect:/auth/verificar";
     }
 
-    // =========================================================
-    //   POST /auth/verificar/reenviar → genera y envía un código nuevo
-    // =========================================================
+    //   POST /auth/verificar/reenviar -> genera y envía un código nuevo
     @PostMapping("/verificar/reenviar")
     public String reenviarCodigo(HttpServletRequest request, RedirectAttributes ra) {
         HttpSession session = request.getSession();
@@ -175,9 +167,7 @@ public class AuthController {
         return "redirect:/auth/verificar";
     }
 
-    // =========================================================
     //   Helper: autenticación programática
-    // =========================================================
     // Cuando NO usamos formLogin() de Spring Security tenemos que dejar
     // al usuario autenticado a mano: crear el Authentication, meterlo en
     // el SecurityContext y guardarlo en sesión para que persista entre

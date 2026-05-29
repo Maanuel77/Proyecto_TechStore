@@ -2,7 +2,7 @@
 //   1. Cooldown del botón "Reenviar código": llega ya activo o con N segundos
 //      por delante (data-cooldown del backend). El botón se desactiva y muestra
 //      el countdown hasta que llega a 0.
-//   2. Forzar solo dígitos en el input del código (extra defense además del pattern).
+//   2. Forzar solo dígitos en el input del código.
 (() => {
 	const btn   = document.getElementById('btnReenviar');
 	const label = document.getElementById('reenviarLabel');
