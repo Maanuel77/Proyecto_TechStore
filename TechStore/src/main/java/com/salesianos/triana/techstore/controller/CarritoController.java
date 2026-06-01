@@ -198,7 +198,18 @@ public class CarritoController {
         // Vaciamos el carrito (limpia también el cupón aplicado en sesión).
         carritoService.vaciarCarrito();
 
+        // Subtotal = suma de las líneas + garantías (lo que se cobraría SIN cupón).
+        // Descuento = diferencia entre subtotal y total final, que ya viene aplicado.
+        double subtotal = itemsConfirmados.values().stream()
+                .mapToDouble(i -> i.getSubtotal()
+                        + (i.getCosteGarantia() != null ? i.getCosteGarantia() : 0.0))
+                .sum();
+        double descuento = subtotal - pedido.getTotal();
+
         model.addAttribute("items", itemsConfirmados);
+        model.addAttribute("subtotal", subtotal);
+        model.addAttribute("descuento", descuento);
+        model.addAttribute("cuponCodigo", cuponCodigo);
         model.addAttribute("total", pedido.getTotal());
         return "carrito/confirmacion";
     }

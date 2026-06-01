@@ -5,7 +5,18 @@
 
 <body>
 
-	<div th:replace="~{fragments/navbar :: navbar}"></div>
+	<!-- Reglas de impresión: al imprimir/guardar como PDF ocultamos navbar,
+	     footer y los botones de acción para que el ticket quede limpio. -->
+	<style>
+		@media print {
+			.no-print { display: none !important; }
+			main { padding: 0 !important; }
+			.shadow-sm { box-shadow: none !important; }
+			body { background: #fff !important; }
+		}
+	</style>
+
+	<div class="no-print" th:replace="~{fragments/navbar :: navbar}"></div>
 
 	<main>
 		<div class="container py-5">
@@ -15,7 +26,7 @@
 					<!-- Encabezado con icono de éxito y referencia generada -->
 					<div class="text-center mb-4">
 						<div class="d-inline-flex align-items-center justify-content-center
-                                    bg-success bg-opacity-10 rounded-circle mb-3"
+                                bg-success bg-opacity-10 rounded-circle mb-3"
 							style="width:72px; height:72px;">
 							<i class="bi bi-bag-check-fill text-success fs-2"></i>
 						</div>
@@ -60,6 +71,25 @@
 								</tr>
 							</tbody>
 							<tfoot class="table-light">
+								<!-- Subtotal (antes de cupón). Solo se muestra si hay cupón aplicado;
+								     si no hay descuento, mostrar solo el total ya es suficiente. -->
+								<tr th:if="${cuponCodigo != null and descuento > 0}">
+									<td colspan="2" class="px-4 text-muted">Subtotal</td>
+									<td class="text-end pe-4 text-muted"
+										th:text="${#numbers.formatDecimal(subtotal,1,'POINT',2,'COMMA')} + ' €'">
+									</td>
+								</tr>
+								<!-- Línea del cupón con el importe descontado -->
+								<tr th:if="${cuponCodigo != null and descuento > 0}" class="text-success">
+									<td colspan="2" class="px-4">
+										<i class="bi bi-tag-fill me-1"></i>
+										Cupón <span class="fw-semibold ts-mono" th:text="${cuponCodigo}"></span>
+									</td>
+									<td class="text-end pe-4 fw-semibold"
+										th:text="'-' + ${#numbers.formatDecimal(descuento,1,'POINT',2,'COMMA')} + ' €'">
+									</td>
+								</tr>
+								<!-- Total final -->
 								<tr>
 									<td colspan="2" class="px-4 fw-bold">Total</td>
 									<td class="text-end pe-4 fw-bold fs-5"
@@ -70,7 +100,7 @@
 						</table>
 					</div>
 
-					<div class="d-flex gap-3 justify-content-center">
+					<div class="d-flex gap-3 justify-content-center no-print">
 						<a th:href="@{/catalogo}" class="btn btn-dark rounded-pill px-4">
 							<i class="bi bi-arrow-left me-1"></i>Seguir comprando
 						</a>
@@ -84,7 +114,7 @@
 		</div>
 	</main>
 
-	<div th:replace="~{fragments/footer :: footer}"></div>
+	<div class="no-print" th:replace="~{fragments/footer :: footer}"></div>
 
 </body>
 

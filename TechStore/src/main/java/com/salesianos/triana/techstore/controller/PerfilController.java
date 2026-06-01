@@ -23,10 +23,10 @@ import lombok.RequiredArgsConstructor;
 //
 // El cambio de contraseña tiene dos pasos:
 //   1. POST /perfil/cambiar-password/solicitar
-//      → valida la actual + la nueva, manda código por email y guarda
+//      -> valida la actual + la nueva, manda código por email y guarda
 //        la nueva (en claro) + el código en sesión.
 //   2. POST /perfil/cambiar-password/confirmar
-//      → valida el código, aplica la contraseña nueva, limpia sesión.
+//      -> valida el código, aplica la contraseña nueva, limpia sesión.
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/perfil")
