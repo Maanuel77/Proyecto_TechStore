@@ -33,7 +33,8 @@ INSERT INTO usuarios (user_type, username, password, email, fullname, telefono, 
   ('CLIENTE', 'sergio.navas',     '{noop}sergio',  'sergio.navas@example.com',      'Sergio Navas',       '633000005', FALSE),
   ('CLIENTE', 'julia.alonso',     '{noop}julia',   'julia.alonso@example.com',      'Julia Alonso',       '633000006', FALSE),
   ('CLIENTE', 'sebastian.mendez', '{noop}sebastian','sebastian.mendez@example.com', 'Sebastian Mendez',   '633000007', FALSE),
-  ('CLIENTE', 'ariadna.perez',    '{noop}ariadna', 'ariadna.perez@example.com',     'Ariadna Pérez',      '633000007', FALSE);
+  ('CLIENTE', 'Manuel',           '{noop}manuel',  'manuelmm.for@gmail.com',        'Manuel Martínez',    '633000008', FALSE),
+  ('CLIENTE', 'ariadna.perez',    '{noop}ariadna', 'ariadna.perez@example.com',     'Ariadna Pérez',      '633000009', FALSE);
 
 -- ======================================================================
 -- PRODUCTOS (30 articulos de 10 marcas distintas)
