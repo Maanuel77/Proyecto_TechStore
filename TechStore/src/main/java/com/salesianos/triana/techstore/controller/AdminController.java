@@ -40,8 +40,8 @@ public class AdminController {
     @GetMapping("/dashboard")
     public String dashboard(@RequestParam(defaultValue = "5") int umbralStock,
                             Model model) {
-        // count() emite SELECT COUNT(*), no trae las filas a memoria.
-        model.addAttribute("productos", productoService.count());
+        // KPI "productos en venta": solo cuenta activos (no incluye archivados).
+        model.addAttribute("productos", productoService.countActivos());
         model.addAttribute("pedidos",   pedidoService.count());
         model.addAttribute("clientes",  userService.count());
 
@@ -61,8 +61,18 @@ public class AdminController {
 
     @GetMapping("/productos")
     public String listadoProductos(Model model) {
-        model.addAttribute("productos", productoService.findAll());
+        // Solo activos: los archivados viven en /admin/productos/archivados.
+        model.addAttribute("productos", productoService.findActivos());
         return "admin/productos/list";
+    }
+
+    // Pestaña "Archivados": productos que han sido archivados (soft delete).
+    // No aparecen en el catálogo público ni en el listado normal de productos,
+    // pero el admin puede consultarlos y restaurarlos desde aquí.
+    @GetMapping("/productos/archivados")
+    public String listadoArchivados(Model model) {
+        model.addAttribute("productos", productoService.findArchivados());
+        return "admin/productos/archivados";
     }
 
     // Listado de pedidos con filtro opcional por rango de fechas.
@@ -124,12 +134,24 @@ public class AdminController {
         return "redirect:/admin/dashboard";
     }
 
-    // Eliminar producto. El service lanza IllegalArgumentException si está
-    // referenciado en pedidos antiguos (FK), gestionado por el ControllerAdvice.
-    @GetMapping("/producto/eliminar/{id}")
-    public String eliminarProducto(@PathVariable Long id) {
-        productoService.eliminar(id);
-        return "redirect:/admin/dashboard";
+    // Archivar producto (soft delete). El producto deja de aparecer en el
+    // catálogo público y en el listado de "Productos" del admin, pero sigue
+    // existiendo en la BD para preservar la integridad de los pedidos antiguos
+    // que lo referencian. Es reversible vía /producto/restaurar/{id}.
+    @GetMapping("/producto/archivar/{id}")
+    public String archivarProducto(@PathVariable Long id, RedirectAttributes ra) {
+        productoService.archivar(id);
+        ra.addFlashAttribute("infoProducto",
+                "Producto archivado. Puedes restaurarlo desde la pestaña 'Archivados'.");
+        return "redirect:/admin/productos";
+    }
+
+    // Restaurar producto: vuelve al catálogo público y al listado normal.
+    @GetMapping("/producto/restaurar/{id}")
+    public String restaurarProducto(@PathVariable Long id, RedirectAttributes ra) {
+        productoService.restaurar(id);
+        ra.addFlashAttribute("infoProducto", "Producto restaurado y de nuevo a la venta.");
+        return "redirect:/admin/productos/archivados";
     }
 
     @GetMapping("/clientes")

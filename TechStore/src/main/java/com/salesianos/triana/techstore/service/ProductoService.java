@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,20 +61,45 @@ public class ProductoService extends BaseServiceImpl<Producto, Long, ProductoRep
         return super.save(producto);
     }
 
-    // Borrar producto. Si está referenciado en pedidos antiguos la BD lanza
-    // DataIntegrityViolationException (FK), que convertimos en un mensaje
-    // amigable. flush() fuerza el DELETE inmediato para capturarlo aquí.
+    // ---- Soft delete ----
+    // En lugar de borrar el producto (que rompería la FK con pedidos históricos),
+    // lo marcamos como archivado. Deja de aparecer en el catálogo público y en
+    // el listado normal del admin, pero los pedidos antiguos lo siguen viendo
+    // correctamente. Es reversible vía `restaurar`.
     @Transactional
-    public void eliminar(Long id) {
+    public void archivar(Long id) {
         Producto producto = buscarPorId(id);
-        try {
-            repository.delete(producto);
-            repository.flush();
-        } catch (DataIntegrityViolationException e) {
-            throw new IllegalArgumentException(
-                "No se puede eliminar el producto '" + producto.getNombre()
-                + "' porque está incluido en pedidos históricos.");
-        }
+        producto.setArchivado(true);
+        repository.save(producto);
+    }
+
+    // Reactiva un producto previamente archivado: vuelve al catálogo público
+    // y al listado normal de productos del admin.
+    @Transactional
+    public void restaurar(Long id) {
+        Producto producto = buscarPorId(id);
+        producto.setArchivado(false);
+        repository.save(producto);
+    }
+
+    // Listado de productos activos (no archivados). Lo usan el catálogo público
+    // y el listado normal del admin. Para ver TODOS (incluidos archivados),
+    // usa `findAll()` de la clase base. Para ver solo archivados, `findArchivados()`.
+    @Transactional(readOnly = true)
+    public List<Producto> findActivos() {
+        return repository.findByArchivadoFalseOrderByIdAsc();
+    }
+
+    // Listado de productos archivados (pestaña "Archivados" del panel admin).
+    @Transactional(readOnly = true)
+    public List<Producto> findArchivados() {
+        return repository.findByArchivadoTrueOrderByIdAsc();
+    }
+
+    // Conteo de productos activos para el KPI del dashboard ("productos en venta").
+    @Transactional(readOnly = true)
+    public long countActivos() {
+        return repository.countByArchivadoFalse();
     }
 
     @Transactional(readOnly = true)

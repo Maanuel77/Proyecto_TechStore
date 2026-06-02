@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import org.hibernate.proxy.HibernateProxy;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -62,6 +63,20 @@ public class Producto {
 
     private String imagenUrl;
 
+    // Soft delete: si está a true, el producto NO aparece en el catálogo público
+    // ni en el listado de "Productos" del admin, pero sigue existiendo en la BD
+    // para que los pedidos antiguos que lo referencian se vean correctamente.
+    // Por defecto los productos nuevos se crean a false (activos).
+    // Se gestiona desde el panel admin (archivar / restaurar).
+    //
+    // `columnDefinition` añade `DEFAULT FALSE` al DDL para que los INSERTs del
+    // import.sql (que NO incluyen esta columna) reciban automáticamente `false`,
+    // en vez de fallar por NOT NULL y arrastrar consigo todas las FKs de pedidos.
+    @NotNull
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private Boolean archivado = false;
+
     // Nivel de disponibilidad calculado a partir del stock. Lo consumen tanto
     // los templates (`th:if="${p.nivelStock.name() == 'AGOTADO'}"`) como el JS
     // (a través de data-nivel). Así la regla vive en un único sitio.
@@ -70,8 +85,6 @@ public class Producto {
         return NivelStock.evaluar(stock != null ? stock : 0);
     }
 
-    // equals/hashCode basados en id, compatibles con HibernateProxy.
-    // Evita los problemas que generaría @Data con lazy loading.
     @Override
     public final boolean equals(Object o) {
         if (this == o) return true;

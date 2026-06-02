@@ -21,10 +21,14 @@ public class HomeController {
 
 	@GetMapping("/")
 	public String index (Model model) {
-		// "Nuestros favoritos": los 6 productos más vendidos.
-		// findTopVendidos devuelve DTOs; nos quedamos solo con el Producto.
-		var destacados = productoService.findTopVendidos(6).stream()
+		// "Nuestros favoritos": los 6 productos más vendidos. Pedimos un margen
+		// (12) y filtramos archivados para que la sección no muestre productos
+		// retirados del catálogo. Si hubiera tantos archivados que no llegamos
+		// a 6, simplemente se muestran los que haya — no es crítico.
+		var destacados = productoService.findTopVendidos(12).stream()
 				.map(ProductoTopDto::producto)
+				.filter(p -> !Boolean.TRUE.equals(p.getArchivado()))
+				.limit(6)
 				.toList();
 		model.addAttribute("destacados", destacados);
 		return "index";
@@ -32,7 +36,9 @@ public class HomeController {
 
 	@GetMapping("/catalogo")
 	public String catalogo(Model model) {
-		model.addAttribute("productos", productoService.findAll());
+		// Catálogo público: solo productos activos (los archivados están retirados
+		// de la venta aunque sigan en BD para preservar los pedidos antiguos).
+		model.addAttribute("productos", productoService.findActivos());
 		return "catalogo";
 	}
 

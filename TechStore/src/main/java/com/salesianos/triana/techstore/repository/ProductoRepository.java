@@ -15,11 +15,24 @@ import com.salesianos.triana.techstore.model.Producto;
 
 public interface ProductoRepository extends JpaRepository<Producto, Long> {
 
+    // ---- Soft delete: filtros por archivado ----
+    // Productos en venta (los que se ven en el catálogo público y en el listado
+    // normal del admin). Excluye archivados.
+    List<Producto> findByArchivadoFalseOrderByIdAsc();
+
+    // Productos archivados (pestaña "Archivados" del panel admin).
+    List<Producto> findByArchivadoTrueOrderByIdAsc();
+
+    // Conteo de productos activos para los KPIs del dashboard.
+    long countByArchivadoFalse();
+
     // Productos con stock por debajo del valor dado (alertas de stock).
-    List<Producto> findByStockLessThanEqual(Integer stock);
+    // Solo activos: los archivados no se reponen.
+    List<Producto> findByArchivadoFalseAndStockLessThanEqual(Integer stock);
 
     // Listado del catálogo ordenado por stock ascendente (los más bajos arriba).
-    @Query("select p from Producto p order by p.stock asc")
+    // Solo activos.
+    @Query("select p from Producto p where p.archivado = false order by p.stock asc")
     List<Producto> findByLowAvailability();
 
     // Devuelve [Producto, unidades vendidas] para el ranking simple de ventas.
@@ -67,13 +80,15 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
     // fecha indicada. La subquery devuelve 0 si el producto no se ha vendido
     // en el periodo (coalesce). Ordenado por stock ascendente → arriba los
     // más urgentes.
+    // Stock bajo solo de productos activos: los archivados no se reponen ni se
+    // muestran en alertas (ya están fuera del catálogo).
     @Query("""
            select new com.salesianos.triana.techstore.dto.ProductoStockDto(
                  p,
                  (select coalesce(sum(lp.cantidad), 0L) from LineaPedido lp
                   where lp.producto = p and lp.pedido.fecha >= :desde))
            from Producto p
-           where p.stock <= :umbral
+           where p.archivado = false and p.stock <= :umbral
            order by p.stock asc
            """)
     List<ProductoStockDto> findStockBajoConVentas(int umbral, LocalDate desde);

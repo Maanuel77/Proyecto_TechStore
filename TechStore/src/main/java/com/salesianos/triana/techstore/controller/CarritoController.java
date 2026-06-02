@@ -60,10 +60,12 @@ public class CarritoController {
         Optional<Cupon> fidelidad = cuponService.getCuponFidelidad(cliente);
         model.addAttribute("cuponFidelidad", fidelidad.orElse(null));
         // Top productos para el bloque "Te puede interesar", excluyendo los
-        // que ya están en el carrito.
-        List<Producto> sugeridos = productoService.findTopVendidos(N_SUGERIDOS + items.size()).stream()
+        // que ya están en el carrito y los archivados (no se pueden comprar).
+        // Pedimos margen extra para tener para filtrar.
+        List<Producto> sugeridos = productoService.findTopVendidos(N_SUGERIDOS + items.size() + 6).stream()
                 .map(ProductoTopDto::producto)
                 .filter(p -> !items.containsKey(p.getId()))
+                .filter(p -> !Boolean.TRUE.equals(p.getArchivado()))
                 .limit(N_SUGERIDOS)
                 .toList();
         model.addAttribute("sugeridos", sugeridos);
@@ -73,11 +75,19 @@ public class CarritoController {
     // Endpoint genérico de añadir. El parámetro opcional `volver` decide
     // a dónde se redirige: "carrito" (cuando se añade desde el carrito) o
     // "catalogo" (por defecto, cuando se añade desde el catálogo).
+    //
+    // Defensa: si el producto está archivado (soft delete), rechazamos el
+    // alta aunque alguien tenga el enlace antiguo. No bloqueamos incrementar /
+    // decrementar para no destruir la UX de items ya en el carrito.
     @GetMapping("/anadir/{id}")
     public String anadirProducto(@PathVariable Long id,
                                  @RequestParam(defaultValue = "1") Integer cantidad,
                                  @RequestParam(defaultValue = "catalogo") String volver) {
         Producto p = productoService.buscarPorId(id);
+        if (Boolean.TRUE.equals(p.getArchivado())) {
+            throw new IllegalArgumentException(
+                "El producto '" + p.getNombre() + "' ya no está disponible.");
+        }
         carritoService.addProducto(p, cantidad);
         return "carrito".equals(volver) ? "redirect:/carrito" : "redirect:/catalogo";
     }
