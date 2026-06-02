@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<!--
+  Página 404 personalizada.
+  Spring Boot la sirve automaticamente cuando el status HTTP de la respuesta de
+  error es 404 (URL no registrada, recurso eliminado, sendError(404), etc.),
+  en lugar del Whitelabel Error Page por defecto.
+-->
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: head('Página no encontrada — TechStore', null)}"></head>
+
+<body class="d-flex flex-column min-vh-100 bg-light">
+
+	<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+	<main class="flex-grow-1 d-flex align-items-center justify-content-center py-5">
+		<div class="text-center px-3" style="max-width: 32rem;">
+
+			<i class="bi bi-patch-exclamation display-1 text-secondary opacity-50"></i>
+
+			<p class="text-muted text-uppercase ts-label-sm small fw-semibold mt-4 mb-2">
+				Error 404
+			</p>
+			<h1 class="fw-bold mb-3">Esta página no está registrada en la web</h1>
+			<p class="text-muted mb-4">
+				La dirección que has intentado abrir no existe o ya no está disponible.
+				Quizá te equivocaste al escribirla, o el enlace que seguiste está roto.
+			</p>
+
+			<div class="d-flex gap-2 justify-content-center flex-wrap">
+				<a th:href="@{/}" class="btn btn-dark rounded-pill px-4 py-2">
+					<i class="bi bi-house me-1"></i> Volver al inicio
+				</a>
+				<a th:href="@{/catalogo}" class="btn btn-outline-secondary rounded-pill px-4 py-2">
+					<i class="bi bi-grid me-1"></i> Ir al catálogo
+				</a>
+			</div>
+
+		</div>
+	</main>
+
+	<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+
+</html>

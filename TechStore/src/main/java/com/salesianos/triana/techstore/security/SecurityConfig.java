@@ -32,7 +32,13 @@ public class SecurityConfig {
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/carrito/**", "/pedidos/**").hasRole("CLIENTE")
-                .anyRequest().authenticated()
+                .requestMatchers("/perfil/**").authenticated()
+                // Catch-all permitAll (antes era .authenticated()): así las URLs
+                // que no matchean ningún controlador llegan al dispatcher de error
+                // de Spring Boot y muestran templates/error/404.html en lugar de
+                // un 403 vacío. Los endpoints sensibles SIEMPRE deben declararse
+                // explícitamente arriba (hasRole / authenticated).
+                .anyRequest().permitAll()
             )
             .requestCache(cache -> {
                 HttpSessionRequestCache requestCache = new HttpSessionRequestCache();
@@ -54,7 +60,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf
                 .ignoringRequestMatchers("/h2-console/**")
             )
-            // sameOrigin (no disable) → protege contra clickjacking pero
+            // sameOrigin (no disable) -> protege contra clickjacking pero
             // permite que la consola H2, que vive en el mismo origen, use
             // su propio frame interno. Disable() abriria la app a iframes
             // de cualquier sitio externo.
