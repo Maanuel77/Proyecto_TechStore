@@ -43,7 +43,7 @@
 		</form>
 
 		<!-- Form secundario: reenviar código (cooldown 30s) -->
-		<form method="post" th:action="@{/auth/verificar/reenviar}" class="text-center mt-3">
+		<form method="post" th:action="@{/auth/verificar/reenviar}" data-ts-loading class="text-center mt-3">
 			<button type="submit" id="btnReenviar"
 			        class="btn btn-link text-muted small text-decoration-none p-0"
 			        th:data-cooldown="${segundosReenvio}">
@@ -60,6 +60,8 @@
 	</div>
 
 	<script th:src="@{/js/auth/verificar.js}" defer></script>
+
+	<div th:replace="~{fragments/loading-overlay :: loadingOverlay}"></div>
 
 </body>
 

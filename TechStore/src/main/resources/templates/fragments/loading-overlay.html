@@ -1,0 +1,24 @@
+<!-- Fragmento: pantalla de carga minimalista con temática de tienda (TechStore).
+     Se superpone durante las esperas del envío de email (login y reenviar código).
+     Incluir antes de </body> con:
+       <div th:replace="~{fragments/loading-overlay :: loadingOverlay}"></div>
+     y marcar el formulario que la dispara con el atributo  data-ts-loading. -->
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="loadingOverlay">
+
+	<div id="tsLoadingOverlay" class="ts-loading-overlay" role="status" aria-hidden="true">
+		<div class="ts-loading-box">
+			<!-- Texto estático para lectores de pantalla (los mensajes que rotan son aria-hidden). -->
+			<span class="visually-hidden">Cargando, esto puede tardar unos segundos…</span>
+			<i id="tsLoadingIcon" class="ts-loading-icon bi bi-box-seam" aria-hidden="true"></i>
+			<p class="ts-loading-text" id="tsLoadingText" aria-hidden="true">Cargando…</p>
+		</div>
+	</div>
+
+	<script th:src="@{/js/loading-overlay.js}" defer></script>
+
+</th:block>
+</body>
+</html>

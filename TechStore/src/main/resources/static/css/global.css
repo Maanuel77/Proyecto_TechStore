@@ -3,14 +3,14 @@
  * Todo lo demás se gestiona con clases Bootstrap en el HTML.
  */
 
-/* ── Navbar: frosted glass (backdrop-filter no existe en Bootstrap) ── */
+/* Navbar: frosted glass (backdrop-filter no existe en Bootstrap)*/
 .ts-navbar-blur {
   background: rgba(255, 255, 255, .88) !important;
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
 }
 
-/* ── Hero: gradiente + overlay radial ─────────────────────────────── */
+/*Hero: gradiente + overlay radial*/
 .ts-hero {
   padding: 8rem 1rem 6rem;
   background: linear-gradient(160deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
@@ -23,7 +23,7 @@
 }
 .ts-hero > * { position: relative; z-index: 1; }
 
-/* ── Hero eyebrow: borde semitransparente (no hay en Bootstrap) ───── */
+/*Hero eyebrow: borde semitransparente (no hay en Bootstrap)*/
 .ts-eyebrow {
   display: inline-block;
   border: 1px solid rgba(255, 255, 255, .15);
@@ -32,25 +32,25 @@
   padding: .3em 1.2em;
 }
 
-/* ── Hover lift en tarjetas ────────────────────────────────────────── */
+/*Hover lift en tarjetas */
 .ts-hover { transition: transform .2s ease, box-shadow .2s ease; }
 .ts-hover:hover { transform: translateY(-4px); box-shadow: 0 12px 36px rgba(0, 0, 0, .14) !important; }
 
-/* ── Zoom de imagen al hacer hover ────────────────────────────────── */
+/*Zoom de imagen al hacer hover*/
 .ratio img { transition: transform .4s ease; }
 .ts-hover:hover .ratio img { transform: scale(1.04); }
 
-/* ── Placeholder de imagen (gradiente que Bootstrap no tiene) ──────── */
+/*Placeholder de imagen (gradiente que Bootstrap no tiene)*/
 .ts-img-placeholder {
   background: linear-gradient(135deg, #f0f0f5 0%, #e5e5ea 100%);
   color: #c7c7cc;
 }
 
-/* ── Letter-spacing (Bootstrap no tiene utilidades para esto) ──────── */
+/*Letter-spacing (Bootstrap no tiene utilidades para esto)*/
 .ts-label { letter-spacing: .1em; }
 .ts-label-sm { letter-spacing: .06em; }
 
-/* ── Colores de iconos en stats del admin ──────────────────────────── */
+/*Colores de iconos en stats del admin*/
 .ts-icon-blue   { background: #dbeafe; color: #1d4ed8; }
 .ts-icon-green  { background: #dcfce7; color: #15803d; }
 .ts-icon-orange { background: #fef3c7; color: #92400e; }
@@ -58,13 +58,13 @@
 .ts-icon-red    { background: #fee2e2; color: #b91c1c; }
 .ts-icon-yellow { background: #fef9c3; color: #a16207; }
 
-/* ── Cabecera de tabla admin (text-transform + letter-spacing) ─────── */
+/*Cabecera de tabla admin (text-transform + letter-spacing)*/
 .ts-th { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
 
-/* ── Monospace para códigos de pedido ──────────────────────────────── */
+/*Monospace para códigos de pedido*/
 .ts-mono { font-family: ui-monospace, "SF Mono", monospace; }
 
-/* ── Footer: opacidades de blanco que Bootstrap no genera ─────────── */
+/*Footer: opacidades de blanco que Bootstrap no genera*/
 .ts-fheading { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; color: #fff; margin-bottom: .875rem; }
 .ts-flink { color: rgba(255, 255, 255, .55) !important; transition: color .15s; text-decoration: none; }
 .ts-flink:hover { color: #fff !important; }
@@ -72,35 +72,86 @@
 .ts-fsocial { color: rgba(255, 255, 255, .4); font-size: 1.2rem; transition: color .15s; text-decoration: none; }
 .ts-fsocial:hover { color: #fff; }
 
-/* ── Login: max-width de la tarjeta ───────────────────────────────── */
+/*Login: max-width de la tarjeta*/
 .ts-login-card { max-width: 430px; width: 100%; }
 .ts-demo-creds { font-family: ui-monospace, "SF Mono", monospace; font-size: .8rem; }
 .ts-demo-sep   { width: 1px; background: #dee2e6; align-self: stretch; flex-shrink: 0; }
 
-/* ── Icono value-prop (60 × 60 px fijo, Bootstrap no tiene px utility) */
+/*Icono value-prop (60 × 60 px fijo, Bootstrap no tiene px utility) */
 .ts-value-icon { width: 60px; height: 60px; }
 
-/* ── Main: altura mínima ──────────────────────────────────────────── */
+/*Main: altura mínima*/
 main { min-height: 72vh; }
 
-/* ── Carrito: tarjetas con hover sutil ────────────────────────────── */
+/*Carrito: tarjetas con hover sutil*/
 .ts-cart-item { transition: box-shadow .2s ease; }
 .ts-cart-item:hover { box-shadow: 0 8px 24px rgba(0, 0, 0, .08) !important; }
 
-/* ── Carrito: resumen pegado al hacer scroll ────── */
+/*Carrito: resumen pegado al hacer scroll*/
 @media (min-width: 992px) {
   .ts-cart-summary { position: sticky; top: 90px; }
 }
 
-/* ── Stepper: quitar flechas nativas del input number en webkit/firefox */
+/*Stepper: quitar flechas nativas del input number en webkit/firefox */
 .ts-stepper-input::-webkit-outer-spin-button,
 .ts-stepper-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 .ts-stepper-input { -moz-appearance: textfield; }
 
-/* ── Truncar texto a 2 líneas (Bootstrap no tiene utilidad) ───────── */
+/*Truncar texto a 2 líneas (Bootstrap no tiene utilidad)*/
 .ts-truncate-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/*Pantalla de carga: overlay claro y minimalista con icono temático TechStore*/
+.ts-loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1080;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: rgba(248, 249, 250, .94);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.ts-loading-overlay.is-visible { display: flex; animation: ts-loading-fade .25s ease both; }
+@keyframes ts-loading-fade { from { opacity: 0; } to { opacity: 1; } }
+
+.ts-loading-box { max-width: 28rem; text-align: center; }
+
+.ts-loading-icon {
+  display: block;
+  font-size: 2.5rem;
+  line-height: 1;
+  color: #212529;
+  margin-bottom: 1rem;
+  animation: ts-loading-pulse 1.6s ease-in-out infinite;
+  transition: opacity .25s ease;
+}
+@keyframes ts-loading-pulse {
+  0%, 100% { transform: scale(1);    opacity: 1;   }
+  50%      { transform: scale(1.08); opacity: .55; }
+}
+
+.ts-loading-text {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #6c757d;
+  transition: opacity .25s ease;
+}
+
+/* Transición al cambiar de mensaje (texto + icono se desvanecen juntos) */
+.ts-loading-text.is-swapping,
+.ts-loading-icon.is-swapping { opacity: 0; }
+
+/* Respeta a quien prefiere menos movimiento: sin pulsos ni fades */
+@media (prefers-reduced-motion: reduce) {
+  .ts-loading-overlay.is-visible { animation: none; }
+  .ts-loading-icon { animation: none; }
+  .ts-loading-text, .ts-loading-icon { transition: none; }
 }

@@ -140,7 +140,7 @@ public class CarritoService {
         return items.isEmpty();
     }
 
-    // === Cupón ============================================================
+    // Cupón:
     // La validación del código vive en CuponService (no aquí). Este servicio
     // solo recibe ya validado el código y el porcentaje aplicable, y los
     // guarda en sesión para el cálculo del total.

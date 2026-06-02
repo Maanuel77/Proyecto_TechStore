@@ -24,7 +24,7 @@
 			¡Cuenta creada! Ya puedes iniciar sesión.
 		</div>
 
-		<form method="post" th:action="@{/auth/login}" novalidate>
+		<form method="post" th:action="@{/auth/login}" data-ts-loading novalidate>
 			<div class="mb-3">
 				<label class="form-label small fw-semibold text-muted text-uppercase ts-label-sm">
 					Usuario
@@ -63,6 +63,8 @@
 		</div>
 
 	</div>
+
+	<div th:replace="~{fragments/loading-overlay :: loadingOverlay}"></div>
 
 </body>
 
