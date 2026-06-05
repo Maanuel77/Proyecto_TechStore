@@ -38,7 +38,7 @@
   
 ---
 
-## 🛠️ Tecnologías y Herramientas
+## Tecnologías y Herramientas
 
 **Backend:**
 * Java (Spring Boot)
